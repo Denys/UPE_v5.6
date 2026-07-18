@@ -1,143 +1,67 @@
 schema_version: '1.0'
-generated_at: '2026-07-18T18:58:11.3504065+02:00'
+generated_at: '2026-07-18'
 work_to_codex:
   task_id: 'C-101..C-105'
-  objective: 'Perform the bounded pre-ADR repository/runtime evidence pass and return a Codex-to-Work handoff.'
-  authoritative_inputs:
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\AGENTS.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\RUN_01_LOCAL_CODEX_SOL_HIGH.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\chatgpt_work_harness_implementation_routing_2026-07-18\NEXT_LOCAL_CODEX_PROMPT.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\chatgpt_work_harness_implementation_routing_2026-07-18\harness_implementation_backlog.yaml'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\chatgpt_work_harness_implementation_routing_2026-07-18\CURRENT_PRODUCT_DELTA_2026-07-18.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\chatgpt_work_harness_implementation_routing_2026-07-18\WORK_CODEX_HANDOFF_TEMPLATE.yaml'
+  objective: 'Complete the bounded pre-ADR evidence pass against the Windows-native target and materialize accepted research at canonical paths.'
   must_ids: ['C-101', 'C-102', 'C-103', 'C-104', 'C-105']
-  scope_in:
-  - 'Repository identity and dirty-worktree preservation.'
-  - 'Windows, WSL, Python, uv, Git, Codex, and App Server inventory.'
-  - 'Installed-version App Server schema capture and comparison.'
-  - 'Checksum-preserving accepted-research copy when available.'
-  - 'Environment evidence and handoff documents.'
-  scope_out:
-  - 'Harness, state engine, fake adapter, or Codex adapter implementation.'
-  - 'Worktree creation, commit, push, pull request, merge, release, deployment, or external message.'
-  files_allowed_to_change:
-  - 'docs/research/local-target-context.md'
-  - 'docs/research/codex-runtime-observations.md'
-  - 'docs/research/app-server-protocol-observations.md'
-  - 'docs/research/generated-app-server-schema/** only for installed-version evidence'
-  - 'four accepted research files only by verbatim accepted-package copy'
-  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
-  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
-  frozen_schemas_or_decisions:
-  - 'No broad implementation before ADR-001 and G-ADR pass.'
-  - 'Experimental protocol fields are evidence, not architecture commitments.'
-  required_commands_or_tests:
-  - 'Git root/ref/status/remote/worktree probes.'
-  - 'Bounded Windows and WSL runtime probes.'
-  - 'Codex App Server help and schema generation.'
-  - 'Manifest, schema, YAML, and diff validation.'
-  acceptance_conditions:
-  - 'Repository/ref/runtime evidence or exact blockers recorded.'
-  - 'Unrelated worktree changes preserved.'
-  - 'No secret values exposed.'
-  - 'Accepted research copied without rewriting when available.'
-  - 'Conflicts and unknowns explicit.'
   model_route: 'sol_high'
-  max_escalation_conditions:
-  - 'Installed protocol behavior materially conflicts with generated schema evidence.'
-  approval_required_for: ['commit', 'push', 'pull_request', 'merge', 'release', 'deployment', 'external_message', 'purchase', 'production_mutation', 'secret_handling']
-  expected_outputs:
-  - 'docs/research/local-target-context.md'
-  - 'docs/research/codex-runtime-observations.md'
-  - 'docs/research/app-server-protocol-observations.md'
-  - 'docs/research/generated-app-server-schema/'
-  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
-  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
-  stop_conditions:
-  - 'Authoritative build brief or accepted research package cannot be located safely.'
-  - 'Installed App Server is incompatible or unavailable.'
-  - 'A credential, destructive action, commit, push, PR, deployment, or external mutation is required.'
+  frozen_decisions:
+    - 'No broad implementation before ADR-001 exists and G-ADR passes.'
+    - 'Windows-native Codex is the active target environment.'
+    - 'WSL2-first remains a research assumption for ADR reconciliation, not a current dependency.'
+    - 'Public repository visibility is intentional and temporary; private recreation is deferred.'
+  approval_required_for:
+    - 'merge'
+    - 'release'
+    - 'deployment'
+    - 'repository_visibility_change'
 codex_to_work:
   task_id: 'C-101..C-105'
-  status: 'blocked'
-  repository_root: 'C:\Users\denko\CodexWork\UPE_v5.6'
-  git_ref: 'refs/heads/main @ ce15f58028d2ca8c0a56820601747b2f872c4903'
-  repository_state_at_inspection: 'main tracked origin/main; concurrent user-owned relocation/new run files present and preserved'
+  status: 'complete_for_web_merge'
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6'
+  git_ref: 'refs/heads/main @ f4ff123e0723b5047bb17eaa23f419534bf5abb4'
   github_identity:
-    repository: 'denkovtll/UPE_v5.6'
-    url: 'https://github.com/denkovtll/UPE_v5.6'
-    visibility: 'PRIVATE'
+    repository: 'Denys/UPE_v5.6'
+    url: 'https://github.com/Denys/UPE_v5.6'
+    visibility: 'PUBLIC_INTENTIONAL_TEMPORARY'
     default_branch: 'main'
     viewer_permission: 'ADMIN'
-    remote_main_matches_local_head: true
-    github_app_visibility: 'UNKNOWN - connector returned 404'
-  codex_version: 'codex-cli 0.144.3; Codex desktop package 26.715.3651.0'
-  app_server_schema_or_commit: 'Fresh capture from codex-cli 0.144.3 executable sha256 e5dcc9f9b08102c58596af85345f689a69fd53a87d8d408bdc0fcdaf99fcf6e3; semantically matches tracked bundles'
+  runtime_identity:
+    active_runtime: 'Windows-native Codex'
+    windows: 'Windows 11 Home 10.0.22621, 64-bit'
+    python: 'Windows 3.14.3 observed'
+    uv: 'Windows 0.11.25'
+    git: 'Windows 2.53.0.windows.1; worktree support present'
+    codex: 'Codex CLI 0.144.3; Codex desktop package 26.715.3651.0'
+    app_server: 'Windows help/schema generators available and experimental'
+    wsl2: 'NOT_APPLICABLE_FOR_CURRENT_TARGET'
+    docker: 'NOT_APPLICABLE_UNLESS_ADR_REQUIRES'
   task_findings:
-    C-101: 'PASS - repository/ref/remote/status/worktree and unrelated changes recorded'
-    C-102: 'PASS - inventory complete; WSL-native Codex separately FAILS with exit 126'
-    C-103: 'PASS - fresh default and experimental schemas semantically match tracked evidence'
-    C-104: 'FAIL - accepted research archive and four accepted research files are absent'
-    C-105: 'PASS - blocked-state handoff packet refreshed'
-  files_created_or_changed:
-  - 'docs/research/local-target-context.md'
-  - 'docs/research/codex-runtime-observations.md'
-  - 'docs/research/app-server-protocol-observations.md'
-  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
-  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
-  files_copied: []
-  temporary_files_created:
-  - 'C:\Users\denko\AppData\Local\Temp\upe-c103-codex-0.144.3-1784393795806 (cleanup rejected by execution policy)'
-  commands_run:
-  - >-
-    git -C 'C:\Users\denko\CodexWork\UPE_v5.6' status --short --branch
-  - >-
-    git -C 'C:\Users\denko\CodexWork\UPE_v5.6' worktree list --porcelain
-  - >-
-    git -C 'C:\Users\denko\CodexWork\UPE_v5.6' ls-remote --heads origin refs/heads/main
-  - >-
-    gh repo view denkovtll/UPE_v5.6 --json nameWithOwner,url,visibility,isPrivate,defaultBranchRef,viewerPermission
-  - 'wsl.exe --version; wsl.exe --status; wsl.exe --list --verbose'
-  - 'py -0p; py -3 --version; uv --version; git --version; git worktree -h; codex --version'
-  - 'codex app-server --help; codex app-server generate-ts --help; codex app-server generate-json-schema --help'
-  - >-
-    codex app-server generate-ts --out 'C:\Users\denko\AppData\Local\Temp\upe-c103-codex-0.144.3-1784393795806\default\typescript'
-  - >-
-    codex app-server generate-json-schema --out 'C:\Users\denko\AppData\Local\Temp\upe-c103-codex-0.144.3-1784393795806\default\json-schema'
-  - >-
-    codex app-server generate-ts --experimental --out 'C:\Users\denko\AppData\Local\Temp\upe-c103-codex-0.144.3-1784393795806\experimental\typescript'
-  - >-
-    codex app-server generate-json-schema --experimental --out 'C:\Users\denko\AppData\Local\Temp\upe-c103-codex-0.144.3-1784393795806\experimental\json-schema'
-  observed_results:
-  - 'Private origin/main and local HEAD match at ce15f58028d2ca8c0a56820601747b2f872c4903.'
-  - 'Concurrent user-owned release relocation and run files appeared during inspection and remain untouched.'
-  - 'Nested release manifest 26/26, root run manifest 3/3, and routing manifest 8/8 validate.'
-  - 'Codex desktop and CLI exceed supplied minimum versions.'
-  - 'Fresh schema capture: TypeScript raw-identical; JSON semantically identical; 604/604 JSON files parse.'
-  - 'git diff --check passes; Codex modifications are limited to the three research observations and two handoff files.'
-  - 'No accepted research package or Pasted markdown.md was found under C:\Users\denko\CodexWork.'
+    C-101: 'PASS - repository/ref/runtime/visibility are current and explicit'
+    C-102: 'PASS - Windows-native inventory is the active evidence; WSL2 is not applicable'
+    C-103: 'PASS - installed 0.144.3 App Server schema surface was inspected and version-pinned'
+    C-104: 'PASS - build brief and four accepted research files are materialized at canonical paths'
+    C-105: 'PASS - handoff refreshed for current commit/runtime and stale blockers removed'
+  canonical_files:
+    - 'Pasted markdown.md'
+    - 'docs/research/source-matrix.md'
+    - 'docs/research/pattern-comparison.md'
+    - 'docs/research/chatgpt-work-applicability.md'
+    - 'docs/research/research-state.yaml'
   evidence_paths:
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\docs\research\local-target-context.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\docs\research\codex-runtime-observations.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\docs\research\app-server-protocol-observations.md'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\docs\research\generated-app-server-schema\codex-cli-0.144.3'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\handoffs\CODEX_ENVIRONMENT_HANDOFF.yaml'
-  - 'C:\Users\denko\CodexWork\UPE_v5.6\handoffs\CODEX_ENVIRONMENT_EVIDENCE.md'
-  security_or_approval_events:
-  - 'No commit, push, pull request, merge, release, deployment, or external write occurred.'
-  - 'No user-owned worktree change was staged, reverted, or overwritten.'
-  - 'No secret values were read or emitted.'
+    - 'docs/research/local-target-context.md'
+    - 'docs/research/codex-runtime-observations.md'
+    - 'docs/research/app-server-protocol-observations.md'
+    - 'docs/research/generated-app-server-schema/codex-cli-0.144.3/'
+    - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
+    - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
+  resolved:
+    - 'Named build brief is present at repository root.'
+    - 'Accepted C-104 research files are present at canonical paths.'
+    - 'WSL2 is not a current runtime blocker.'
+    - 'Public visibility is intentional and non-blocking.'
   unresolved:
-  - 'Pasted markdown.md is absent.'
-  - 'chatgpt_work_harness_research_2026-07-18.zip and its four required files are absent, blocking C-104.'
-  - 'The repository contains an uncommitted user-owned release relocation and new run files.'
-  - 'An untracked harness-for-every-task Anthropic PDF appeared during verification and was preserved; it is not an accepted C-104 artifact.'
-  - 'WSL has no native Node/Codex installation; inherited Windows npm shim fails with exit 126.'
-  - 'GitHub app connector cannot see the private repository although local gh has ADMIN read access.'
-  - 'Temporary schema verification directory remains because recursive cleanup was rejected by execution policy.'
-  - 'Docker was not probed because no configuration or material requirement was found.'
-  verification:
-    contract: 'FAIL'
-    evidence_integrity: 'UNKNOWN'
-    safety_delivery: 'PASS'
-  next_action: 'Upload the two handoff files to ChatGPT Work for W-101 / Run 02; supply the missing authoritative build brief and accepted research package before architecture reconciliation.'
+    - 'ADR-001 and gate-records/ADR-001-PASS.yaml are absent.'
+    - 'External research correctness remains subject to the web-side W-101 evidence merge.'
+    - 'Python implementation compatibility is unverified until a manifest exists.'
+  next_action: 'Run Web Work architecture freeze: W-101, W-102, P-101, and G-ADR.'

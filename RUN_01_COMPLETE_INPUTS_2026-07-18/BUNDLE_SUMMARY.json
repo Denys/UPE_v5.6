@@ -1,0 +1,17 @@
+{
+  "created": "2026-07-18",
+  "purpose": "Complete Local Codex Run 01 input bundle",
+  "required_missing_files_repaired": [
+    "Pasted markdown.md",
+    "chatgpt_work_harness_research_2026-07-18.zip",
+    "docs/research/source-matrix.md",
+    "docs/research/pattern-comparison.md",
+    "docs/research/chatgpt-work-applicability.md",
+    "docs/research/research-state.yaml"
+  ],
+  "extra_preventive_inputs": [
+    "chatgpt_work_harness_implementation_routing_2026-07-18.zip",
+    "AGENTS.md",
+    "RUN_01_LOCAL_CODEX_SOL_HIGH.md"
+  ]
+}
