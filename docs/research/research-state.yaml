@@ -1,74 +1,79 @@
 upe_state:
   goal: >-
-    Research current OpenAI and Anthropic harness-engineering evidence, compare the
-    main architecture choices, and record which patterns apply natively or by
-    adaptation to ChatGPT Work before any harness implementation begins.
+    Research current OpenAI and Anthropic harness-engineering evidence, merge
+    target-environment observations, freeze the minimum v0 architecture, and
+    complete a fresh-context Pro review before implementation.
   must_status:
-    primary_sources_30:
-      status: PASS
-      evidence: docs/research/source-matrix.md contains OAI-01..OAI-21 and ANT-22..ANT-30 exactly once.
-    required_source_fields:
-      status: PASS
-      evidence: Source, Date, Scope, Harness layer, Concrete mechanism, Transferability, Evidence strength, Limitations, and Decision impact are present; Work applicability was added.
-    exact_repository_refs:
-      status: PASS
-      evidence: Five repositories are recorded at exact commits with inspected file/blob identifiers.
-    pattern_comparisons_10:
-      status: PASS
-      evidence: docs/research/pattern-comparison.md contains all ten comparisons required by the brief.
-    chatgpt_work_applicability:
-      status: PASS
-      evidence: docs/research/chatgpt-work-applicability.md distinguishes Work-native, adapted, and Codex/host-only responsibilities.
-    implementation_deferred_until_adr:
-      status: PASS
-      evidence: No harness source modules, schemas, runtime configuration, or external actions were created by this research package.
-    direct_codex_environment_run:
-      status: UNKNOWN
-      evidence: Not performed in this ChatGPT research surface; must be supplied by the Codex-side research run.
+    research_matrix: PASS
+    pattern_comparison: PASS
+    local_environment_handoff: PASS
+    architecture_evidence_packet: PASS
+    adr_001: PASS
+    pro_review: PASS
+    adr_gate: PASS
+    harness_implementation: NOT_STARTED
   authoritative_inputs:
-    - /mnt/data/Pasted markdown.md
-    - /mnt/data/01_UPE_v5.6.0_FULL_REFERENCE(2).md
-    - /mnt/data/04_GPT_5.6_RUNTIME_PROFILE(2).md
-    - /mnt/data/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN(2).md
-    - /mnt/data/06_SOURCE_MAP(2).md
-    - /mnt/data/09_CAPABILITY_REGISTRY_TEMPLATE(2).yaml
-    - 30 live official sources listed in docs/research/source-matrix.md
+    - Pasted markdown.md
+    - docs/research/source-matrix.md
+    - docs/research/pattern-comparison.md
+    - docs/research/chatgpt-work-applicability.md
+    - docs/research/W-101-target-runtime-reconciliation.md
+    - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
+    - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
+    - docs/research/codex-runtime-observations.md
+    - docs/research/local-target-context.md
+    - docs/research/app-server-protocol-observations.md
+    - docs/research/generated-app-server-schema/codex-cli-0.144.3/
+    - docs/architecture/ADR-001-evidence-packet.md
+    - docs/architecture/ADR-001-harness-boundary.md
+    - docs/architecture/ADR-001-PRO-REVIEW.md
+    - gate-records/ADR-001-PASS.yaml
   findings:
-    - Codex App Server is the minimum reliable v0 execution boundary; rebuilding Codex core in Agents SDK is not justified.
-    - The trusted host must own durable state, credentials, budgets, approvals, audit, retry/idempotency, and recovery.
-    - Deterministic validation precedes any independent model evaluator.
-    - Work is a capable research/deliverable/steering/review surface, not merely a passive UI.
-    - Work conversation and Goal state remain supporting context; versioned artifacts are the cross-surface source of truth.
-    - Single-agent v0 remains supported; planner and multi-agent execution are deferred pending representative eval evidence.
+    - Codex App Server remains the minimum v0 execution boundary; rebuilding Codex core in Agents SDK is not justified.
+    - The trusted-host contract is portable, while Windows-native Codex is the current v0 target. Earlier WSL2-first text is historical context, not an active dependency.
+    - The installed App Server surface is pinned to Codex CLI 0.144.3 and schema-validated; a live lifecycle smoke test remains required before adapter completion.
+    - SQLite is authoritative state and uses a transactional outbox to produce a replayable and deduplicated JSONL audit mirror.
+    - Potentially non-idempotent external actions use stable action IDs, recorded approval scope and reconciliation before retry.
+    - Routine rollback uses host-managed patch snapshots; Git commits are explicit approval-gated milestones.
+    - Deterministic validation precedes any read-only model evaluator.
+    - Single-agent v0 remains mandatory; planner, evaluator loops and multi-agent execution require representative eval evidence.
+    - The legacy-upstream merge is a recorded safety incident, not authorization for target-repository merge or release.
   completed:
-    - Opened and classified all 30 requested live pages/repositories.
-    - Recorded exact current commits for Codex, Symphony, Agents SDK Python, CWC long-running agents, and Claude quickstarts.
-    - Created source matrix, ten-way pattern comparison, Work applicability memo, package README, and validation manifest.
+    - Opened and classified all 30 requested live pages and repositories.
+    - Materialized the build brief and four accepted research files at canonical repository paths.
+    - Merged Windows-native repository, runtime and App Server observations for C-101 through C-105.
+    - Rechecked critical current official sources for App Server, harness engineering, Symphony, Agents SDK and evaluation design.
+    - Created the environment conflict log, ADR evidence packet and ADR-001.
+    - Applied the ADR gate.
+    - Completed a fresh-context Pro review.
+    - Repaired SQLite/JSONL crash consistency, external-action recovery and checkpoint-approval ambiguity.
+    - Removed temporary scratch files from the delivery branch.
   unresolved:
-    - Merge with Codex-side direct WSL2/repository observations and commands.
-    - Inspect the named local files not found under their exact names: CIDP_AGENTS.md, repository README.md, 01_OPENAI_SURFACE_MAP__reference.md, 02_OFFICIAL_SOURCE_MAP__OpenAI.md, and 03_GPT_5_6_MODEL_AND_EFFORT_ROUTING__reference.md.
-    - Verify the exact installed Codex/App Server release or binary used for the future smoke test; repository commit inspection is not a runtime test.
-    - Confirm feature-specific Work maturity labels where OpenAI exposes them; unspecified maturity remains UNKNOWN.
+    - Run a controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
+    - Establish Python dependency compatibility after pyproject.toml exists; Windows Python 3.14.3 is observed but not yet a project runtime contract.
+    - Add CI before release readiness; no status checks currently protect the target PR.
+    - The actor and authorization history of the legacy-upstream merge remain unknown; no inference is made.
+    - Target repository visibility remains intentionally public until a separately authorized post-gate change.
   verification:
     method:
-      - deterministic row and heading counts
-      - required-field/header checks
-      - exact source-ID sequence check
-      - local Markdown link syntax scan
-      - YAML parse
-      - SHA-256 manifest generation
+      - local handoff YAML and Markdown review
+      - generated App Server archive integrity and inventory inspection
+      - current official-source refresh
+      - criterion-to-ADR mapping
+      - fresh-context Pro review
+      - YAML gate validation
+      - draft-branch scope and scratch-file review
     result: PASS
-    note: Content correctness remains source-grounded research; no target-environment execution has been claimed.
-  recovery:
-    canonical_files:
-      - docs/research/source-matrix.md
-      - docs/research/pattern-comparison.md
-      - docs/research/chatgpt-work-applicability.md
-      - docs/research/research-state.yaml
-    resume_rule: >-
-      Reopen the four canonical files, compare Codex-side findings by stable source ID
-      and exact commit/version, resolve conflicts by authority and evidence, then draft
-      ADR-001 without restarting verified research.
+    note: >-
+      Architecture is accepted for v0 after Pro repair. Runtime adapter
+      functionality is not claimed until the controlled App Server smoke test
+      passes. Merge, release and deployment remain unauthorized.
+  recovery: >-
+    Resume from W-201 through W-210. Preserve the draft PR, portable trusted-host
+    contract, Windows-native v0 target, transactional-outbox and action-journal
+    rules, single-agent v0, and fake-adapter-first ordering.
   next_action: >-
-    Merge Codex direct research into this source-indexed package and write
-    docs/architecture/ADR-001-harness-boundary.md; do not begin broad implementation before ADR acceptance.
+    Proceed to W-201 through W-210: freeze schemas, templates, prompts,
+    state/recovery contracts, security, evaluation and operations specifications.
+    Do not merge the draft PR or implement the real Codex adapter until the
+    relevant gates and smoke checks pass.
