@@ -1,0 +1,31 @@
+{
+  "created": "2026-07-18",
+  "run_01": {
+    "surface": "Local Codex / WSL2",
+    "model": "GPT-5.6 Sol",
+    "effort": "High",
+    "tasks": [
+      "C-101",
+      "C-102",
+      "C-103",
+      "C-104",
+      "C-105"
+    ],
+    "max_fallback": "C-103 only if protocol/version evidence is ambiguous or undocumented"
+  },
+  "run_02": {
+    "surface": "ChatGPT Work web",
+    "model": "GPT-5.6 Sol Pro",
+    "tasks": [
+      "W-101",
+      "W-102",
+      "P-101",
+      "G-ADR"
+    ]
+  },
+  "naming": {
+    "extra_high": "xhigh",
+    "ordering": "high < xhigh (Extra High) < max",
+    "pro": "separate model route"
+  }
+}

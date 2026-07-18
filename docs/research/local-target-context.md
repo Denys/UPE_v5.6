@@ -1,46 +1,59 @@
 # C-101 Local Target Context
 
-**Captured:** 2026-07-18T18:34:41.6551604+02:00  
-**Status:** BLOCKED / FAIL
+**Captured:** 2026-07-18T18:58:11.3504065+02:00
+**Status:** PASS; unrelated concurrent worktree changes preserved
 
 ## Repository identity
 
-- User-specified source directory: `C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE`
-- Intended GitHub repository name: `UPE_v5.6`
-- Git repository root: `UNKNOWN` — the source directory is not inside a Git repository.
-- Git ref, branch, commit, remotes, and worktree state: `UNKNOWN` — no `.git` metadata exists under the source directory.
-- Target-directory ambiguity: the local source directory is explicit and unambiguous, but the requested Git repository does not yet exist locally or in the connected GitHub installation.
+- Repository root: `C:\Users\denko\CodexWork\UPE_v5.6`
+- Branch: `main`
+- Git ref: `refs/heads/main`
+- Commit: `ce15f58028d2ca8c0a56820601747b2f872c4903`
+- Worktree: `C:/Users/denko/CodexWork/UPE_v5.6`
+- Remote: `origin` → `https://github.com/denkovtll/UPE_v5.6.git`
+- Remote `refs/heads/main`: `ce15f58028d2ca8c0a56820601747b2f872c4903`, matching local HEAD at inspection.
+- GitHub identity: `denkovtll/UPE_v5.6`, private, default branch `main`, viewer permission `ADMIN`, verified with read-only `gh repo view`.
+- Target identity: unambiguous.
 
-All of the following Git probes exited `1` with `fatal: not a git repository (or any of the parent directories): .git`:
+The connected GitHub app returned 404 for this private repository, so connector visibility is unavailable. Local Git and authenticated read-only `gh` checks establish the repository identity; no connector or GitHub write was performed.
+
+## Current worktree state to preserve
+
+The first snapshot was clean (`## main...origin/main`). During inspection, unrelated user-owned changes appeared. Before any Codex edit, `git status --short` showed:
+
+- 27 tracked release-pack paths deleted from the repository root, including root `README.md`, `MANIFEST.json`, `evals/`, and `skill/` content;
+- untracked `AGENTS.md`, `MANIFEST.sha256`, `RUN_01_LOCAL_CODEX_SOL_HIGH.md`, `RUN_02_WEB_SOL_PRO.md`, `RUN_SUMMARY.json`, and `UPE_v5.6.0_RELEASE/`;
+- the release pack reappearing under untracked `UPE_v5.6.0_RELEASE/`.
+
+These changes were not made, staged, reverted, or normalized by this pass. The nested release manifest contains 26 entries with 0 checksum mismatches, consistent with an intact relocation, but Git rename classification was not assumed or staged.
+
+During final verification, untracked `harness-for-every-task\harness-for-every-task-anthropic.pdf` also appeared. It is preserved as additional user-owned state and is not the named accepted research archive or any of the four C-104 artifacts.
+
+## Instruction, README, manifest, and configuration inspection
+
+- Applicable root `AGENTS.md` was read after it appeared. No nested `AGENTS.md` applies to `docs/research/` or `handoffs/`.
+- The current root `README.md` is deleted in the worktree; `UPE_v5.6.0_RELEASE\README.md` and the routing-package `README.md` were read.
+- `.gitattributes` contains `* text=auto` after a comment describing LF normalization.
+- `UPE_v5.6.0_RELEASE\MANIFEST.json`: 26 entries, 0 missing or mismatched.
+- Root `MANIFEST.sha256`: 3 entries, 0 missing or mismatched.
+- Routing `MANIFEST.sha256`: 8 entries, 0 missing or mismatched.
+- `harness_implementation_backlog.yaml`, `CURRENT_PRODUCT_DELTA_2026-07-18.md`, `WORK_CODEX_HANDOFF_TEMPLATE.yaml`, `NEXT_LOCAL_CODEX_PROMPT.md`, and `RUN_01_LOCAL_CODEX_SOL_HIGH.md` were read.
+- No `pyproject.toml`, `uv.lock`, `requirements*.txt`, `package.json`, `Cargo.toml`, `go.mod`, Dockerfile, or Compose file was found.
+- `Pasted markdown.md` was not found under `C:\Users\denko\CodexWork`; the available `UPE_tasks_downloads\prompt_harness.txt` is only a short routing request, not the named authoritative build brief.
+
+## Commands
 
 ```powershell
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' rev-parse --show-toplevel
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' status --short
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' status --short --branch
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' rev-parse --verify HEAD
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' symbolic-ref --quiet --short HEAD
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' remote -v
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' worktree list --porcelain
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' rev-parse --show-toplevel
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' branch --show-current
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' rev-parse HEAD
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' status --short --branch
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' worktree list --porcelain
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' remote -v
+git -C 'C:\Users\denko\CodexWork\UPE_v5.6' ls-remote --heads origin refs/heads/main
+gh repo view denkovtll/UPE_v5.6 --json nameWithOwner,url,visibility,isPrivate,defaultBranchRef,viewerPermission
 ```
-
-The connected GitHub account is `Denys`. A read-only installed-repository search for `UPE_v5.6` returned no repositories. Repository creation was not attempted because this pass expressly forbids external mutation and stops when one would be required. The exposed GitHub connector surface also has no repository-creation operation.
-
-## Local instruction and configuration inspection
-
-- No `AGENTS.md` or `AGENTS.override.md` was found from `C:\` through the target directory. The active task-supplied `AGENTS.md` instructions therefore remain the only project guidance observed in this pass.
-- Read `README.md` and `MANIFEST.json` at the source-directory root.
-- Read the routing package `README.md`, `harness_implementation_backlog.yaml`, `CURRENT_PRODUCT_DELTA_2026-07-18.md`, `WORK_CODEX_HANDOFF_TEMPLATE.yaml`, `NEXT_LOCAL_CODEX_PROMPT.md`, `validation-report.json`, and `MANIFEST.sha256`.
-- Read the available build-request equivalent `UPE_tasks_downloads\prompt_harness.txt`. The named `Pasted markdown.md` was not present.
-- No implementation manifest or environment configuration such as `pyproject.toml`, `uv.lock`, `requirements*.txt`, `package.json`, `Cargo.toml`, `go.mod`, Dockerfile, or Compose file was found.
-- Root release manifest verification: 26 entries checked, 0 missing or mismatched.
-- Routing package manifest verification: 8 entries checked, 0 missing or mismatched.
-
-## Local state to preserve
-
-There is no Git baseline from which to classify tracked, untracked, or unrelated changes. Treat every pre-existing file and directory under the source directory as user-owned state. In particular, preserve the release-pack files, `evals\`, `gpt_expert_v2\`, `skill\`, `UPE_tasks_downloads\`, and `chatgpt_work_harness_implementation_routing_2026-07-18\`.
-
-This pass did not modify any pre-existing file. It created only the requested evidence and handoff artifacts plus generated App Server schemas.
 
 ## Finding
 
-`C-101` is `FAIL/BLOCKED`: the source directory is known, but no repository root, Git ref, Git status, remote, or worktree state exists to record. Initializing Git or creating the private GitHub repository would be a local/external mutation outside this pass.
+`C-101` is `PASS`: repository identity, ref, remote, worktree state, instructions, manifests, and unrelated local changes are recorded. The concurrent reorganization remains fully preserved and uncommitted.
