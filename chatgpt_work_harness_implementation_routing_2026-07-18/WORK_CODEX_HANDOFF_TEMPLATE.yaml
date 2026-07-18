@@ -1,0 +1,45 @@
+schema_version: '1.0'
+work_to_codex:
+  task_id: ''
+  objective: ''
+  authoritative_inputs: []
+  must_ids: []
+  scope_in: []
+  scope_out: []
+  files_allowed_to_change: []
+  frozen_schemas_or_decisions: []
+  required_commands_or_tests: []
+  acceptance_conditions: []
+  model_route: sol_high
+  max_escalation_conditions: []
+  approval_required_for:
+  - commit
+  - push
+  - pull_request
+  - merge
+  - release
+  - deployment
+  - external_message
+  - purchase
+  - production_mutation
+  - secret_handling
+  expected_outputs: []
+  stop_conditions: []
+codex_to_work:
+  task_id: ''
+  status: planned | implemented | tested_locally | blocked | unverified
+  repository_root: ''
+  git_ref: ''
+  codex_version: ''
+  app_server_schema_or_commit: ''
+  files_created_or_changed: []
+  commands_run: []
+  observed_results: []
+  evidence_paths: []
+  security_or_approval_events: []
+  unresolved: []
+  verification:
+    contract: PASS | FAIL | UNKNOWN
+    evidence_integrity: PASS | FAIL | UNKNOWN
+    safety_delivery: PASS | FAIL | UNKNOWN
+  next_action: ''

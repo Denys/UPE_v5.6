@@ -1,0 +1,168 @@
+schema_version: '1.0'
+generated_at: '2026-07-18T18:34:41.6551604+02:00'
+work_to_codex:
+  task_id: 'C-101..C-105'
+  objective: 'Perform the bounded pre-ADR local environment evidence pass and return a Codex-to-Work handoff.'
+  authoritative_inputs:
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\README.md'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\MANIFEST.json'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\UPE_tasks_downloads\prompt_harness.txt'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\chatgpt_work_harness_implementation_routing_2026-07-18\harness_implementation_backlog.yaml'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\chatgpt_work_harness_implementation_routing_2026-07-18\CURRENT_PRODUCT_DELTA_2026-07-18.md'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\chatgpt_work_harness_implementation_routing_2026-07-18\WORK_CODEX_HANDOFF_TEMPLATE.yaml'
+  must_ids:
+  - 'C-101'
+  - 'C-102'
+  - 'C-103'
+  - 'C-104'
+  - 'C-105'
+  scope_in:
+  - 'Read-only repository/source-directory inspection.'
+  - 'Host, WSL, Python, uv, Git, Codex, and App Server inventory.'
+  - 'Installed-version App Server TypeScript and JSON Schema capture.'
+  - 'Checksum-preserving research-package copy if the accepted package exists.'
+  - 'Environment evidence and handoff documents.'
+  scope_out:
+  - 'Git initialization or repository creation.'
+  - 'Harness, state engine, fake adapter, or Codex adapter implementation.'
+  - 'Commit, push, pull request, merge, release, deployment, or external message.'
+  files_allowed_to_change:
+  - 'docs/research/local-target-context.md'
+  - 'docs/research/codex-runtime-observations.md'
+  - 'docs/research/app-server-protocol-observations.md'
+  - 'docs/research/generated-app-server-schema/**'
+  - 'docs/research/source-matrix.md only by verbatim accepted-package copy'
+  - 'docs/research/pattern-comparison.md only by verbatim accepted-package copy'
+  - 'docs/research/chatgpt-work-applicability.md only by verbatim accepted-package copy'
+  - 'docs/research/research-state.yaml only by verbatim accepted-package copy'
+  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
+  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
+  frozen_schemas_or_decisions:
+  - 'No broad implementation before ADR-001 exists and G-ADR passes.'
+  - 'Generated experimental protocol fields are evidence, not architecture commitments.'
+  required_commands_or_tests:
+  - 'Git identity, status, ref, remote, and worktree probes.'
+  - 'Bounded Windows and WSL version probes.'
+  - 'Codex App Server help and schema-generation commands.'
+  - 'Checksum and generated-artifact validation.'
+  acceptance_conditions:
+  - 'Exact repository/ref/runtime evidence is recorded or an exact blocker is recorded.'
+  - 'No secret values are exposed.'
+  - 'Accepted research files are copied without rewriting when available.'
+  - 'Conflicts and unknowns remain explicit.'
+  model_route: 'sol_high'
+  max_escalation_conditions:
+  - 'Installed protocol behavior conflicts materially with generated schema evidence.'
+  approval_required_for:
+  - 'commit'
+  - 'push'
+  - 'pull_request'
+  - 'merge'
+  - 'release'
+  - 'deployment'
+  - 'external_message'
+  - 'purchase'
+  - 'production_mutation'
+  - 'secret_handling'
+  expected_outputs:
+  - 'docs/research/local-target-context.md'
+  - 'docs/research/codex-runtime-observations.md'
+  - 'docs/research/app-server-protocol-observations.md'
+  - 'docs/research/generated-app-server-schema/'
+  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
+  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
+  stop_conditions:
+  - 'Target repository is ambiguous or absent.'
+  - 'Required accepted research files cannot be located safely.'
+  - 'Installed App Server surface is incompatible or unavailable.'
+  - 'A credential, destructive action, commit, push, PR, deployment, or external mutation is required.'
+codex_to_work:
+  task_id: 'C-101..C-105'
+  status: 'blocked'
+  source_directory: 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE'
+  repository_root: 'UNKNOWN - source directory is not a Git repository'
+  git_ref: 'UNKNOWN - no Git metadata'
+  github_identity:
+    connected_account: 'Denys'
+    intended_repository: 'UPE_v5.6'
+    installed_repository_search_result: '0 matches'
+    repository_created: false
+  codex_version: 'codex-cli 0.144.3; Codex desktop package 26.715.3651.0'
+  app_server_schema_or_commit: 'Generated from codex-cli 0.144.3 executable sha256 e5dcc9f9b08102c58596af85345f689a69fd53a87d8d408bdc0fcdaf99fcf6e3'
+  task_findings:
+    C-101: 'FAIL - no repository root/ref/status/worktree exists'
+    C-102: 'PASS - runtime inventory complete; WSL-native Codex invocation separately FAILS'
+    C-103: 'PASS - default and experimental TypeScript/JSON bundles generated and validated'
+    C-104: 'FAIL - accepted research archive and four accepted research files are absent'
+    C-105: 'PASS - blocked-state handoff packet created'
+  files_created_or_changed:
+  - 'docs/research/local-target-context.md'
+  - 'docs/research/codex-runtime-observations.md'
+  - 'docs/research/app-server-protocol-observations.md'
+  - 'docs/research/generated-app-server-schema/codex-cli-0.144.3/stable/typescript/ (598 generated files)'
+  - 'docs/research/generated-app-server-schema/codex-cli-0.144.3/stable/json-schema/ (267 generated files)'
+  - 'docs/research/generated-app-server-schema/codex-cli-0.144.3/experimental/typescript/ (671 generated files)'
+  - 'docs/research/generated-app-server-schema/codex-cli-0.144.3/experimental/json-schema/ (337 generated files)'
+  - 'handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml'
+  - 'handoffs/CODEX_ENVIRONMENT_EVIDENCE.md'
+  files_copied: []
+  commands_run:
+  - >-
+    git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' status --short
+  - >-
+    git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' status --short --branch
+  - >-
+    git -C 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE' worktree list --porcelain
+  - >-
+    Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber,OSArchitecture | Format-List
+  - 'wsl.exe --version'
+  - 'wsl.exe --status'
+  - 'wsl.exe --list --verbose'
+  - 'py -0p'
+  - 'py -3 --version'
+  - 'uv --version'
+  - 'git --version'
+  - 'git worktree -h'
+  - 'codex --version'
+  - 'codex app-server --help'
+  - 'codex app-server generate-ts --help'
+  - 'codex app-server generate-json-schema --help'
+  - >-
+    codex app-server generate-ts --out 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\generated-app-server-schema\codex-cli-0.144.3\stable\typescript'
+  - >-
+    codex app-server generate-json-schema --out 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\generated-app-server-schema\codex-cli-0.144.3\stable\json-schema'
+  - >-
+    codex app-server generate-ts --experimental --out 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\generated-app-server-schema\codex-cli-0.144.3\experimental\typescript'
+  - >-
+    codex app-server generate-json-schema --experimental --out 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\generated-app-server-schema\codex-cli-0.144.3\experimental\json-schema'
+  observed_results:
+  - 'Git probes exited 1: fatal: not a git repository.'
+  - 'Root release manifest: 26 entries, 0 mismatches.'
+  - 'Routing package manifest: 8 entries, 0 mismatches.'
+  - 'Windows Codex CLI and desktop package both exceed the supplied minimum versions.'
+  - 'All four App Server schema-generation commands exited 0.'
+  - 'Generated validation: 604 JSON files, 0 parse failures; 1269 TypeScript files, 0 empty files.'
+  - 'No accepted research package was found in C:\Users\denko\CodexWork.'
+  evidence_paths:
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\local-target-context.md'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\codex-runtime-observations.md'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\app-server-protocol-observations.md'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\docs\research\generated-app-server-schema\codex-cli-0.144.3'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\handoffs\CODEX_ENVIRONMENT_HANDOFF.yaml'
+  - 'C:\Users\denko\CodexWork\UPE_v5.6.0_RELEASE\handoffs\CODEX_ENVIRONMENT_EVIDENCE.md'
+  security_or_approval_events:
+  - 'Private GitHub repository creation was not attempted because it conflicts with the pass stop/forbidden rules.'
+  - 'No Git initialization, commit, push, pull request, merge, release, deployment, or external message occurred.'
+  - 'No secret values were read or emitted.'
+  unresolved:
+  - 'No local Git repository, ref, remote, or worktree exists.'
+  - 'The requested private GitHub repository UPE_v5.6 does not appear in the connected installation and was not created.'
+  - 'The accepted chatgpt_work_harness_research_2026-07-18.zip package and its four required files are absent, so C-104 checksum comparison and copy cannot be performed.'
+  - 'Pasted markdown.md is absent; prompt_harness.txt is the only located build-request equivalent.'
+  - 'WSL has no native Node/Codex installation; the Windows npm shim fails in WSL with exit 126.'
+  - 'Docker was intentionally not probed because no Docker configuration or material requirement was found.'
+  verification:
+    contract: 'FAIL'
+    evidence_integrity: 'UNKNOWN'
+    safety_delivery: 'PASS'
+  next_action: 'Upload this handoff packet to ChatGPT Work for W-101; reconcile the missing accepted research package and repository-creation authorization before any Git/GitHub mutation.'

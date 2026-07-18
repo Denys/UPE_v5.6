@@ -1,0 +1,34 @@
+{
+  "created": "2026-07-18",
+  "status": "PASS",
+  "checks": {
+    "backlog_yaml_parses": true,
+    "handoff_yaml_parses": true,
+    "unique_task_ids": true,
+    "dependency_references_valid": true,
+    "broad_implementation_depends_on_adr_gate": true,
+    "all_v0_acceptance_criteria_mapped": true,
+    "no_mandatory_local_work_task": true,
+    "two_primary_pro_tasks": true,
+    "multi_agent_runtime_deferred": true,
+    "commit_is_approval_gated": true,
+    "no_push_pr_deploy_authorized": true,
+    "current_next_tasks_are_local_codex": true,
+    "product_delta_records_work_sync_change": true,
+    "product_delta_separates_pro_and_max": true
+  },
+  "counts": {
+    "tasks": 73,
+    "done": 5,
+    "ready": 2,
+    "blocked_or_planned": 52,
+    "optional": 3,
+    "deferred": 10,
+    "acceptance_criteria": 12
+  },
+  "notes": [
+    "Validation is structural and routing-oriented.",
+    "No local repository, Codex runtime, App Server smoke test, or harness implementation was performed in this package.",
+    "The next executable work is C-101 and C-102 in local Codex."
+  ]
+}

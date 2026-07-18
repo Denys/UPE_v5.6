@@ -1,0 +1,1496 @@
+schema_version: '1.0'
+created: '2026-07-18'
+project: Long-Running Agent Harness
+authoritative_inputs:
+- Pasted markdown.md
+- chatgpt_work_harness_research_2026-07-18.zip
+- CHAT_COPY_Pro_Loop_Engineering_research(2).md
+- codex_loops_harness_anthropic_reading_map_2026-07-18(3).md
+- UPE v5.6.0 reference/runtime/capability files
+current_state:
+  research: PASS
+  implementation: NOT_STARTED
+  next_action:
+  - C-101
+  - C-102
+  broad_implementation_gate: G-ADR
+  local_work_critical_path: false
+routing_invariant: Use ChatGPT Work web whenever uploaded/connected/cloud sources and reviewable artifacts suffice;
+  use local Work only for private local non-repository files/apps/UI evidence; use local Codex for Git, shell, tests,
+  worktrees, typed durable state, App Server, recovery, security and executable proof.
+model_routing:
+  sol_high: Default for clear, bounded research/specification/implementation with observable checks.
+  sol_max_or_highest_exposed: Use only for unresolved architecture interactions, state/recovery/idempotency, security/permissions,
+    App Server event ordering/versioning, hard failures surviving High, or final multi-component integration.
+  sol_pro: 'Use in ChatGPT/Work for difficult indivisible judgment: ADR-001 and fresh read-only release review;
+    not equivalent to max effort.'
+  ultra: Not used for v0 runtime. Read-only independent research branches only when genuinely separable.
+approval_boundaries:
+- No commit without explicit user authorization.
+- No push, pull request, merge, release, deployment, external message, purchase, or production mutation.
+- No broad credential inheritance into the agent workspace.
+- Network access only for a documented need and within narrow policy.
+tasks:
+- id: R-001
+  title: Complete the 30-source OpenAI/Anthropic source matrix
+  phase: 0-research
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: done
+  dependencies: []
+  critical_path: true
+  scope: Current-source research and evidence classification.
+  outputs:
+  - docs/research/source-matrix.md
+  completion_evidence:
+  - 30 primary source IDs
+  - required fields present
+  - exact repository refs recorded
+  escalation: none
+  notes: ''
+- id: R-002
+  title: Complete the ten mandatory architecture comparisons
+  phase: 0-research
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: done
+  dependencies:
+  - R-001
+  critical_path: true
+  scope: Compare App Server/custom loop, state, evaluators, isolation, tools, and hosting.
+  outputs:
+  - docs/research/pattern-comparison.md
+  completion_evidence:
+  - comparisons 1-10 present
+  - recommended v0 boundary documented
+  escalation: none
+  notes: ''
+- id: R-003
+  title: Assess ChatGPT Work applicability and limits
+  phase: 0-research
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: done
+  dependencies:
+  - R-001
+  - R-002
+  critical_path: true
+  scope: Separate Work-native knowledge work from host/Codex enforcement.
+  outputs:
+  - docs/research/chatgpt-work-applicability.md
+  completion_evidence:
+  - Work/native/adapted/host boundary recorded
+  - known unknowns recorded
+  escalation: none
+  notes: ''
+- id: R-004
+  title: Validate and package the research phase
+  phase: 0-research
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: done
+  dependencies:
+  - R-001
+  - R-002
+  - R-003
+  critical_path: true
+  scope: Package research without claiming runtime implementation.
+  outputs:
+  - validation-report.json
+  - MANIFEST.sha256
+  - chatgpt_work_harness_research_2026-07-18.zip
+  completion_evidence:
+  - structural validation PASS
+  - archive integrity PASS
+  escalation: none
+  notes: ''
+- id: R-005
+  title: Merge implementation TODOs, surface split, and model routing
+  phase: 0-research
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: done
+  dependencies:
+  - R-001
+  - R-002
+  - R-003
+  - R-004
+  critical_path: true
+  scope: Create one authoritative backlog and derived surface queues; do not duplicate tasks.
+  outputs:
+  - HARNESS_IMPLEMENTATION_MASTER_PLAN.md
+  - harness_implementation_backlog.yaml
+  - CURRENT_PRODUCT_DELTA_2026-07-18.md
+  - WORK_CODEX_HANDOFF_TEMPLATE.yaml
+  completion_evidence:
+  - unique task IDs
+  - valid dependency graph
+  - acceptance criteria mapped
+  - ZIP integrity PASS
+  escalation: none
+  notes: ''
+- id: C-101
+  title: Inspect the target repository and preserve unrelated local state
+  phase: 1-pre-adr-evidence
+  surface: local_codex
+  model_route: sol_high
+  status: ready
+  dependencies:
+  - R-005
+  critical_path: true
+  scope: Read-only repository orientation. Do not edit implementation files yet.
+  outputs:
+  - docs/research/local-target-context.md
+  completion_evidence:
+  - repository root/ref recorded
+  - git status recorded
+  - README/AGENTS/manifests inspected
+  - unrelated changes preserved
+  escalation: none
+  notes: Stop BLOCKED if the current directory is not the intended repository or repository identity is ambiguous.
+- id: C-102
+  title: Inventory the WSL2/Codex runtime and development dependencies
+  phase: 1-pre-adr-evidence
+  surface: local_codex
+  model_route: sol_high
+  status: ready
+  dependencies:
+  - R-005
+  critical_path: true
+  scope: Run bounded version/help/doctor checks. No broad implementation.
+  outputs:
+  - docs/research/codex-runtime-observations.md
+  completion_evidence:
+  - Python, uv, Git, worktree support and OS recorded
+  - Codex desktop/CLI version recorded
+  - App Server availability recorded
+  - missing dependencies identified without exposing secrets
+  escalation: Use sol_max only if version/runtime evidence conflicts or App Server behavior is ambiguous.
+  notes: 'Current documented GPT-5.6 minimums to verify locally: desktop 26.707.30751; Codex CLI 0.144.0.'
+- id: C-103
+  title: Capture the installed App Server protocol surface
+  phase: 1-pre-adr-evidence
+  surface: local_codex
+  model_route: sol_high
+  status: planned
+  dependencies:
+  - C-102
+  critical_path: true
+  scope: Generate installed-version TypeScript/JSON schemas or record the exact blocker.
+  outputs:
+  - docs/research/app-server-protocol-observations.md
+  - docs/research/generated-app-server-schema/
+  completion_evidence:
+  - initialize/help or schema generation observed
+  - exact Codex version tied to generated schema
+  - experimental fields labeled
+  - no raw protocol assumptions leaked into architecture
+  escalation: Use sol_max only for protocol-version conflicts, event-order ambiguity, or undocumented behavior.
+  notes: ''
+- id: C-104
+  title: Materialize the web research package in the target repository
+  phase: 1-pre-adr-evidence
+  surface: local_codex
+  model_route: sol_high
+  status: planned
+  dependencies:
+  - C-101
+  critical_path: true
+  scope: Copy accepted research artifacts into the repository. Do not start broad implementation.
+  outputs:
+  - docs/research/source-matrix.md
+  - docs/research/pattern-comparison.md
+  - docs/research/chatgpt-work-applicability.md
+  - docs/research/research-state.yaml
+  completion_evidence:
+  - files copied without evidence-label rewrites
+  - checksums compared
+  - repository diff inspected
+  escalation: none
+  notes: ''
+- id: C-105
+  title: Produce the Codex-to-Work environment handoff packet
+  phase: 1-pre-adr-evidence
+  surface: local_codex
+  model_route: sol_high
+  status: planned
+  dependencies:
+  - C-101
+  - C-102
+  - C-103
+  - C-104
+  critical_path: true
+  scope: Return only evidence required for web merge and ADR.
+  outputs:
+  - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
+  - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
+  completion_evidence:
+  - exact commands and observed results recorded
+  - repo/ref/version recorded
+  - conflicts and unknowns explicit
+  - no unsupported completion claim
+  escalation: none
+  notes: This is the immediate local deliverable. It is not the harness implementation.
+- id: W-101
+  title: Merge Codex target-environment evidence into the research package
+  phase: 2-architecture-gate
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-105
+  critical_path: true
+  scope: Reconcile current official documentation with installed target behavior.
+  outputs:
+  - docs/research/source-matrix.md (updated)
+  - docs/research/pattern-comparison.md (updated)
+  - docs/research/research-state.yaml (updated)
+  - docs/research/environment-conflict-log.md
+  completion_evidence:
+  - documented vs observed claims separated
+  - stale claims corrected
+  - critical UNKNOWNs resolved or retained
+  escalation: Escalate unresolved high-impact source/runtime conflicts to sol_pro in P-101.
+  notes: ''
+- id: W-102
+  title: Prepare the architecture decision evidence packet
+  phase: 2-architecture-gate
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - W-101
+  critical_path: true
+  scope: Prepare concise decision inputs; do not pre-ordain the conclusion.
+  outputs:
+  - docs/architecture/ADR-001-evidence-packet.md
+  completion_evidence:
+  - alternatives, tradeoffs, security implications and change triggers mapped
+  - all active brief constraints represented
+  escalation: none
+  notes: ''
+- id: P-101
+  title: Freeze the v0 harness boundary in ADR-001
+  phase: 2-architecture-gate
+  surface: chatgpt_pro_web
+  model_route: sol_pro
+  status: blocked
+  dependencies:
+  - W-102
+  critical_path: true
+  scope: 'Highest-value indivisible judgment: decide Work/host/Codex/state/evaluator/security boundary.'
+  outputs:
+  - docs/architecture/ADR-001-harness-boundary.md
+  completion_evidence:
+  - minimum viable architecture selected
+  - rejected alternatives explained
+  - provider dependencies and failure boundaries explicit
+  - security implications explicit
+  - evidence that would justify a change recorded
+  - no critical unresolved contradiction
+  escalation: none
+  notes: Pro is used here for coherent architecture judgment, not for file copying or YAML formatting.
+- id: G-ADR
+  title: 'Architecture gate: block broad implementation until ADR-001 passes'
+  phase: 2-architecture-gate
+  surface: coordinator
+  model_route: deterministic_gate
+  status: blocked
+  dependencies:
+  - P-101
+  critical_path: true
+  scope: This gate is a hard dependency for every broad implementation task.
+  outputs:
+  - gate-records/ADR-001-PASS.yaml
+  completion_evidence:
+  - ADR exists
+  - all required ADR sections present
+  - critical constraints mapped
+  - critical FAIL/UNKNOWN repaired or explicitly blocking
+  escalation: none
+  notes: ''
+- id: W-201
+  title: Write the ChatGPT Work loop adapter
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Work-native operator/research/deliverable layer, not host runtime state.
+  outputs:
+  - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+  completion_evidence:
+  - goal, repair, eval, checkpoint, no-progress and escalation rules documented
+  escalation: none
+  notes: ''
+- id: W-202
+  title: Finalize the web/local Work/local Codex routing matrix
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Choose surface before model. Web first unless local evidence/execution is required.
+  outputs:
+  - docs/work/WEB_VS_LOCAL_ROUTING.md
+  completion_evidence:
+  - every task class has one primary owner
+  - fallback does not duplicate completed work
+  - local Work remains narrow and non-repository
+  escalation: none
+  notes: ''
+- id: W-203
+  title: Define the generator/verifier protocol
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Use separate evaluator only where deterministic checks cannot settle completion.
+  outputs:
+  - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+  completion_evidence:
+  - deterministic-first rule
+  - read-only independent evaluator contract
+  - PASS/FAIL/INSUFFICIENT_EVIDENCE schema
+  - scope expansion forbidden
+  escalation: Use sol_pro for final review only if acceptance involves substantial subjective judgment.
+  notes: ''
+- id: W-204
+  title: Define the Work-to-Codex and Codex-to-Work handoff protocol
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Make cross-surface state explicit and versionable.
+  outputs:
+  - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+  - schemas/handoff.schema.yaml
+  completion_evidence:
+  - authoritative inputs, scope, MUST IDs, outputs, evidence and approval fields required
+  - no hidden conversation memory required for resume
+  escalation: none
+  notes: ''
+- id: W-205
+  title: Design the Work goal contract schema
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Design schema; local Codex later validates and materializes code models.
+  outputs:
+  - schemas/goal_contract.schema.yaml
+  completion_evidence:
+  - objective, done conditions, constraints, tools, approvals, budget and outputs represented
+  escalation: Use sol_max_or_highest_exposed only if schema invariants conflict with runtime state semantics.
+  notes: ''
+- id: W-206
+  title: Design the Work loop-state schema
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Compact project-level handoff state, not the host SQLite schema.
+  outputs:
+  - schemas/work_loop_state.schema.yaml
+  completion_evidence:
+  - status, iteration, evidence, failed checks, remaining, approvals and stop reason represented
+  escalation: Use sol_max_or_highest_exposed for subtle state/terminal-state conflicts.
+  notes: ''
+- id: W-207
+  title: Design the verifier-result schema
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - W-203
+  critical_path: true
+  scope: Structured read-only evaluation result.
+  outputs:
+  - schemas/verifier_result.schema.yaml
+  completion_evidence:
+  - criterion-level verdicts
+  - evidence references
+  - smallest correction
+  - release-blocking flag
+  - insufficient-evidence state
+  escalation: none
+  notes: ''
+- id: W-208
+  title: Design the capability-execution record
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Record actual exposure and action boundaries without inventing capabilities.
+  outputs:
+  - schemas/capability_execution_record.schema.yaml
+  completion_evidence:
+  - surface, capability, permission, validation, fallback and residual limits represented
+  escalation: none
+  notes: ''
+- id: W-209
+  title: Create the human-readable Work acceptance cases
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - W-201
+  - W-202
+  - W-203
+  - W-204
+  critical_path: true
+  scope: Acceptance cases for the Work-facing layer.
+  outputs:
+  - evals/work_loop_acceptance_cases.yaml
+  completion_evidence:
+  - success, failed verification, no-progress, read-only verifier, scheduled monitor, mobile/web/local fallback,
+    concurrent-write prevention and local-folder assumption cases
+  escalation: Use sol_max_or_highest_exposed for adversarial case coverage and negative tests.
+  notes: ''
+- id: W-210
+  title: Write the dated model/effort routing reference
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  critical_path: true
+  scope: Separate model tier, effort, Pro, and orchestration controls.
+  outputs:
+  - docs/work/MODEL_EFFORT_ROUTING.md
+  completion_evidence:
+  - Sol High default
+  - Max escalation triggers
+  - Pro-specific tasks
+  - surface-dependent naming caveat
+  - Ultra deferred for v0 runtime
+  escalation: none
+  notes: ''
+- id: W-211
+  title: Define web scheduled-task patterns for research and monitoring
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - W-201
+  critical_path: false
+  scope: Optional operational support. Not the v0 harness scheduler.
+  outputs:
+  - docs/work/SCHEDULED_TASK_PATTERNS.md
+  completion_evidence:
+  - web-only source monitoring examples
+  - manual-run prerequisite
+  - narrow permissions and stop/report rules
+  - no local repo claim
+  escalation: none
+  notes: ''
+- id: W-212
+  title: Prepare UPE runtime-layer migration notes without changing the stable core
+  phase: 3-web-specification
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - W-201
+  - W-202
+  - W-210
+  critical_path: false
+  scope: Supporting UPE deployment note; not a harness v0 blocker.
+  outputs:
+  - docs/work/UPE_V5_6_1_MIGRATION_NOTES.md
+  completion_evidence:
+  - new volatile behavior placed in dated adapter/skill/evals
+  - stable core unchanged unless ADR supplies explicit evidence
+  escalation: Use sol_pro for final core-vs-runtime placement review.
+  notes: ''
+- id: LW-001
+  title: Inspect private local non-repository documents when upload is inappropriate
+  phase: 3-local-work-optional
+  surface: chatgpt_work_desktop
+  model_route: sol_high
+  status: optional
+  dependencies: []
+  critical_path: false
+  scope: Use only when a private local document materially affects the task.
+  outputs:
+  - review artifact or local evidence note
+  completion_evidence:
+  - only necessary files granted
+  - no repository mutation performed
+  escalation: none
+  notes: ''
+- id: LW-002
+  title: Perform desktop application or visual/template QA
+  phase: 3-local-work-optional
+  surface: chatgpt_work_desktop
+  model_route: sol_high
+  status: optional
+  dependencies: []
+  critical_path: false
+  scope: Use for Word/Excel/PowerPoint/PDF/browser UI evidence, not Git/tests.
+  outputs:
+  - visual QA report
+  - screenshots/evidence when appropriate
+  completion_evidence:
+  - rendered artifact inspected in the actual application
+  - defects listed
+  escalation: none
+  notes: ''
+- id: LW-003
+  title: Demonstrate a desktop workflow for later skill design
+  phase: 3-local-work-optional
+  surface: chatgpt_work_desktop
+  model_route: sol_high
+  status: optional
+  dependencies: []
+  critical_path: false
+  scope: Use only when the workflow is easier to demonstrate than describe.
+  outputs:
+  - workflow demonstration notes
+  completion_evidence:
+  - steps and UI evidence captured
+  - no autonomous external action
+  escalation: none
+  notes: ''
+- id: C-301
+  title: Re-inspect repository state immediately before edits
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - G-ADR
+  - W-204
+  - W-205
+  - W-206
+  - W-207
+  - W-208
+  critical_path: true
+  scope: Mandatory pre-edit check. Do not assume C-101 is still current.
+  outputs:
+  - agent/state/pre-edit-context.yaml
+  completion_evidence:
+  - repo/ref/status recorded
+  - unrelated changes preserved
+  - smallest slice selected
+  - tests and rollback path stated
+  escalation: none
+  notes: ''
+- id: C-302
+  title: Create the minimal Python/uv repository scaffold
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-301
+  critical_path: true
+  scope: Python 3.12+, uv, pytest, ruff, and mypy/pyright. WSL2 first.
+  outputs:
+  - pyproject.toml
+  - src/harness/
+  - tests/
+  - examples/fixture-repository/
+  - README.md
+  - AGENTS.md
+  completion_evidence:
+  - uv environment resolves
+  - package imports
+  - tree contains no empty speculative abstractions
+  escalation: none
+  notes: ''
+- id: C-303
+  title: Materialize accepted research, ADR, schemas, templates, and prompts
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-302
+  - W-209
+  - W-210
+  critical_path: true
+  scope: Bring accepted web-owned artifacts into the versioned repository.
+  outputs:
+  - docs/
+  - schemas/
+  - templates/
+  - prompts/
+  completion_evidence:
+  - content identity or intentional transformation recorded
+  - internal references resolve
+  escalation: none
+  notes: ''
+- id: C-304
+  title: Create a short AGENTS.md map and repository operating README
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-302
+  - C-303
+  critical_path: true
+  scope: Do not turn AGENTS.md into a duplicate encyclopedia.
+  outputs:
+  - AGENTS.md
+  - README.md
+  completion_evidence:
+  - AGENTS.md points to docs/scripts/tests
+  - commands and invariants are concise
+  - definition of done and prohibited actions explicit
+  escalation: none
+  notes: ''
+- id: C-305
+  title: Create the fixture repository and deterministic baseline commands
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-302
+  critical_path: true
+  scope: Ground later lifecycle and recovery tests in an inspectable environment.
+  outputs:
+  - examples/fixture-repository/
+  - scripts/bootstrap.sh
+  - scripts/verify-fast.sh
+  - scripts/verify-full.sh
+  completion_evidence:
+  - fixture initializes reproducibly
+  - fast/full checks have known pass/fail behavior
+  escalation: none
+  notes: ''
+- id: C-306
+  title: Create schema and package validators
+  phase: 4-local-scaffold
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-303
+  critical_path: true
+  scope: Mechanical validation belongs to code, not model confidence.
+  outputs:
+  - scripts/validate_schema.py
+  - scripts/validate_release.py
+  - scripts/validate_references.py
+  completion_evidence:
+  - valid examples pass
+  - invalid examples fail with actionable messages
+  escalation: none
+  notes: ''
+- id: C-401
+  title: Implement typed Goal, Task, Run, Event, configuration, and lifecycle models
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-304
+  - C-305
+  - C-306
+  critical_path: true
+  scope: State model first. No provider calls.
+  outputs:
+  - src/harness/state.py
+  - src/harness/config.py
+  - schemas/*.schema.json
+  - tests/unit/test_state.py
+  - tests/unit/test_config.py
+  completion_evidence:
+  - valid transitions pass
+  - invalid transitions fail
+  - schemas round-trip
+  - terminal states and reasons explicit
+  escalation: Use sol_max_or_highest_exposed only if transition/recovery invariants conflict.
+  notes: ''
+- id: C-402
+  title: Implement the provider adapter interface and fake adapter
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-401
+  critical_path: true
+  scope: Test orchestration without model calls. Implement no second real provider.
+  outputs:
+  - src/harness/adapters/base.py
+  - src/harness/adapters/fake.py
+  - tests/unit/test_fake_adapter.py
+  completion_evidence:
+  - scripted success, failure, interruption and approval events reproducible
+  escalation: none
+  notes: ''
+- id: C-403
+  title: Implement the lifecycle/orchestrator against the fake adapter
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-402
+  critical_path: true
+  scope: Drive CREATED through CHECKPOINTING/READY and explicit terminal states.
+  outputs:
+  - src/harness/orchestrator.py
+  - src/harness/lifecycle.py
+  - tests/unit/test_lifecycle.py
+  completion_evidence:
+  - one coherent task per iteration
+  - transition persisted before external action
+  - reasoned stop states emitted
+  - worker message alone cannot complete a task
+  escalation: Use sol_max_or_highest_exposed for subtle event ordering or re-entrancy.
+  notes: ''
+- id: C-404
+  title: Implement deterministic validation and evidence records
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-403
+  - C-305
+  critical_path: true
+  scope: Deterministic layer is primary and precedes model evaluation.
+  outputs:
+  - src/harness/validation.py
+  - tests/unit/test_validation.py
+  completion_evidence:
+  - validator commands scoped
+  - outputs stored by reference
+  - task completion requires passing evidence
+  - timeouts/errors normalized
+  escalation: none
+  notes: ''
+- id: C-405
+  title: Implement workspace/worktree isolation and path containment
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-403
+  - C-305
+  critical_path: true
+  scope: Git worktree or scoped workspace manager without broad host access.
+  outputs:
+  - src/harness/workspace.py
+  - tests/unit/test_workspace.py
+  completion_evidence:
+  - one task maps to one contained workspace
+  - path traversal rejected
+  - unrelated worktrees cannot be removed
+  - dirty state handled safely
+  escalation: Use sol_max_or_highest_exposed for containment, symlink, Windows/WSL path, or cleanup edge cases.
+  notes: ''
+- id: C-406
+  title: Implement SQLite state persistence and append-only JSONL events
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-401
+  - C-403
+  critical_path: true
+  scope: Conversation history is not canonical state.
+  outputs:
+  - src/harness/state_store.py
+  - src/harness/events.py
+  - tests/unit/test_state_store.py
+  - tests/unit/test_events.py
+  completion_evidence:
+  - transactional writes
+  - large outputs referenced not embedded
+  - events replayable enough for recovery
+  - redaction marker supported
+  escalation: Use sol_max_or_highest_exposed if replay, transaction, or concurrency semantics become subtle.
+  notes: ''
+- id: C-407
+  title: Implement budgets, stop rules, retry/backoff, and no-progress detection
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-403
+  - C-406
+  critical_path: true
+  scope: Exact bounds owned by host code.
+  outputs:
+  - src/harness/budgets.py
+  - src/harness/retry_policy.py
+  - tests/unit/test_budgets.py
+  - tests/unit/test_retry_policy.py
+  completion_evidence:
+  - iteration/time/token-cost limits enforced
+  - jittered bounded backoff
+  - identical-failure and no-progress stops
+  - non-idempotent retry blocked
+  escalation: Use sol_max_or_highest_exposed when idempotency and side effects interact.
+  notes: ''
+- id: C-408
+  title: Implement optional read-only model evaluator interface
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-404
+  - W-203
+  - W-207
+  critical_path: true
+  scope: Optional second layer only for irreducible judgment.
+  outputs:
+  - src/harness/evaluation.py
+  - tests/unit/test_evaluation.py
+  completion_evidence:
+  - not invoked when deterministic checks suffice
+  - no write access
+  - PASS/FAIL/INSUFFICIENT_EVIDENCE preserved
+  - criteria cannot be rewritten
+  escalation: Use sol_max_or_highest_exposed for multi-grader aggregation or difficult evidence calibration.
+  notes: ''
+- id: C-409
+  title: Implement the CLI and harness doctor
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-403
+  - C-404
+  - C-405
+  - C-406
+  - C-407
+  critical_path: true
+  scope: Small explicit CLI. Missing credentials reported without values.
+  outputs:
+  - src/harness/cli.py
+  - tests/unit/test_cli.py
+  completion_evidence:
+  - init/research/doctor/run/status/events/resume/pause/cancel/evaluate/cleanup commands exist
+  - doctor checks runtime/Codex/Git/worktrees/validators/SQLite/permissions safely
+  escalation: none
+  notes: ''
+- id: C-410
+  title: Document threat model, state model, evaluation plan, and operations
+  phase: 5-core-harness
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-401
+  - C-404
+  - C-405
+  - C-406
+  - C-407
+  - C-409
+  critical_path: true
+  scope: Documentation follows working code and exact tests, not imagined capabilities.
+  outputs:
+  - docs/threat-model.md
+  - docs/state-model.md
+  - docs/evaluation-plan.md
+  - docs/operations.md
+  completion_evidence:
+  - setup, operation, recovery, approvals and limitations match implementation
+  escalation: none
+  notes: ''
+- id: C-501
+  title: Implement the Codex App Server adapter
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_max_or_highest_exposed
+  status: blocked
+  dependencies:
+  - C-103
+  - C-402
+  - C-406
+  - C-407
+  critical_path: true
+  scope: Keep raw protocol messages inside the adapter boundary.
+  outputs:
+  - src/harness/adapters/codex_app_server.py
+  - tests/unit/test_codex_adapter.py
+  completion_evidence:
+  - startup/shutdown
+  - initialize handshake
+  - thread start/resume
+  - turn submission
+  - streamed event translation
+  - approvals/cancel
+  - terminal detection
+  - error normalization
+  - protocol version compatibility
+  escalation: none
+  notes: Max is justified by protocol evolution, event ordering, reconnectability, and approval semantics.
+- id: C-502
+  title: Run a controlled Codex App Server smoke task
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-501
+  - C-305
+  - C-409
+  critical_path: true
+  scope: One narrow happy-path smoke run; do not call the harness production-ready.
+  outputs:
+  - evals/results/app-server-smoke/
+  - docs/research/app-server-smoke-observation.md
+  completion_evidence:
+  - fixture-only change observed
+  - events recorded
+  - validator evidence recorded
+  - no external mutation
+  escalation: none
+  notes: ''
+- id: C-503
+  title: Implement crash/restart and process-state reconciliation
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_max_or_highest_exposed
+  status: blocked
+  dependencies:
+  - C-406
+  - C-501
+  - C-502
+  critical_path: true
+  scope: Crash-safe resume is a core Max task.
+  outputs:
+  - src/harness/recovery.py
+  - tests/integration/test_restart_recovery.py
+  completion_evidence:
+  - persisted state, process state, worktree, Git, last event and validation reconciled
+  - ambiguous executing state eliminated
+  escalation: none
+  notes: ''
+- id: C-504
+  title: Implement checkpoint and partial-failure recovery
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_max_or_highest_exposed
+  status: blocked
+  dependencies:
+  - C-405
+  - C-406
+  - C-503
+  critical_path: true
+  scope: Use patch/archive/checkpoint metadata by default. Local Git commits remain approval-gated.
+  outputs:
+  - src/harness/checkpoint.py
+  - tests/integration/test_checkpoint_recovery.py
+  completion_evidence:
+  - previous stable checkpoint preserved
+  - interrupted checkpoint cannot corrupt state
+  - rollback path proven without unauthorized commit
+  escalation: none
+  notes: ''
+- id: C-505
+  title: Implement permissions, approval gates, command policy, and redaction
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_max_or_highest_exposed
+  status: blocked
+  dependencies:
+  - C-403
+  - C-405
+  - C-406
+  - C-501
+  critical_path: true
+  scope: Security boundary is host-owned and adjacent to action.
+  outputs:
+  - src/harness/approvals.py
+  - src/harness/permissions.py
+  - tests/unit/test_approvals.py
+  - tests/unit/test_permissions.py
+  completion_evidence:
+  - external/destructive/financial/secret/production action transitions to APPROVAL_REQUIRED
+  - workspace credentials remain narrow
+  - paths/commands/network checked
+  - secrets and personal data redacted from logs
+  escalation: none
+  notes: No push, PR, merge, release, deployment, message, purchase, or production mutation by default.
+- id: C-506
+  title: Integrate state, workspace, validation, App Server, recovery, and security
+  phase: 6-app-server-recovery-security
+  surface: local_codex
+  model_route: sol_max_or_highest_exposed
+  status: blocked
+  dependencies:
+  - C-409
+  - C-501
+  - C-503
+  - C-504
+  - C-505
+  critical_path: true
+  scope: Final multi-component integration. This is where Max earns its keep.
+  outputs:
+  - integrated v0 harness candidate
+  completion_evidence:
+  - critical invariants hold across module boundaries
+  - no duplicate controller state
+  - failure states remain explicit
+  - full fixture path runnable
+  escalation: none
+  notes: ''
+- id: C-601
+  title: Complete unit-test coverage for all required behaviors
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-506
+  critical_path: true
+  scope: Tests should accompany each slice; this task closes gaps.
+  outputs:
+  - tests/unit/
+  completion_evidence:
+  - state transitions, schemas, budgets, retry, no-progress, approvals, redaction, task selection, path containment
+    and adapter errors covered
+  escalation: none
+  notes: ''
+- id: C-602
+  title: Complete the ten required integration tests
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-506
+  critical_path: true
+  scope: Prove init, workspace, fake edits, validation, resume, checkpoint recovery, budgets, approvals, evaluator,
+    cleanup.
+  outputs:
+  - tests/integration/
+  completion_evidence:
+  - all ten brief-specified integration scenarios pass
+  escalation: none
+  notes: ''
+- id: C-603
+  title: Create the six representative evaluation fixtures
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-506
+  critical_path: true
+  scope: Representative model-dependent trials, not decorative demos.
+  outputs:
+  - tests/evals/
+  - evals/cases/
+  completion_evidence:
+  - passing change, test repair, ambiguous requirement, non-progress, malicious repository instruction and forbidden
+    external action represented
+  escalation: none
+  notes: ''
+- id: C-604
+  title: Run repeated model-dependent trials and record metrics
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-603
+  - C-502
+  critical_path: true
+  scope: Use enough trials to expose failure modes; keep costs bounded.
+  outputs:
+  - evals/results/trial-summary.json
+  - evals/results/trial-details.jsonl
+  completion_evidence:
+  - pass rate, iterations, elapsed time, tool calls and reviewer corrections recorded
+  escalation: Use sol_max_or_highest_exposed only to diagnose persistent failures, not to conceal a weak harness.
+  notes: ''
+- id: C-605
+  title: Run the complete deterministic quality suite
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-601
+  - C-602
+  - C-603
+  critical_path: true
+  scope: Tool output, not prose, determines these results.
+  outputs:
+  - validation/full-suite-report.json
+  completion_evidence:
+  - pytest PASS
+  - ruff PASS
+  - mypy or pyright PASS
+  - schema checks PASS
+  - package/reference checks PASS
+  escalation: none
+  notes: ''
+- id: C-606
+  title: Run security, secret, malicious-instruction, and no-external-mutation checks
+  phase: 7-tests-evals
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-505
+  - C-602
+  - C-603
+  critical_path: true
+  scope: Release-blocking security evidence.
+  outputs:
+  - validation/security-report.json
+  completion_evidence:
+  - no secret in fixtures/logs
+  - malicious repo instruction treated as data
+  - forbidden action blocked
+  - no push/PR/deploy/external mutation observed
+  escalation: Use sol_max_or_highest_exposed for unexplained policy bypass or path/credential edge cases.
+  notes: ''
+- id: W-701
+  title: Synthesize the implementation evidence and draft the final report
+  phase: 8-release
+  surface: chatgpt_work_web
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-604
+  - C-605
+  - C-606
+  critical_path: true
+  scope: Answer-first evidence synthesis. Preserve planned/implemented/tested/blocked/unverified labels.
+  outputs:
+  - FINAL_IMPLEMENTATION_REPORT.md
+  - release-evidence-index.yaml
+  completion_evidence:
+  - architecture, sources, exact versions, files, commands, tests, smoke behavior, security, assumptions, deferred
+    features and failure modes covered
+  escalation: none
+  notes: ''
+- id: P-701
+  title: Perform a fresh-context read-only release review
+  phase: 8-release
+  surface: chatgpt_pro_web
+  model_route: sol_pro
+  status: blocked
+  dependencies:
+  - W-701
+  critical_path: true
+  scope: 'Second and final primary Pro use: adversarial whole-system judgment.'
+  outputs:
+  - PRO_RELEASE_REVIEW.yaml
+  completion_evidence:
+  - every acceptance criterion graded PASS/FAIL/INSUFFICIENT_EVIDENCE
+  - smallest correction specified
+  - release blockers explicit
+  escalation: none
+  notes: ''
+- id: C-701
+  title: Apply only accepted release-review corrections
+  phase: 8-release
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - P-701
+  critical_path: true
+  scope: Use Max only for a correction involving state/recovery/security/protocol invariants.
+  outputs:
+  - corrected release candidate
+  - correction-log.yaml
+  completion_evidence:
+  - each change maps to an accepted finding
+  - unrelated structure preserved
+  escalation: Escalate narrowly to sol_max_or_highest_exposed when the correction matches Max criteria.
+  notes: ''
+- id: C-702
+  title: Rerun all deterministic tests after corrections
+  phase: 8-release
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-701
+  critical_path: true
+  scope: No release on stale pre-correction evidence.
+  outputs:
+  - validation/final-validation-report.json
+  completion_evidence:
+  - all critical deterministic gates PASS
+  - remaining UNKNOWNs explicit
+  escalation: none
+  notes: ''
+- id: C-703
+  title: Package the v0 artifacts, documentation, manifest, and archive
+  phase: 8-release
+  surface: local_codex
+  model_route: sol_high
+  status: blocked
+  dependencies:
+  - C-702
+  critical_path: true
+  scope: Packaging is mechanical and does not deserve Pro.
+  outputs:
+  - release/
+  - MANIFEST.sha256
+  - agent-harness-v0.zip
+  completion_evidence:
+  - archive extracts
+  - checksums match
+  - known limitations present
+  escalation: none
+  notes: ''
+- id: C-704
+  title: Create a local Git commit for the accepted release candidate
+  phase: 8-release
+  surface: local_codex
+  model_route: sol_high
+  status: approval_required
+  dependencies:
+  - C-703
+  critical_path: false
+  scope: Do not commit until explicitly authorized. Never push or open a PR under this plan.
+  outputs:
+  - local commit hash
+  completion_evidence:
+  - explicit user authorization recorded
+  - diff reviewed
+  - commit local only
+  escalation: none
+  notes: ''
+- id: D-001
+  title: Multi-agent runtime execution
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-002
+  title: Cloud scheduler for the harness
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-003
+  title: Browser or web control UI
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-004
+  title: Issue-tracker integration
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-005
+  title: Autonomous PR merge or release
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-006
+  title: Production deployment
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-007
+  title: Dynamic model routing
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-008
+  title: Self-modifying prompts or skills
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-009
+  title: Persistent semantic memory
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+- id: D-010
+  title: Provider marketplace or distributed execution
+  phase: 9-deferred
+  surface: none
+  model_route: not_applicable
+  status: deferred
+  dependencies: []
+  critical_path: false
+  scope: Implement only after representative v0 eval evidence justifies it.
+  outputs: []
+  completion_evidence:
+  - excluded from v0
+  escalation: none
+  notes: ''
+v0_acceptance_mapping:
+  AC-01:
+    criterion: '`uv run harness doctor` reports a usable environment'
+    tasks:
+    - C-409
+    - C-605
+  AC-02:
+    criterion: '`uv run harness init examples/fixture-repository` creates valid config/state'
+    tasks:
+    - C-305
+    - C-409
+    - C-602
+  AC-03:
+    criterion: One fixture task completes through the fake adapter
+    tasks:
+    - C-402
+    - C-403
+    - C-602
+  AC-04:
+    criterion: The same run can be interrupted and resumed
+    tasks:
+    - C-503
+    - C-602
+  AC-05:
+    criterion: Codex App Server adapter completes a controlled smoke task
+    tasks:
+    - C-501
+    - C-502
+  AC-06:
+    criterion: State survives process restart
+    tasks:
+    - C-406
+    - C-503
+    - C-602
+  AC-07:
+    criterion: Every completed task has validator evidence
+    tasks:
+    - C-404
+    - C-403
+    - C-602
+  AC-08:
+    criterion: External/destructive operations require approval
+    tasks:
+    - C-505
+    - C-602
+    - C-606
+  AC-09:
+    criterion: Tests, lint and type checks pass
+    tasks:
+    - C-605
+    - C-702
+  AC-10:
+    criterion: Setup, operation, recovery and limitations are documented
+    tasks:
+    - C-410
+    - W-701
+    - C-703
+  AC-11:
+    criterion: No secret appears in committed fixtures or logs
+    tasks:
+    - C-505
+    - C-606
+  AC-12:
+    criterion: No push, PR, deployment or external mutation is performed
+    tasks:
+    - C-505
+    - C-606
+    - P-701

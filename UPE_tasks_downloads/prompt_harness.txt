@@ -1,0 +1,13 @@
+similarly to Pro Loop Engineering research chat and generated artifact (see attached),
+
+Split implementations tasks between ChatGPT / work web and local Work / Codex What can be done in web, leave doing to web, otherwise do in local. What is better doing with Pro What could be done with Sol , effort: max vs high
+
+to attach 
+
+CHAT_COPY_Pro_Loop_Engineering_research(1).md
+File
+
+
+codex_loops_harness_anthropic_reading_map_2026-07-18(2).md
+File
+
