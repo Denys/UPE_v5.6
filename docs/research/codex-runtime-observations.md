@@ -1,6 +1,6 @@
 # C-102 Codex Runtime Observations
 
-**Captured:** 2026-07-18, corrected for the active target  
+**Captured:** 2026-07-18T22:43:25.4294702+02:00
 **Status:** PASS
 
 ## Active target environment
@@ -8,7 +8,7 @@
 | Surface | Finding |
 |---|---|
 | Windows host | Active and supported execution environment |
-| Windows-native Codex CLI/App Server | PASS from prior direct inspection |
+| Windows-native Codex CLI/App Server | PASS from direct inspection |
 | WSL2 | `NOT APPLICABLE` to the current target runtime |
 | Docker | `NOT APPLICABLE` unless ADR-001 later establishes a material isolation need |
 
@@ -24,9 +24,9 @@
 
 ## WSL2 reconciliation
 
-Earlier files describe a WSL2-first architecture. That is a documented research/build-brief assumption, not the active runtime decision. It must remain visible for ADR-001 comparison, but it does not represent a failed dependency for this repository.
+Earlier files describe a WSL2-first architecture. That is a documented research/build-brief assumption, not the active runtime decision. It remains visible for ADR-001 comparison but is not a failed dependency for this repository.
 
-Do not report the inherited Windows npm shim or missing WSL-native Codex installation as a blocker. For the present target, WSL execution was outside scope.
+Do not report the inherited Windows npm shim or missing WSL-native Codex installation as a blocker. WSL execution is outside the active target scope.
 
 ## Finding
 
