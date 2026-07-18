@@ -1,7 +1,8 @@
-schema_version: '1.0'
+schema_version: '1.1'
 gate_id: G-ADR
 decision: PASS
 decided_at: '2026-07-18'
+reviewed_with: GPT-5.6 Sol Pro
 adr: docs/architecture/ADR-001-harness-boundary.md
 inputs:
   - Pasted markdown.md
@@ -10,6 +11,7 @@ inputs:
   - docs/research/chatgpt-work-applicability.md
   - docs/research/environment-conflict-log.md
   - docs/architecture/ADR-001-evidence-packet.md
+  - docs/architecture/ADR-001-harness-boundary.md
   - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
   - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
   - docs/research/codex-runtime-observations.md
@@ -19,19 +21,22 @@ inputs:
 criteria:
   - id: contract
     status: PASS
-    evidence: Every mandatory architecture boundary and v0 exclusion maps to ADR sections 1-9.
+    evidence: Every mandatory architecture boundary and v0 exclusion maps to ADR sections 1 through 10.
   - id: documented_vs_observed
     status: PASS
     evidence: Official intended behavior and installed Windows/Codex 0.144.3 observations are explicitly separated.
   - id: runtime_target
     status: PASS
-    evidence: Windows-native is selected; WSL2-first remains historical context and is not an active dependency.
+    evidence: The host contract is portable while Windows-native is the current implementation target; WSL2 is not an active dependency.
   - id: provider_boundary
     status: PASS
-    evidence: App Server is isolated behind a version-pinned adapter with schema preflight and smoke-test condition.
+    evidence: App Server is isolated behind a version-pinned adapter with schema preflight and a live lifecycle smoke-test condition.
   - id: state_and_recovery
     status: PASS
-    evidence: SQLite, JSONL, file evidence and Git checkpoints are canonical; thread/chat state is supporting context.
+    evidence: SQLite is authoritative; JSONL is emitted through a transactional outbox and repaired by replay. External actions use an action journal and reconciliation before retry.
+  - id: checkpoint_authority
+    status: PASS
+    evidence: Routine rollback uses host-managed snapshots; Git commits remain explicit approval-gated actions.
   - id: validation
     status: PASS
     evidence: Deterministic environmental checks precede optional read-only model evaluation.
@@ -46,17 +51,19 @@ criteria:
     evidence: Multi-agent, scheduler, UI, issue tracker, autonomous release and self-modification remain deferred.
   - id: critical_conflicts
     status: PASS
-    evidence: Windows/WSL and App Server maturity conflicts are resolved; remaining unknowns are phase-bounded and non-critical to architecture.
+    evidence: Windows/WSL, App Server maturity, dual-write recovery and checkpoint-approval conflicts are resolved. Remaining unknowns are phase-bounded.
 non_blocking_unknowns:
-  - Live App Server initialize/thread/turn/interrupt smoke test has not yet run.
+  - Live App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test has not yet run.
   - Python dependency compatibility is unknown until pyproject.toml and installation tests exist.
   - No CI checks are configured.
-  - Legacy-upstream merge actor/authorization history is unknown.
+  - Legacy-upstream merge actor and authorization history is unknown.
   - Repository remains intentionally public.
 conditions:
   - Proceed to W-201 through W-210.
+  - Specify transactional-outbox, deduplication, action-journal and recovery semantics before implementing persistent state.
+  - Use host-managed patch snapshots for routine checkpoints; require approval for Git commits.
   - Do not mark the real Codex adapter tested until the controlled live smoke test passes.
-  - Do not merge the target draft PR or perform release/deployment without explicit authorization.
+  - Do not merge the target draft PR or perform release or deployment without explicit authorization.
   - Preserve single-agent v0 and fake-adapter-first implementation.
 next_backlog_range:
   - W-201
