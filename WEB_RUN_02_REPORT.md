@@ -25,17 +25,17 @@ The fresh-context review found and repaired two architecture ambiguities:
 - independent SQLite and JSONL writes had no crash-consistency rule;
 - routine Git checkpoints conflicted with the explicit commit-approval boundary.
 
-ADR-001 now requires a SQLite transactional outbox, JSONL replay/deduplication, an external-action journal with reconciliation before retry, and host-managed patch snapshots for ordinary checkpoints.
+ADR-001 now requires a SQLite transactional outbox, JSONL replay and deduplication, an external-action journal with reconciliation before retry, and host-managed patch snapshots for ordinary checkpoints.
 
 ## Gate result
 
 `gate-records/ADR-001-PASS.yaml` remains `PASS` at schema version `1.1`.
 
-The unexplained legacy-upstream merge remains a safety finding but does not block architecture. It tightens future approval enforcement. The target `Denys/UPE_v5.6#1` PR remains draft and unmerged.
+The unexplained legacy-upstream merge remains a safety finding but does not block architecture. The target `Denys/UPE_v5.6#1` PR remains draft and unmerged.
 
 ## Delivery state
 
-The reviewed ADR and gate updates are committed and pushed to:
+The reviewed ADR, gate, evidence packet, runtime reconciliation, Work applicability and research state are committed and pushed to:
 
 `agent/windows-materialization-handoff-refresh`
 
@@ -43,6 +43,6 @@ Temporary `TEMP_DO_NOT_USE*` files have been removed from the branch.
 
 ## Next executable range
 
-`W-201` through `W-210`: schemas, templates, prompts, state/recovery contracts, security, evaluation and operations specifications.
+`W-201` through `W-210`: schemas, templates, prompts, state and recovery contracts, security, evaluation and operations specifications.
 
 Do not merge, release or deploy without separate explicit authorization.
