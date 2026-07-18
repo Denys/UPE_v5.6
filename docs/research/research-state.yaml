@@ -1,14 +1,15 @@
 upe_state:
   goal: >-
-    Research current OpenAI and Anthropic harness-engineering evidence, compare the
-    patterns, merge target-environment observations, and freeze the minimum v0
-    architecture before implementation.
+    Research current OpenAI and Anthropic harness-engineering evidence, merge
+    target-environment observations, freeze the minimum v0 architecture, and
+    complete a fresh-context Pro review before implementation.
   must_status:
     research_matrix: PASS
     pattern_comparison: PASS
     local_environment_handoff: PASS
     architecture_evidence_packet: PASS
     adr_001: PASS
+    pro_review: PASS
     adr_gate: PASS
     harness_implementation: NOT_STARTED
   authoritative_inputs:
@@ -16,31 +17,40 @@ upe_state:
     - docs/research/source-matrix.md
     - docs/research/pattern-comparison.md
     - docs/research/chatgpt-work-applicability.md
+    - docs/research/W-101-target-runtime-reconciliation.md
     - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
     - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
     - docs/research/codex-runtime-observations.md
     - docs/research/local-target-context.md
     - docs/research/app-server-protocol-observations.md
     - docs/research/generated-app-server-schema/codex-cli-0.144.3/
+    - docs/architecture/ADR-001-evidence-packet.md
+    - docs/architecture/ADR-001-harness-boundary.md
+    - docs/architecture/ADR-001-PRO-REVIEW.md
+    - gate-records/ADR-001-PASS.yaml
   findings:
     - Codex App Server remains the minimum v0 execution boundary; rebuilding Codex core in Agents SDK is not justified.
-    - The active v0 host is Windows-native Codex. Earlier WSL2-first text is historical research context, not an active dependency.
-    - The installed App Server surface is pinned to Codex CLI 0.144.3 and schema-validated; a live initialize/thread/turn smoke test remains required before adapter completion.
-    - The trusted host owns durable state, credentials, budgets, approvals, audit, retry/idempotency, recovery, and external-write authority.
-    - SQLite run/task state plus JSONL append-only events are canonical; Work and App Server thread state are supporting context.
+    - The trusted-host contract is portable, while Windows-native Codex is the current v0 target. Earlier WSL2-first text is historical context, not an active dependency.
+    - The installed App Server surface is pinned to Codex CLI 0.144.3 and schema-validated; a live lifecycle smoke test remains required before adapter completion.
+    - SQLite is authoritative state and uses a transactional outbox to produce a replayable and deduplicated JSONL audit mirror.
+    - Potentially non-idempotent external actions use stable action IDs, recorded approval scope and reconciliation before retry.
+    - Routine rollback uses host-managed patch snapshots; Git commits are explicit approval-gated milestones.
     - Deterministic validation precedes any read-only model evaluator.
-    - Single-agent v0 remains mandatory; planner, evaluator loops and multi-agent execution are added only when representative evaluations justify them.
+    - Single-agent v0 remains mandatory; planner, evaluator loops and multi-agent execution require representative eval evidence.
     - The legacy-upstream merge is a recorded safety incident, not authorization for target-repository merge or release.
   completed:
     - Opened and classified all 30 requested live pages and repositories.
     - Materialized the build brief and four accepted research files at canonical repository paths.
     - Merged Windows-native repository, runtime and App Server observations for C-101 through C-105.
     - Rechecked critical current official sources for App Server, harness engineering, Symphony, Agents SDK and evaluation design.
-    - Created environment conflict log, ADR evidence packet and ADR-001.
+    - Created the environment conflict log, ADR evidence packet and ADR-001.
     - Applied the ADR gate.
+    - Completed a fresh-context Pro review.
+    - Repaired SQLite/JSONL crash consistency, external-action recovery and checkpoint-approval ambiguity.
+    - Removed temporary scratch files from the delivery branch.
   unresolved:
-    - Run a controlled App Server initialize/thread/turn/interrupt smoke test before marking the real adapter tested.
-    - Establish Python dependency compatibility after pyproject.toml exists; Windows Python 3.14.3 is observed but not yet an accepted project runtime contract.
+    - Run a controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
+    - Establish Python dependency compatibility after pyproject.toml exists; Windows Python 3.14.3 is observed but not yet a project runtime contract.
     - Add CI before release readiness; no status checks currently protect the target PR.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no inference is made.
     - Target repository visibility remains intentionally public until a separately authorized post-gate change.
@@ -50,15 +60,20 @@ upe_state:
       - generated App Server archive integrity and inventory inspection
       - current official-source refresh
       - criterion-to-ADR mapping
-      - YAML parse and gate validation
+      - fresh-context Pro review
+      - YAML gate validation
+      - draft-branch scope and scratch-file review
     result: PASS
     note: >-
-      Architecture is accepted for v0. Runtime adapter functionality is not
-      claimed until the controlled App Server smoke test passes.
+      Architecture is accepted for v0 after Pro repair. Runtime adapter
+      functionality is not claimed until the controlled App Server smoke test
+      passes. Merge, release and deployment remain unauthorized.
   recovery: >-
-    Resume from W-201 through W-210. Preserve the draft PR, the Windows-native
-    runtime decision, single-agent v0, and fake-adapter-first ordering.
+    Resume from W-201 through W-210. Preserve the draft PR, portable trusted-host
+    contract, Windows-native v0 target, transactional-outbox and action-journal
+    rules, single-agent v0, and fake-adapter-first ordering.
   next_action: >-
-    Proceed to W-201 through W-210: freeze schemas, templates, prompts, security
-    and evaluation specifications. Do not merge the draft PR or implement the
-    real Codex adapter until the relevant gates and smoke checks pass.
+    Proceed to W-201 through W-210: freeze schemas, templates, prompts,
+    state/recovery contracts, security, evaluation and operations specifications.
+    Do not merge the draft PR or implement the real Codex adapter until the
+    relevant gates and smoke checks pass.
