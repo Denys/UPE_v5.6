@@ -1,0 +1,71 @@
+schema_version: '1.0'
+gate_id: G-ADR
+decision: PASS
+decided_at: '2026-07-18'
+adr: docs/architecture/ADR-001-harness-boundary.md
+inputs:
+  - Pasted markdown.md
+  - docs/research/source-matrix.md
+  - docs/research/pattern-comparison.md
+  - docs/research/chatgpt-work-applicability.md
+  - docs/research/environment-conflict-log.md
+  - docs/architecture/ADR-001-evidence-packet.md
+  - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
+  - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
+  - docs/research/codex-runtime-observations.md
+  - docs/research/local-target-context.md
+  - docs/research/app-server-protocol-observations.md
+  - docs/research/generated-app-server-schema/codex-cli-0.144.3/
+criteria:
+  - id: contract
+    status: PASS
+    evidence: Every mandatory architecture boundary and v0 exclusion maps to ADR sections 1-9.
+  - id: documented_vs_observed
+    status: PASS
+    evidence: Official intended behavior and installed Windows/Codex 0.144.3 observations are explicitly separated.
+  - id: runtime_target
+    status: PASS
+    evidence: Windows-native is selected; WSL2-first remains historical context and is not an active dependency.
+  - id: provider_boundary
+    status: PASS
+    evidence: App Server is isolated behind a version-pinned adapter with schema preflight and smoke-test condition.
+  - id: state_and_recovery
+    status: PASS
+    evidence: SQLite, JSONL, file evidence and Git checkpoints are canonical; thread/chat state is supporting context.
+  - id: validation
+    status: PASS
+    evidence: Deterministic environmental checks precede optional read-only model evaluation.
+  - id: security_and_approvals
+    status: PASS
+    evidence: Host authority and all consequential approval classes are explicit; legacy merge is not treated as authorization.
+  - id: portability
+    status: PASS
+    evidence: Core contracts exclude raw App Server protocol and permit a future adapter without core-model changes.
+  - id: scope
+    status: PASS
+    evidence: Multi-agent, scheduler, UI, issue tracker, autonomous release and self-modification remain deferred.
+  - id: critical_conflicts
+    status: PASS
+    evidence: Windows/WSL and App Server maturity conflicts are resolved; remaining unknowns are phase-bounded and non-critical to architecture.
+non_blocking_unknowns:
+  - Live App Server initialize/thread/turn/interrupt smoke test has not yet run.
+  - Python dependency compatibility is unknown until pyproject.toml and installation tests exist.
+  - No CI checks are configured.
+  - Legacy-upstream merge actor/authorization history is unknown.
+  - Repository remains intentionally public.
+conditions:
+  - Proceed to W-201 through W-210.
+  - Do not mark the real Codex adapter tested until the controlled live smoke test passes.
+  - Do not merge the target draft PR or perform release/deployment without explicit authorization.
+  - Preserve single-agent v0 and fake-adapter-first implementation.
+next_backlog_range:
+  - W-201
+  - W-202
+  - W-203
+  - W-204
+  - W-205
+  - W-206
+  - W-207
+  - W-208
+  - W-209
+  - W-210
