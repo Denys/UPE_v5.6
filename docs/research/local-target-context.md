@@ -1,59 +1,78 @@
 # C-101 Local Target Context
 
-**Captured:** 2026-07-18T18:58:11.3504065+02:00
-**Status:** PASS; unrelated concurrent worktree changes preserved
+**Captured:** 2026-07-18T19:42:13.2622869+02:00
+**Status:** PASS; corrected target is unambiguous and unrelated local state is preserved
 
 ## Repository identity
 
-- Repository root: `C:\Users\denko\CodexWork\UPE_v5.6`
+- Repository root: `C:\Users\denko\CodexWork\UPE_5.6`
 - Branch: `main`
 - Git ref: `refs/heads/main`
-- Commit: `ce15f58028d2ca8c0a56820601747b2f872c4903`
-- Worktree: `C:/Users/denko/CodexWork/UPE_v5.6`
-- Remote: `origin` → `https://github.com/denkovtll/UPE_v5.6.git`
-- Remote `refs/heads/main`: `ce15f58028d2ca8c0a56820601747b2f872c4903`, matching local HEAD at inspection.
-- GitHub identity: `denkovtll/UPE_v5.6`, private, default branch `main`, viewer permission `ADMIN`, verified with read-only `gh repo view`.
-- Target identity: unambiguous.
+- Commit: `eed3b046c5910dfc51c28b2cd7a368d609370c44`
+- Worktree: `C:/Users/denko/CodexWork/UPE_5.6`
+- `origin`: `https://github.com/Denys/UPE_v5.6.git`
+- `upstream`: `https://github.com/denkovtll/UPE_v5.6.git`
+- `origin/refs/heads/main`: `eed3b046c5910dfc51c28b2cd7a368d609370c44`, matching local HEAD.
+- GitHub identity: `Denys/UPE_v5.6`, default branch `main`, viewer permission `ADMIN`.
+- Live visibility: `PUBLIC`, confirmed independently by the read-only GitHub connector and `gh repo view`.
+- Target identity: unambiguous because the user explicitly supplied this local path and GitHub repository, and `origin` matches it.
 
-The connected GitHub app returned 404 for this private repository, so connector visibility is unavailable. Local Git and authenticated read-only `gh` checks establish the repository identity; no connector or GitHub write was performed.
+The original requirement said the repository should be private. The live repository is public. Changing visibility would be an external account mutation and is forbidden in this pass, so the mismatch is recorded as an unresolved blocker. The legacy `upstream` remote is preserved and was not changed.
 
-## Current worktree state to preserve
+## Worktree state to preserve
 
-The first snapshot was clean (`## main...origin/main`). During inspection, unrelated user-owned changes appeared. Before any Codex edit, `git status --short` showed:
+Before this corrected evidence refresh:
 
-- 27 tracked release-pack paths deleted from the repository root, including root `README.md`, `MANIFEST.json`, `evals/`, and `skill/` content;
-- untracked `AGENTS.md`, `MANIFEST.sha256`, `RUN_01_LOCAL_CODEX_SOL_HIGH.md`, `RUN_02_WEB_SOL_PRO.md`, `RUN_SUMMARY.json`, and `UPE_v5.6.0_RELEASE/`;
-- the release pack reappearing under untracked `UPE_v5.6.0_RELEASE/`.
+```text
+## main...origin/main
+?? CHAT_COPY_Pro_Loop_Engineering_research.md
+?? codex_loops_harness_anthropic_reading_map_2026-07-18.md
+?? prompt_harness.txt
+```
 
-These changes were not made, staged, reverted, or normalized by this pass. The nested release manifest contains 26 entries with 0 checksum mismatches, consistent with an intact relocation, but Git rename classification was not assumed or staged.
+All three files are user-owned raw inputs. They were read for classification but were not moved, copied, rewritten, staged, or treated as the accepted C-104 package.
 
-During final verification, untracked `harness-for-every-task\harness-for-every-task-anthropic.pdf` also appeared. It is preserved as additional user-owned state and is not the named accepted research archive or any of the four C-104 artifacts.
+## Instructions, README, manifests, and configuration
 
-## Instruction, README, manifest, and configuration inspection
+- Root `AGENTS.md` and `chatgpt_work_harness_implementation_routing_2026-07-18\NEXT_LOCAL_CODEX_PROMPT.md` were read and applied.
+- No root `README.md` exists. The routing-package `README.md` and `UPE_v5.6.0_RELEASE\README.md` were read.
+- `harness_implementation_backlog.yaml` records C-101 through C-105 as the bounded pre-ADR evidence slice.
+- `CURRENT_PRODUCT_DELTA_2026-07-18.md` and `WORK_CODEX_HANDOFF_TEMPLATE.yaml` were read.
+- `.gitattributes` contains `* text=auto`; system Git configuration sets `core.autocrlf=true`.
+- No `pyproject.toml`, `uv.lock`, `requirements*.txt`, `package.json`, lockfile, `Cargo.toml`, `go.mod`, Dockerfile, or Compose file was found.
+- `Pasted markdown.md` was not found under `C:\Users\denko\CodexWork`.
+- Root `prompt_harness.txt` is a 13-line intake note referencing the two raw research attachments; it is not a detailed build brief.
+- The two raw research Markdown files provide source/background material but do not carry the accepted-package labels, four required C-104 filenames, or checksum contract.
 
-- Applicable root `AGENTS.md` was read after it appeared. No nested `AGENTS.md` applies to `docs/research/` or `handoffs/`.
-- The current root `README.md` is deleted in the worktree; `UPE_v5.6.0_RELEASE\README.md` and the routing-package `README.md` were read.
-- `.gitattributes` contains `* text=auto` after a comment describing LF normalization.
-- `UPE_v5.6.0_RELEASE\MANIFEST.json`: 26 entries, 0 missing or mismatched.
-- Root `MANIFEST.sha256`: 3 entries, 0 missing or mismatched.
-- Routing `MANIFEST.sha256`: 8 entries, 0 missing or mismatched.
-- `harness_implementation_backlog.yaml`, `CURRENT_PRODUCT_DELTA_2026-07-18.md`, `WORK_CODEX_HANDOFF_TEMPLATE.yaml`, `NEXT_LOCAL_CODEX_PROMPT.md`, and `RUN_01_LOCAL_CODEX_SOL_HIGH.md` were read.
-- No `pyproject.toml`, `uv.lock`, `requirements*.txt`, `package.json`, `Cargo.toml`, `go.mod`, Dockerfile, or Compose file was found.
-- `Pasted markdown.md` was not found under `C:\Users\denko\CodexWork`; the available `UPE_tasks_downloads\prompt_harness.txt` is only a short routing request, not the named authoritative build brief.
+## Manifest observations
+
+The checkout does not byte-match the supplied manifests because Git converted text to CRLF:
+
+| Manifest | Raw SHA-256 matches | LF-normalized matches | Finding |
+|---|---:|---:|---|
+| Root `MANIFEST.sha256` | 0/3 | 3/3 | Content matches after line-ending normalization |
+| Routing `MANIFEST.sha256` | 0/8 | 8/8 | Content matches after line-ending normalization |
+| Release `MANIFEST.json` | 1/26 | 25/26 | The CSV matches raw; the other 25 match after LF normalization |
+
+For the release manifest, each of the 26 entries matches either its raw bytes or its LF-normalized bytes. This supports content preservation, but the checked-out byte-level manifest contract is not a clean PASS and was not repaired in this evidence-only pass.
 
 ## Commands
 
 ```powershell
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' rev-parse --show-toplevel
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' branch --show-current
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' rev-parse HEAD
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' status --short --branch
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' worktree list --porcelain
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' remote -v
-git -C 'C:\Users\denko\CodexWork\UPE_v5.6' ls-remote --heads origin refs/heads/main
-gh repo view denkovtll/UPE_v5.6 --json nameWithOwner,url,visibility,isPrivate,defaultBranchRef,viewerPermission
+git rev-parse --show-toplevel
+git branch --show-current
+git rev-parse HEAD
+git symbolic-ref --quiet HEAD
+git status --short --branch
+git remote -v
+git worktree list --porcelain
+git ls-remote --heads origin refs/heads/main
+gh repo view Denys/UPE_v5.6 --json nameWithOwner,url,visibility,isPrivate,defaultBranchRef,viewerPermission
+git config --show-origin --get core.autocrlf
+git check-attr text eol -- AGENTS.md chatgpt_work_harness_implementation_routing_2026-07-18/NEXT_LOCAL_CODEX_PROMPT.md UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md UPE_v5.6.0_RELEASE/skill/upe-v5-6/evals/trigger_cases.csv
+rg --files C:\Users\denko\CodexWork
 ```
 
 ## Finding
 
-`C-101` is `PASS`: repository identity, ref, remote, worktree state, instructions, manifests, and unrelated local changes are recorded. The concurrent reorganization remains fully preserved and uncommitted.
+`C-101` is `PASS`: the corrected repository, ref, remotes, GitHub identity, configuration, and pre-existing worktree state are recorded. The public/private mismatch, legacy `upstream`, missing named build brief, and checkout line-ending checksum behavior remain explicit.

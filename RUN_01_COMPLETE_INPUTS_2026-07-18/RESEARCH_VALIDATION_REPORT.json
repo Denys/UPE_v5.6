@@ -1,0 +1,29 @@
+{
+  "created": "2026-07-18",
+  "status": "PASS",
+  "checks": {
+    "source_row_count_30": true,
+    "source_id_sequence_exact": true,
+    "required_matrix_headers": true,
+    "pattern_comparisons_1_to_10": true,
+    "work_native_adapted_host_boundary": true,
+    "implementation_deferred": true,
+    "exact_codex_commit_recorded": true,
+    "workspace_agents_api_limitation_recorded": true,
+    "missing_local_files_recorded": true,
+    "research_state_yaml_parses": true,
+    "source_matrix_http_links_present": true,
+    "pattern_comparison_http_links_present": true,
+    "work_applicability_http_links_present": true,
+    "readme_http_links_present": true
+  },
+  "counts": {
+    "primary_sources": 30,
+    "pattern_comparisons": 10,
+    "files_before_manifest": 5
+  },
+  "notes": [
+    "Validation is structural and packaging-oriented.",
+    "No Codex runtime smoke test or harness implementation was performed in this research phase."
+  ]
+}
