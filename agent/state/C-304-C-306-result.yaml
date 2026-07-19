@@ -1,0 +1,126 @@
+schema_version: '1.0'
+record_id: C-304-C-306-RESULT
+generated_at: '2026-07-20T00:46:30.0976533+02:00'
+status: TESTED_LOCALLY_READY_TO_MERGE
+
+tasks:
+  C-304:
+    title: Create a short AGENTS.md map and repository operating README
+    verdict: PASS
+  C-305:
+    title: Create the fixture repository and deterministic baseline commands
+    verdict: PASS
+  C-306:
+    title: Create schema and package validators
+    verdict: PASS
+
+repository:
+  identity: Denys/UPE_v5.6
+  branch: codex/c303-materialize-accepted-artifacts
+  baseline_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
+  base_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/5
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c303'
+
+authorization:
+  source: active user request
+  granted:
+    - implement C-304 through C-306
+    - commit and push the bundle to pull request 5
+    - merge pull request 5 after the combined gate passes
+  forbidden_or_not_granted:
+    - C-401 or later implementation
+    - release or deployment
+    - repository visibility changes
+
+files_changed:
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+  - examples/fixture-repository/README.md
+  - pyproject.toml
+  - uv.lock
+files_created:
+  - agent/state/C-304-C-306-pre-edit-context.yaml
+  - agent/state/C-304-C-306-result.yaml
+  - examples/fixture-repository/.gitignore
+  - examples/fixture-repository/seed/.gitattributes
+  - examples/fixture-repository/seed/.gitignore
+  - examples/fixture-repository/seed/README.md
+  - examples/fixture-repository/seed/fixture_math.py
+  - examples/fixture-repository/seed/tests/known_failure.py
+  - examples/fixture-repository/seed/tests/test_fixture_math.py
+  - scripts/bootstrap.sh
+  - scripts/fixture-guard.sh
+  - scripts/validate_references.py
+  - scripts/validate_release.py
+  - scripts/validate_schema.py
+  - scripts/verify-fast.sh
+  - scripts/verify-full.sh
+  - tests/fixture/test_fixture_scripts.py
+  - tests/validators/test_validate_references.py
+  - tests/validators/test_validate_release.py
+  - tests/validators/test_validate_schema.py
+  - validation/C-304-C-306-GATE.yaml
+
+evidence_hashes_sha256:
+  agent/state/C-304-C-306-pre-edit-context.yaml: 5e53c5a9305f9422791a4beb8f9f5feed31a069c43ce91c8ae38e1e45d029ee8
+  validation/C-304-C-306-GATE.yaml: 01dc369c8ca3811557c41175209850ee86180e8c8c04ed616715af1f2da7ad2d
+
+implemented:
+  C-304:
+    - concise authority/read-order and repository map
+    - executable setup, test, fixture, and validator commands
+    - explicit invariants, definition of done, prohibited actions, and stop conditions
+  C-305:
+    - inspectable committed fixture seed without nested Git metadata
+    - marker-owned reproducible generated Git repository
+    - positive and known-failure fast/full baseline commands
+    - shared Windows reparse/containment guard before cleanup or execution
+  C-306:
+    - Draft 2020-12 schema and positive-instance validator
+    - local reference and cross-record identity validator
+    - manifest/package/archive validator without archive extraction
+    - focused actionable negative-case tests
+
+verification:
+  gate: validation/C-304-C-306-GATE.yaml
+  result: PASS
+  summary:
+    full_pytest: 19_passed
+    fixture_adversarial_pytest: 1_passed
+    validator_pytest: 17_passed
+    ruff: PASS
+    ruff_format: PASS
+    mypy: PASS
+    uv_lock: PASS
+    bash_syntax: PASS
+    W-200_regression: PASS
+    C-303_hash_regression: PASS
+    diff_check: PASS
+
+independent_review:
+  initial_verdict: CHANGES_REQUIRED
+  finding: >-
+    Fixture cleanup and full verification lacked complete Windows junction/reparse,
+    owner-marker, and exact-containment enforcement.
+  correction: >-
+    Added one shared guard used before every cleanup or execution and added marker,
+    output, and repository junction tests with external sentinel preservation.
+  final_disposition: RESOLVED_AND_TESTED
+
+preserved_unrelated_state:
+  - path: RUN_01_COMPLETE_INPUTS_2026-07-18.zip
+    state: MISSING_FROM_WORKTREE_UNSTAGED
+    publication_scope: EXCLUDED
+
+not_implemented:
+  - C-401 or later runtime models, state, adapters, orchestration, recovery, or CLI
+  - live App Server behavior
+  - Python 3.12 or 3.13 compatibility proof
+  - release or deployment
+
+next_action: >-
+  Stage only the recorded C-304 through C-306 and integration-state paths, commit
+  and push them to pull request 5, reverify its exact head and mergeability, mark
+  it ready for review, and perform the explicitly authorized merge.

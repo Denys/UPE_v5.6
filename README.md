@@ -1,57 +1,118 @@
 # UPE v5.6 Long-Running Harness
 
-This repository is building a minimal, resumable, independently verifiable software-engineering harness around a portable trusted-host contract and a Windows-native Codex App Server adapter.
+UPE is building a minimal, resumable, independently verifiable
+software-engineering harness around a portable trusted-host contract and a
+Windows-native Codex App Server adapter. The repository currently contains the
+accepted specification package and the C-301…C-306 implementation foundation;
+it does not yet contain the v0 lifecycle, state engine, provider adapter,
+orchestration, recovery, or CLI.
 
-## Current status
+## Current implementation slice
 
 **Status date:** 2026-07-19
 
-**Accepted baseline:** `main@d0fbfd56c6b533da62db3e4bea147496345b6c90`
+| Task | Canonical outcome | Current evidence |
+|---|---|---|
+| `C-301` | Re-inspect repository state immediately before edits | `PASS`; pre-edit context is recorded. |
+| `C-302` | Create the minimal Python/uv repository scaffold | Merged by PR `#4` at `a7e99bd32e71ef047296446c14f9e4376b444fcd`. |
+| `C-303` | Materialize accepted research, ADR, schemas, templates, and prompts | Tested locally and published at `049bdec9f826761a9f362385ce0f6d165d99fe3e` in [draft PR #5](https://github.com/Denys/UPE_v5.6/pull/5). |
+| `C-304` | Create a short `AGENTS.md` map and repository operating README | `PASS`; concise operating map, commands, invariants, definition of done, and prohibited actions are validated. |
+| `C-305` | Create the fixture repository and deterministic baseline commands | `PASS`; reproducible fixture HEAD, positive/known-failure exits, and Windows reparse safety are tested. |
+| `C-306` | Create schema and package validators | `PASS`; schema, reference, release, and 14 negative validator cases are tested. |
 
-**Architecture:** `ADR-001` accepted; `G-ADR = PASS`
+The accepted architecture and Work specification baseline is on `main`: ADR-001
+and `G-ADR` are `PASS`; canonical `W-201` through `W-210` and the W-200 gate are
+`PASS` and were adopted by PR `#3` at
+`d0fbfd56c6b533da62db3e4bea147496345b6c90`. Backlog status fields are historical;
+use the current state, Git/PR evidence, and task gate together.
 
-**Specification phase:** `W-201` through `W-210` = `PASS`
+## Setup and package checks
 
-**Specification adoption:** PR `#3` merged at `d0fbfd56c6b533da62db3e4bea147496345b6c90`
-
-**Runtime implementation:** `C-301/C-302 = MERGED`; `C-303 = TESTED_LOCALLY`
-
-The W-200 specification acceptance gate is `PASS`. PR `#4` merged the separately
-authorized C-301/C-302 scaffold at `a7e99bd32e71ef047296446c14f9e4376b444fcd`.
-The current authorization covers local C-303 implementation only; it does not include
-publication or another external mutation.
-
-## Minimal local scaffold
-
-The current scaffold intentionally contains only package metadata, the importable
-`harness` package root, one package-level test, and the reserved fixture-repository
-boundary. State, adapters, orchestration, CLI, persistence, and recovery remain later
-canonical tasks.
-
-The accepted research, architecture, and schema trees are reused in place. C-303 adds
-the build-brief paths under `templates/` and `prompts/` as traceable transformations;
-`validation/C-303-MATERIALIZATION.yaml` records their sources and hashes.
+Prerequisites are Windows-native Python 3.12+ and
+[`uv`](https://docs.astral.sh/uv/). Dependency resolution and tests have been
+observed on Python 3.14.3 only; Python 3.12 and 3.13 remain unverified.
 
 ```powershell
 uv sync --all-groups
+uv lock --check
 uv run python -c "import harness; print(harness.__version__)"
-uv run pytest
+uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy src tests
 ```
 
-## Authority and current-state sources
+The current package exposes only the importable `harness` root and version.
+Commands such as `uv run harness doctor` and `uv run harness init ...` are v0
+acceptance targets, not implemented operating commands.
 
-Use these in order after active instructions:
+## Specification and slice validation
 
-1. `Pasted markdown.md` — authoritative build brief.
-2. `docs/architecture/ADR-001-harness-boundary.md` and `gate-records/ADR-001-PASS.yaml` — accepted architecture and gate.
-3. `docs/research/research-state.yaml` — mutable current phase and recovery state.
-4. `chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml` — canonical task definitions and dependencies.
-5. `AGENTS.md` — repository operating rules.
+Validate the accepted W-200/W-201…W-210 package:
 
-The dated routing package, Run 01/02 prompts, archives, and C-101…C-105 handoffs are preserved point-in-time evidence. Their embedded status and next-action fields are historical; do not use them instead of `docs/research/research-state.yaml`.
+```powershell
+uv run python scripts/validate_work_specifications.py
+```
+
+The C-303 source mappings and hashes are recorded in
+[`validation/C-303-MATERIALIZATION.yaml`](validation/C-303-MATERIALIZATION.yaml).
+
+C-305 and C-306 provide these tested entry points. Their combined evidence is in
+[`validation/C-304-C-306-GATE.yaml`](validation/C-304-C-306-GATE.yaml):
+
+```powershell
+$fixtureBash = 'C:\Program Files\Git\usr\bin\bash.exe'
+& $fixtureBash scripts/bootstrap.sh
+& $fixtureBash scripts/verify-fast.sh
+& $fixtureBash scripts/verify-fast.sh --known-failure
+& $fixtureBash scripts/verify-full.sh
+& $fixtureBash scripts/verify-full.sh --known-failure
+uv run python scripts/validate_schema.py
+uv run python scripts/validate_references.py
+uv run python scripts/validate_release.py UPE_v5.6.0_RELEASE --manifest UPE_v5.6.0_RELEASE/MANIFEST.json --normalize-text-eol
+```
+
+Fixture bootstrap owns only the ignored
+`examples/fixture-repository/.fixture-output/` directory and recreates it only
+when its owner marker matches. The default fast/full checks must exit `0`; each
+`--known-failure` check deliberately exercises the seed's unimplemented behavior
+and must exit `1` with a `KNOWN_FAILURE` result.
+
+`validate_schema.py` checks every accepted schema/example mapping;
+`validate_references.py` checks local references and cross-record identities.
+Both exit `0` only when every check passes and exit `1` with actionable errors
+otherwise. The release check above validates the accepted checked-out historical
+package; `--normalize-text-eol` accounts for Git checkout conversion of text
+files. Raw-byte hash checking remains the default for other package targets; run
+`uv run python scripts/validate_release.py --help` before supplying different
+package or archive paths.
+
+The combined task result is
+[`agent/state/C-304-C-306-result.yaml`](agent/state/C-304-C-306-result.yaml).
+
+## Repository operating map
+
+- Start with [`AGENTS.md`](AGENTS.md) for the concise work rules, commands,
+  definition of done, and prohibited actions.
+- The authoritative build brief is `Pasted markdown.md`.
+- The accepted boundary is
+  [`docs/architecture/ADR-001-harness-boundary.md`](docs/architecture/ADR-001-harness-boundary.md),
+  with [`gate-records/ADR-001-PASS.yaml`](gate-records/ADR-001-PASS.yaml).
+- Mutable status and recovery state live in
+  [`docs/research/research-state.yaml`](docs/research/research-state.yaml).
+- The canonical task backlog is
+  [`harness_implementation_backlog.yaml`](chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml).
+- The local implementation sequence and invariants are in
+  [`handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md`](handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md).
+- Work/local contracts live under [`docs/work/`](docs/work/); schemas and positive
+  examples live under [`schemas/`](schemas/) and
+  [`examples/specifications/`](examples/specifications/).
+- Deterministic commands live under [`scripts/`](scripts/); package, fixture, and
+  validator checks live under [`tests/`](tests/).
+
+The dated routing package, Run 01/02 prompts, archives, and C-101…C-105 handoffs
+are preserved point-in-time evidence. Their embedded status and next-action
+fields do not replace `docs/research/research-state.yaml`.
 
 ## W-201…W-210 canonical mapping
 
@@ -68,17 +129,24 @@ The dated routing package, Run 01/02 prompts, archives, and C-101…C-105 handof
 | `W-209` | Create the human-readable Work acceptance cases | `evals/work_loop_acceptance_cases.yaml` | `W-201`…`W-204` |
 | `W-210` | Write the dated model/effort routing reference | `docs/work/MODEL_EFFORT_ROUTING.md` | `G-ADR` |
 
-Phase-level Web/Work artifacts also define the security/threat boundary, recovery/evaluation/operations contract, cross-document/static-validation gate, and the local implementation handoff. These are phase acceptance artifacts; no additional W-ID mapping is inferred beyond the canonical backlog.
+Phase-level Web/Work artifacts also define the security/threat boundary,
+recovery/evaluation/operations contract, cross-document/static-validation gate,
+and local implementation handoff. They do not create additional W task IDs.
 
-## Runtime boundary
+## Runtime invariants and limitations
 
-- Windows-native Codex is the current v0 target behind a provider-portable host contract.
-- SQLite is authoritative lifecycle/action state; JSONL is a replayable audit mirror emitted through a transactional outbox.
-- External actions use stable IDs, recorded approval scope, and reconciliation before retry.
-- Routine checkpoints are host-managed patch snapshots; Git commits are separately authorized milestones.
+- Windows-native Codex is the current v0 target; WSL2-first statements are
+  historical and superseded by ADR-001 and W-101.
+- SQLite will be authoritative lifecycle/action state; JSONL will be a replayable
+  audit mirror emitted through a transactional outbox.
+- External actions require stable IDs, recorded approval scope, and reconciliation
+  before retry. Routine checkpoints are host-managed patch snapshots; Git commits
+  are separately authorized milestones.
 - Deterministic validation precedes optional read-only model evaluation.
 - v0 remains single-agent and fake-adapter-first.
 
-`C-301` and `C-302` are merged; `C-303` is tested locally on its isolated worktree.
-The next canonical task is `C-304`, which requires a new active task authorization.
-Publication of C-303 requires separate commit/push/PR authorization.
+Those runtime rules are accepted contracts, not implemented behavior. Recovery is
+currently repository/checkpoint based as recorded in the mutable research state.
+Do not call this repository production-ready. C-304…C-306 now have passing
+integration evidence, but `C-401` or later runtime work still requires a new
+bounded authorization after PR #5 is adopted.

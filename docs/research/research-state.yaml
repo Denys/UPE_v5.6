@@ -1,8 +1,8 @@
 upe_state:
   goal: >-
-    Complete canonical local task C-303: preserve accepted research,
-    architecture, and schemas by identity and materialize the required
-    template/prompt paths as traceable contract transformations.
+    Complete canonical local tasks C-304 through C-306: publish a concise
+    operating map, a deterministic Windows-native fixture/baseline contract,
+    and mechanical schema/reference/release validators to pull request 5.
 
   repository_status:
     identity: Denys/UPE_v5.6
@@ -24,6 +24,10 @@ upe_state:
       merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
     local_implementation_branch: codex/c303-materialize-accepted-artifacts
     local_implementation_base: a7e99bd32e71ef047296446c14f9e4376b444fcd
+    implementation_pr_5:
+      state: OPEN_DRAFT_READY_TO_MERGE
+      published_C-303_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
+      combined_gate: validation/C-304-C-306-GATE.yaml
 
   must_status:
     research_matrix: PASS
@@ -47,9 +51,12 @@ upe_state:
     specification_acceptance: PASS
     C-301: PASS
     C-302: MERGED
-    C-303: TESTED_LOCALLY
-    harness_implementation: SCAFFOLD_AND_ACCEPTED_ARTIFACTS
-    local_implementation_authorization: GRANTED_C303_ONLY
+    C-303: PUBLISHED_PR_5
+    C-304: PASS
+    C-305: PASS
+    C-306: PASS
+    harness_implementation: PRE_CORE_FOUNDATION_TESTED_LOCALLY
+    local_implementation_authorization: GRANTED_C304_C306_AND_PR5_MERGE
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -79,7 +86,7 @@ upe_state:
     - Every template is a projection and explicitly cannot replace SQLite/outbox state, validation evidence, or approval authority.
     - PR #3 is merged into main at d0fbfd56c6b533da62db3e4bea147496345b6c90; the W-201 through W-210 specifications are adopted.
     - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
-    - The active user request authorizes local C-301/C-302 implementation only; no commit, push, PR, merge, release, deployment, visibility change, or external mutation is authorized.
+    - The active user request authorizes C-304 through C-306 implementation, publication to PR #5, and merge of that PR after the combined gate passes; it does not authorize C-401+, release, deployment, or a visibility change.
     - C-301 used an isolated worktree at the merged main commit and preserved the dirty, stale primary worktree without mutation.
     - The uv environment resolves and the package imports on observed Windows Python 3.14.3; this proves that runtime only, not the entire Python 3.12+ range.
     - The C-302 scaffold contains no lifecycle, state, adapter, orchestrator, CLI, persistence, recovery, or other speculative modules.
@@ -88,6 +95,9 @@ upe_state:
     - Five Draft 2020-12 schemas and six positive instances pass; required/type/value/additional-property and targeted safety negatives are rejected.
     - W-209 contains the canonical eight cases plus eight requested security/recovery cases with unique IDs, oracles, and forbidden outcomes.
     - Current v0 remains Windows-native, single-agent, fake-adapter first, SQLite-authoritative, transactional-outbox based, deterministic-first, and approval-gated.
+    - The deterministic fixture reproduces Git HEAD ed95abccdb7593a6fa0760ad6b26b5a817db8f82 and exposes explicit passing and known-failure exit contracts.
+    - Fixture cleanup and execution share Windows reparse, adjacent-marker, and exact-containment guards; junction tampering is refused before deletion or code execution.
+    - The new validators accept six schema instances, 41 location references, 237 local schema references, and the 26-file historical release manifest while rejecting 14 focused negative cases.
 
   completed:
     - Created and validated four bounded prompts for initialization, generation, read-only review, and independent evaluation.
@@ -103,11 +113,17 @@ upe_state:
     - Completed all canonical W-201 through W-210 outputs and the supporting security, recovery, validation, example, checkpoint, and local implementation package.
     - Ran duplicate-key YAML parsing, Draft 2020-12 meta/instance validation, positive and negative schema cases, local-reference checks, exact backlog mapping, W-209 coverage, and Markdown-link checks.
     - Completed coordinator and fresh independent cross-document reviews with no blocking finding.
+    - Completed C-304 operating documentation with concise commands, invariants, definition of done, and prohibited actions.
+    - Completed C-305 fixture bootstrap and fast/full baselines with reproducible HEAD and expected exit matrix 0/0/0/1/1.
+    - Completed C-306 schema, reference, and release validators plus focused actionable negative tests.
+    - Resolved a fresh independent review finding by adding a shared Windows junction/reparse guard and adversarial sentinel-preservation tests.
+    - Passed the combined C-304 through C-306 gate with 19 pytest cases, Ruff, formatting, mypy, lock, Bash syntax, W-200, C-303 hash, and diff regression checks.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Execute C-304 through C-306 only after a new active task authorization.
+    - Merge PR #5 only after the recorded local gate is committed, pushed, and the exact GitHub head remains mergeable.
+    - Begin C-401 only after PR #5 adoption and a new bounded task authorization.
     - Implement and test harness lifecycle, state/outbox, worktrees, action reconciliation, recovery, path containment, redaction, budgets, evaluator, and CLI in the C-series phases.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
@@ -131,11 +147,17 @@ upe_state:
       - canonical task mapping and W-209 coverage checks
       - cross-document vocabulary, identity, approval, security, and recovery review
       - accepted-content SHA-256 manifest and diff-scope inspection
+      - deterministic fixture bootstrap, positive baselines, known-failure exits, and repeated Git HEAD identity
+      - Windows marker tampering and marker/output/repository junction refusal with external sentinel preservation
+      - standalone schema, local-reference/cross-record, and release/package/archive validators
+      - 14 focused negative validator cases and complete 19-test repository suite
+      - fresh read-only integration review and bounded correction rerun
     result: PASS
     scope_note: >-
-      PASS accepts the local C-303 materialization and preserves the merged
-      C-301/C-302 evidence. Harness behavior, broader Python compatibility,
-      C-303 publication, release, and deployment are not claimed.
+      PASS accepts the local C-304 through C-306 operating documentation,
+      deterministic fixture/baselines, and validators while preserving C-301
+      through C-303 evidence. C-401+ harness behavior, broader Python
+      compatibility, release, and deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -146,12 +168,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from local branch codex/c303-materialize-accepted-artifacts based on
-    a7e99bd32e71ef047296446c14f9e4376b444fcd. Preserve the isolated worktree,
-    agent/state/C-303-pre-edit-context.yaml, validation/C-303-MATERIALIZATION.yaml,
-    and the accepted locked surfaces. Re-run the C-303 deterministic commands.
+    Resume from branch codex/c303-materialize-accepted-artifacts and PR #5.
+    Preserve the isolated worktree, unrelated unstaged archive deletion,
+    agent/state/C-304-C-306-pre-edit-context.yaml, and
+    validation/C-304-C-306-GATE.yaml. Re-run the combined deterministic gate.
 
   next_action: >-
-    Review the local C-303 diff and evidence. The next canonical task is C-304,
-    but it and any C-303 commit, push, or pull request require new explicit
-    authorization.
+    Commit and push the bounded C-304 through C-306 bundle to PR #5, reverify
+    its exact head and mergeability, and perform the explicitly authorized
+    merge. C-401 remains unauthorized until a later active task.

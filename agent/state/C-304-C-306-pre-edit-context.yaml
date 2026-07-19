@@ -1,0 +1,110 @@
+schema_version: '1.0'
+record_id: C-304-C-306-PRE-EDIT-CONTEXT
+generated_at: '2026-07-19T23:59:46.5154906+02:00'
+task_bundle:
+  - id: C-304
+    title: Create a short AGENTS.md map and repository operating README
+    dependencies: [C-302, C-303]
+  - id: C-305
+    title: Create the fixture repository and deterministic baseline commands
+    dependencies: [C-302]
+  - id: C-306
+    title: Create schema and package validators
+    dependencies: [C-303]
+
+authorization:
+  source: active user request
+  granted:
+    - implement C-304 through C-306
+    - add the completed bundle to pull request 5
+    - commit and push the bounded bundle
+    - merge pull request 5 after the combined gate passes
+  excluded:
+    - C-401 or later implementation
+    - release or deployment
+    - repository visibility changes
+    - destructive cleanup outside an owned fixture output
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c303'
+  branch: codex/c303-materialize-accepted-artifacts
+  head: 049bdec9f826761a9f362385ce0f6d165d99fe3e
+  upstream: origin/codex/c303-materialize-accepted-artifacts
+  base: origin/main
+  base_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/5
+  pull_request_state: OPEN_DRAFT_MERGEABLE
+
+preserved_unrelated_state:
+  - path: RUN_01_COMPLETE_INPUTS_2026-07-18.zip
+    observed_state: MISSING_FROM_WORKTREE
+    staged: false
+    treatment: Preserve as an unrelated local anomaly; do not stage or publish the deletion.
+
+parallel_ownership:
+  C-304:
+    - AGENTS.md
+    - README.md
+  C-305:
+    - examples/fixture-repository/**
+    - scripts/bootstrap.sh
+    - scripts/verify-fast.sh
+    - scripts/verify-full.sh
+    - tests/fixture/**
+  C-306:
+    - scripts/validate_schema.py
+    - scripts/validate_release.py
+    - scripts/validate_references.py
+    - tests/validators/**
+    - pyproject.toml
+    - uv.lock
+  integration:
+    - agent/state/C-304-C-306-pre-edit-context.yaml
+    - agent/state/C-304-C-306-result.yaml
+    - validation/C-304-C-306-GATE.yaml
+    - docs/research/research-state.yaml
+
+acceptance:
+  C-304:
+    - AGENTS.md points to authoritative docs, scripts, and tests.
+    - Commands, invariants, definition of done, and prohibited actions are concise and explicit.
+    - README describes only implemented and verified behavior.
+  C-305:
+    - Fixture initialization is reproducible in a repository-contained owned output.
+    - Fast and full baseline commands have deterministic passing and failing behavior.
+    - No nested Git metadata or secrets are committed.
+  C-306:
+    - Accepted schema examples and package/reference checks pass mechanically.
+    - Invalid required-field, type/enum, additional-property, URI/path/reference, and cross-record cases fail nonzero with actionable messages.
+  combined:
+    - Existing package, C-303 hashes, W-200 specifications, lint, format, typing, and tests do not regress.
+    - Only the authorized task bundle is committed and added to pull request 5.
+    - Pull request 5 is merged only after its head and mergeability are reverified.
+
+baseline:
+  status: PASS
+  commands:
+    - uv lock --check
+    - uv run pytest -q
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run mypy src tests
+    - verify C-303 intentional-transformation hashes
+    - git diff --check
+  observed:
+    pytest: 1 passed
+    ruff_check: PASS
+    ruff_format: PASS
+    mypy: PASS
+    C-303_hashes: PASS
+
+rollback:
+  stable_ref: 049bdec9f826761a9f362385ce0f6d165d99fe3e
+  method: Preserve a diff, then restore only an owned C-304 through C-306 path from the stable ref.
+
+stop_conditions:
+  - repository or pull-request head diverges unexpectedly
+  - an agent edits outside its assigned ownership
+  - deterministic acceptance remains failing after a bounded correction
+  - merge is no longer authorized or GitHub does not report the pull request mergeable
