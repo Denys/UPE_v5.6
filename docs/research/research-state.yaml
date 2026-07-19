@@ -1,19 +1,25 @@
 upe_state:
   goal: >-
-    Complete and accept the Web/Work-owned W-201 through W-210 specification
-    package, repair current repository status records, and hand the next
-    canonical local task to Local Codex without claiming runtime implementation.
+    Complete canonical local tasks C-301 and C-302: re-inspect the merged
+    specification baseline, preserve unrelated state, and create the smallest
+    Windows-native Python/uv scaffold with deterministic local evidence.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+    observed_main_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
     specification_delivery_ref: work/w201-w210-specification
-    main_adoption: PENDING_SEPARATE_MERGE_AUTHORIZATION
+    specification_pr_3:
+      state: MERGED
+      head_commit: b1a4e4b9a61cbef88504c380ce8bb509417da448
+      merge_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
+    main_adoption: COMPLETE
+    local_implementation_branch: codex/c301-c302-python-scaffold
+    local_implementation_base: d0fbfd56c6b533da62db3e4bea147496345b6c90
 
   must_status:
     research_matrix: PASS
@@ -35,8 +41,10 @@ upe_state:
     W-209: PASS
     W-210: PASS
     specification_acceptance: PASS
-    harness_implementation: NOT_STARTED
-    local_implementation_authorization: NOT_GRANTED
+    C-301: PASS
+    C-302: TESTED_LOCALLY
+    harness_implementation: SCAFFOLD_ONLY
+    local_implementation_authorization: GRANTED_C301_C302_ONLY
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -60,8 +68,12 @@ upe_state:
     - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
 
   findings:
+    - PR #3 is merged into main at d0fbfd56c6b533da62db3e4bea147496345b6c90; the W-201 through W-210 specifications are adopted.
     - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
-    - The later PR #1 merge and the phase-delivery authorization grant no standing authority for another merge, release, deployment, visibility change, or implementation publication.
+    - The active user request authorizes local C-301/C-302 implementation only; no commit, push, PR, merge, release, deployment, visibility change, or external mutation is authorized.
+    - C-301 used an isolated worktree at the merged main commit and preserved the dirty, stale primary worktree without mutation.
+    - The uv environment resolves and the package imports on observed Windows Python 3.14.3; this proves that runtime only, not the entire Python 3.12+ range.
+    - The C-302 scaffold contains no lifecycle, state, adapter, orchestrator, CLI, persistence, recovery, or other speculative modules.
     - Canonical W-201 through W-210 titles, outputs, surfaces, and dependencies are taken directly from the repository backlog.
     - Work owns the specification/gate/handoff phase; the trusted Windows host and Local Codex own runtime enforcement and executable proof.
     - Five Draft 2020-12 schemas and six positive instances pass; required/type/value/additional-property and targeted safety negatives are rejected.
@@ -69,6 +81,11 @@ upe_state:
     - Current v0 remains Windows-native, single-agent, fake-adapter first, SQLite-authoritative, transactional-outbox based, deterministic-first, and approval-gated.
 
   completed:
+    - Confirmed PR #3 merged state, exact merge commit, current origin/main, remotes, worktrees, dirty state, and Windows runtime identity.
+    - Verified the accepted W-200 validator and all 33 content-manifest entries against Git blob bytes at the merged baseline.
+    - Wrote agent/state/pre-edit-context.yaml before scaffold edits with exact acceptance, tests, stop conditions, locked surfaces, and rollback boundary.
+    - Created pyproject.toml, uv.lock, the importable harness package root, one package-level test, repository-local cache ignores, and the documented C-305 fixture boundary.
+    - Resolved 13 packages and passed import, pytest, Ruff lint/format, and mypy on Windows Python 3.14.3.
     - Re-inspected exact repository identity, default branch, current main commit, files, and PR #1 history.
     - Repaired README, AGENTS, ADR/W-101/Run-02 follow-up, ADR gate follow-up, and this current state without rewriting dated historical snapshots.
     - Completed all canonical W-201 through W-210 outputs and the supporting security, recovery, validation, example, checkpoint, and local implementation package.
@@ -77,7 +94,8 @@ upe_state:
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
-    - Establish dependency and supported Python compatibility on the Windows target after a project manifest exists.
+    - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
+    - Execute C-303 through C-306 only after a new active task authorization.
     - Implement and test harness lifecycle, state/outbox, worktrees, action reconciliation, recovery, path containment, redaction, budgets, evaluator, and CLI in the C-series phases.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
@@ -85,6 +103,12 @@ upe_state:
 
   verification:
     method:
+      - merged PR and current origin/main inspection through GitHub and Git
+      - clean isolated worktree and primary-worktree preservation check
+      - uv dependency resolution and lock validation
+      - package import and metadata identity check
+      - pytest, Ruff lint/format, and mypy
+      - immutable W-200 specification validator and Git-blob manifest verification
       - exact repository/backlog/status inspection
       - attachment-to-release byte-identity comparison
       - duplicate-key YAML parsing
@@ -95,8 +119,9 @@ upe_state:
       - accepted-content SHA-256 manifest and diff-scope inspection
     result: PASS
     scope_note: >-
-      PASS accepts the W-201 through W-210 specification phase only. Runtime
-      functionality, C-301 execution, merge, release, and deployment are not claimed.
+      PASS accepts C-301 and the C-302 minimal scaffold on the observed Windows
+      Python 3.14.3 runtime. Harness behavior, broader Python compatibility,
+      publication, merge, release, and deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -107,13 +132,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from the accepted delivery ref and
-    validation/W-200-CONTENT-MANIFEST.sha256. Preserve W-201 through W-210,
-    the accepted architecture, and the explicit later-phase unknowns. Resolve
-    the delivery ref to its provider commit and verify the manifest before reuse.
+    Resume from local branch codex/c301-c302-python-scaffold based on
+    d0fbfd56c6b533da62db3e4bea147496345b6c90. Preserve the isolated worktree,
+    agent/state/pre-edit-context.yaml, uv.lock, and the accepted W-200 locked
+    surfaces. Re-run the C-302 deterministic commands before any next slice.
 
   next_action: >-
-    Review the draft W-201 through W-210 specification PR. Merge remains
-    separately authorization-gated. After specification adoption and a new
-    implementation authorization, execute canonical C-301: re-inspect current
-    repository state and write agent/state/pre-edit-context.yaml before edits.
+    Review the local C-301/C-302 diff and evidence. The next canonical task is
+    C-303, but it and any commit, push, or pull request require new explicit
+    authorization.
