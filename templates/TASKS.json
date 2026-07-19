@@ -1,0 +1,26 @@
+{
+  "$comment": "Projection template only. Trusted-host SQLite is canonical after a run exists.",
+  "schema_version": "1.0",
+  "record_kind": "task_plan_projection",
+  "goal_id": "REPLACE_WITH_STABLE_GOAL_ID",
+  "contract_version": "REPLACE_WITH_CONTRACT_VERSION",
+  "generated_at": null,
+  "canonical_state_ref": null,
+  "tasks": [
+    {
+      "task_id": "REPLACE_WITH_STABLE_TASK_ID",
+      "title": "REPLACE_WITH_BOUNDED_TITLE",
+      "dependencies": [],
+      "status": "PLANNED",
+      "attempts": 0,
+      "workspace_ref": null,
+      "allowed_paths": ["REPLACE_WITH_EXACT_ALLOWED_PATH"],
+      "locked_paths": ["REPLACE_WITH_EXACT_LOCKED_PATH"],
+      "criterion_ids": ["REPLACE_WITH_FROZEN_CRITERION_ID"],
+      "validation_commands": ["REPLACE_WITH_DETERMINISTIC_COMMAND"],
+      "evidence_refs": [],
+      "last_failure": null,
+      "next_action": "REPLACE_WITH_ONE_NEXT_ACTION"
+    }
+  ]
+}

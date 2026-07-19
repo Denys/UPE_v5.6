@@ -14,12 +14,12 @@ This repository is building a minimal, resumable, independently verifiable softw
 
 **Specification adoption:** PR `#3` merged at `d0fbfd56c6b533da62db3e4bea147496345b6c90`
 
-**Runtime implementation:** `C-301 = PASS`; `C-302 = TESTED_LOCALLY`
+**Runtime implementation:** `C-301/C-302 = MERGED`; `C-303 = TESTED_LOCALLY`
 
-The W-200 specification acceptance gate is `PASS`. The user separately authorized
-local implementation of `C-301` and `C-302`; that authorization does not include a
-commit, push, PR, merge, release, deployment, visibility change, or other external
-mutation.
+The W-200 specification acceptance gate is `PASS`. PR `#4` merged the separately
+authorized C-301/C-302 scaffold at `a7e99bd32e71ef047296446c14f9e4376b444fcd`.
+The current authorization covers local C-303 implementation only; it does not include
+publication or another external mutation.
 
 ## Minimal local scaffold
 
@@ -27,6 +27,10 @@ The current scaffold intentionally contains only package metadata, the importabl
 `harness` package root, one package-level test, and the reserved fixture-repository
 boundary. State, adapters, orchestration, CLI, persistence, and recovery remain later
 canonical tasks.
+
+The accepted research, architecture, and schema trees are reused in place. C-303 adds
+the build-brief paths under `templates/` and `prompts/` as traceable transformations;
+`validation/C-303-MATERIALIZATION.yaml` records their sources and hashes.
 
 ```powershell
 uv sync --all-groups
@@ -75,6 +79,6 @@ Phase-level Web/Work artifacts also define the security/threat boundary, recover
 - Deterministic validation precedes optional read-only model evaluation.
 - v0 remains single-agent and fake-adapter-first.
 
-`C-301` and `C-302` are complete on the local implementation worktree. The next
-canonical task is `C-303`, which requires a new active task authorization. Publication
-of the local scaffold requires separate commit/push/PR authorization.
+`C-301` and `C-302` are merged; `C-303` is tested locally on its isolated worktree.
+The next canonical task is `C-304`, which requires a new active task authorization.
+Publication of C-303 requires separate commit/push/PR authorization.

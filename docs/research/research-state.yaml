@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Complete canonical local tasks C-301 and C-302: re-inspect the merged
-    specification baseline, preserve unrelated state, and create the smallest
-    Windows-native Python/uv scaffold with deterministic local evidence.
+    Complete canonical local task C-303: preserve accepted research,
+    architecture, and schemas by identity and materialize the required
+    template/prompt paths as traceable contract transformations.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
+    observed_main_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -18,8 +18,12 @@ upe_state:
       head_commit: b1a4e4b9a61cbef88504c380ce8bb509417da448
       merge_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
     main_adoption: COMPLETE
-    local_implementation_branch: codex/c301-c302-python-scaffold
-    local_implementation_base: d0fbfd56c6b533da62db3e4bea147496345b6c90
+    scaffold_pr_4:
+      state: MERGED
+      head_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
+      merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+    local_implementation_branch: codex/c303-materialize-accepted-artifacts
+    local_implementation_base: a7e99bd32e71ef047296446c14f9e4376b444fcd
 
   must_status:
     research_matrix: PASS
@@ -42,9 +46,10 @@ upe_state:
     W-210: PASS
     specification_acceptance: PASS
     C-301: PASS
-    C-302: TESTED_LOCALLY
-    harness_implementation: SCAFFOLD_ONLY
-    local_implementation_authorization: GRANTED_C301_C302_ONLY
+    C-302: MERGED
+    C-303: TESTED_LOCALLY
+    harness_implementation: SCAFFOLD_AND_ACCEPTED_ARTIFACTS
+    local_implementation_authorization: GRANTED_C303_ONLY
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -68,6 +73,10 @@ upe_state:
     - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
 
   findings:
+    - PR #4 merged C-301/C-302 into main at a7e99bd32e71ef047296446c14f9e4376b444fcd.
+    - Accepted docs/research, docs/architecture, and schemas trees already existed on main and were reused without rewriting.
+    - The build brief required four prompt and five template paths, but no accepted source files existed at those paths; C-303 records each new file as an intentional transformation of exact accepted contracts.
+    - Every template is a projection and explicitly cannot replace SQLite/outbox state, validation evidence, or approval authority.
     - PR #3 is merged into main at d0fbfd56c6b533da62db3e4bea147496345b6c90; the W-201 through W-210 specifications are adopted.
     - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
     - The active user request authorizes local C-301/C-302 implementation only; no commit, push, PR, merge, release, deployment, visibility change, or external mutation is authorized.
@@ -81,6 +90,9 @@ upe_state:
     - Current v0 remains Windows-native, single-agent, fake-adapter first, SQLite-authoritative, transactional-outbox based, deterministic-first, and approval-gated.
 
   completed:
+    - Created and validated four bounded prompts for initialization, generation, read-only review, and independent evaluation.
+    - Created and validated five workflow/task/progress/decision/blocker templates with explicit canonical-state and approval boundaries.
+    - Recorded nine content hashes, source mappings, and three unchanged accepted Git tree identities in validation/C-303-MATERIALIZATION.yaml.
     - Confirmed PR #3 merged state, exact merge commit, current origin/main, remotes, worktrees, dirty state, and Windows runtime identity.
     - Verified the accepted W-200 validator and all 33 content-manifest entries against Git blob bytes at the merged baseline.
     - Wrote agent/state/pre-edit-context.yaml before scaffold edits with exact acceptance, tests, stop conditions, locked surfaces, and rollback boundary.
@@ -95,7 +107,7 @@ upe_state:
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Execute C-303 through C-306 only after a new active task authorization.
+    - Execute C-304 through C-306 only after a new active task authorization.
     - Implement and test harness lifecycle, state/outbox, worktrees, action reconciliation, recovery, path containment, redaction, budgets, evaluator, and CLI in the C-series phases.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
@@ -109,6 +121,8 @@ upe_state:
       - package import and metadata identity check
       - pytest, Ruff lint/format, and mypy
       - immutable W-200 specification validator and Git-blob manifest verification
+      - C-303 file presence, non-empty content, JSON parsing, local links, boundary vocabulary, source mapping, and SHA-256 verification
+      - unchanged accepted research, architecture, and schema Git tree identities
       - exact repository/backlog/status inspection
       - attachment-to-release byte-identity comparison
       - duplicate-key YAML parsing
@@ -119,9 +133,9 @@ upe_state:
       - accepted-content SHA-256 manifest and diff-scope inspection
     result: PASS
     scope_note: >-
-      PASS accepts C-301 and the C-302 minimal scaffold on the observed Windows
-      Python 3.14.3 runtime. Harness behavior, broader Python compatibility,
-      publication, merge, release, and deployment are not claimed.
+      PASS accepts the local C-303 materialization and preserves the merged
+      C-301/C-302 evidence. Harness behavior, broader Python compatibility,
+      C-303 publication, release, and deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -132,12 +146,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from local branch codex/c301-c302-python-scaffold based on
-    d0fbfd56c6b533da62db3e4bea147496345b6c90. Preserve the isolated worktree,
-    agent/state/pre-edit-context.yaml, uv.lock, and the accepted W-200 locked
-    surfaces. Re-run the C-302 deterministic commands before any next slice.
+    Resume from local branch codex/c303-materialize-accepted-artifacts based on
+    a7e99bd32e71ef047296446c14f9e4376b444fcd. Preserve the isolated worktree,
+    agent/state/C-303-pre-edit-context.yaml, validation/C-303-MATERIALIZATION.yaml,
+    and the accepted locked surfaces. Re-run the C-303 deterministic commands.
 
   next_action: >-
-    Review the local C-301/C-302 diff and evidence. The next canonical task is
-    C-303, but it and any commit, push, or pull request require new explicit
+    Review the local C-303 diff and evidence. The next canonical task is C-304,
+    but it and any C-303 commit, push, or pull request require new explicit
     authorization.

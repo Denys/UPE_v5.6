@@ -1,0 +1,139 @@
+schema_version: '1.0'
+record_id: C-303-PRE-EDIT-CONTEXT
+task_id: C-303
+captured_at: '2026-07-19T23:37:34.2129131+02:00'
+status: PASS
+
+repository:
+  identity: Denys/UPE_v5.6
+  root: 'C:\Users\denko\CodexWork\UPE_5.6_c303'
+  branch: codex/c303-materialize-accepted-artifacts
+  head: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  base_ref: refs/remotes/origin/main
+  base_head: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  base_source: merged PR 4
+  worktree_state: CLEAN_BEFORE_C303_OUTPUT
+
+authorization:
+  source: active user request on 2026-07-19
+  granted:
+    - local C-303 implementation
+  not_granted:
+    - commit C-303
+    - push C-303
+    - create or modify a C-303 pull request
+    - merge C-303
+    - release or deploy
+    - visibility change
+    - external message or production mutation
+
+unrelated_state_preserved:
+  primary_worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  primary_worktree_head: f4ff123e0723b5047bb17eaa23f419534bf5abb4
+  primary_worktree_behind_count_at_capture: 33
+  paths:
+    - 'RUN_01_COMPLETE_INPUTS_2026-07-18/Pasted markdown.md'
+    - UPE_v5.6.0_Complete_Documentation.pdf
+    - UPE_v5.6.0_Recommended_Project_Files.zip
+    - harness-for-every-task/extension_prompt.md
+
+baseline:
+  C-301: MERGED
+  C-302: MERGED_AND_TESTED_LOCALLY
+  W200_validator: PASS
+  pytest: PASS_1_OF_1
+  ruff: PASS
+  mypy: PASS
+  accepted_tree_identity:
+    docs/research: 7b12ef41e821658a7d22ad26a0696ad45e0302da
+    docs/architecture: 949b47afed272475d209b8fd9f983b5b7f5610f5
+    schemas: 7cc1724d9bb46a25950d6eefaf4cad09fe645373
+  templates: ABSENT
+  prompts: ABSENT
+
+selected_slice:
+  task_id: C-303
+  title: Materialize accepted research, ADR, schemas, templates, and prompts
+  interpretation: >-
+    Accepted research, ADR, and schema trees are already versioned on main and
+    remain byte-identical. Materialize the build-brief template and prompt
+    paths as explicit transformations of the accepted W-201, W-203, W-204,
+    ADR-001, and security/recovery contracts; do not invent runtime behavior.
+  allowed_changes:
+    - agent/state/C-303-pre-edit-context.yaml
+    - agent/state/C-303-result.yaml
+    - prompts/initializer.md
+    - prompts/worker.md
+    - prompts/reviewer.md
+    - prompts/evaluator.md
+    - templates/WORKFLOW.md
+    - templates/TASKS.json
+    - templates/PROGRESS.md
+    - templates/DECISIONS.md
+    - templates/BLOCKERS.md
+    - validation/C-303-MATERIALIZATION.yaml
+    - README.md
+    - AGENTS.md
+    - docs/research/research-state.yaml
+  locked_surfaces:
+    - docs/research/ except docs/research/research-state.yaml
+    - docs/architecture/
+    - docs/work/
+    - schemas/
+    - gate-records/
+    - evals/work_loop_acceptance_cases.yaml
+    - handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+    - validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+    - validation/W-200-CONTENT-MANIFEST.sha256
+    - pyproject.toml
+    - uv.lock
+    - src/
+    - tests/
+
+transformation_sources:
+  - Pasted markdown.md sections 4, 6, 8, 9, 10, 16, and repository structure
+  - docs/architecture/ADR-001-harness-boundary.md
+  - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+  - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+  - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+  - docs/work/SECURITY_THREAT_BOUNDARY.md
+  - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+  - codex_loops_harness_anthropic_reading_map_2026-07-18.md session contracts
+
+acceptance_conditions:
+  - accepted research, architecture, and schema Git tree identities remain unchanged
+  - every required build-brief template and prompt path exists and is non-empty
+  - every new file maps to exact accepted source contracts in the materialization record
+  - TASKS.json parses and represents a projection rather than canonical host state
+  - prompts preserve frozen criteria, deterministic-first validation, read-only verification, and approval boundaries
+  - templates state that SQLite/outbox remains canonical after a host run exists
+  - no C-304 documentation rewrite, C-305 fixture behavior, C-306 validator implementation, or runtime module is added
+  - project and W-200 regression checks pass
+
+required_commands:
+  - uv sync --all-groups
+  - uv lock --check
+  - uv run pytest
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy src tests
+  - py -3 scripts\validate_work_specifications.py
+  - 'py -3 -c "parse TASKS.json, YAML state/materialization records, and verify C-303 hashes/references"'
+  - git diff --check
+  - git diff --exit-code HEAD -- locked surfaces
+
+stop_conditions:
+  - origin/main or the task base diverges before completion
+  - an accepted tree must be rewritten instead of referenced by identity
+  - a template or prompt would claim unimplemented runtime behavior
+  - a required transformation cannot be traced to an accepted source
+  - C-304 or later implementation is required for C-303 acceptance
+  - commit, push, PR, merge, release, deployment, visibility change, destructive cleanup, or external mutation is required
+
+rollback:
+  stable_reference: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  scope: only C-303 allowed paths in the isolated worktree
+  method: >-
+    Preserve the diff, then restore only C-303 paths from the stable reference.
+    Never reset or clean the primary worktree.
+  destructive_rollback_executed: false

@@ -13,10 +13,11 @@ This file is a short operating map. Detailed requirements live in the build brie
 
 The Web/Work specification range `W-201` through `W-210` and the W-200
 specification gate are `PASS` and were adopted on `main` by merged PR `#3`.
-The separately authorized local tasks `C-301` and `C-302` are complete and
-tested locally on the isolated implementation worktree. The next canonical
-task is `C-303`; do not execute it or create state, adapter, orchestrator, CLI,
-persistence, or recovery modules without a new active task authorization.
+The separately authorized local tasks `C-301` and `C-302` are merged by PR
+`#4`. `C-303` is tested locally on its isolated implementation worktree. The
+next canonical task is `C-304`; do not execute it or create fixture behavior,
+validators, state, adapters, orchestration, CLI, persistence, or recovery
+modules without a new active task authorization.
 
 ## Runtime boundary
 
