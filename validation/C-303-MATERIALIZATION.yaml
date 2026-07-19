@@ -1,0 +1,136 @@
+schema_version: '1.0'
+record_id: C-303-MATERIALIZATION
+generated_at: '2026-07-19T23:40:46.7470463+02:00'
+task_id: C-303
+status: PASS
+status_reason: >-
+  Accepted research, architecture, and schema trees are present unchanged at
+  the merged C-302 baseline. The nine build-brief template/prompt paths are
+  materialized as traceable transformations of accepted contracts without
+  claiming runtime behavior or canonical host state.
+
+repository:
+  identity: Denys/UPE_v5.6
+  base_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  branch: codex/c303-materialize-accepted-artifacts
+
+accepted_content_reused_in_place:
+  - path: docs/research/
+    identity_kind: GIT_TREE
+    identity: 7b12ef41e821658a7d22ad26a0696ad45e0302da
+    transformation: NONE
+  - path: docs/architecture/
+    identity_kind: GIT_TREE
+    identity: 949b47afed272475d209b8fd9f983b5b7f5610f5
+    transformation: NONE
+  - path: schemas/
+    identity_kind: GIT_TREE
+    identity: 7cc1724d9bb46a25950d6eefaf4cad09fe645373
+    transformation: NONE
+
+intentional_transformations:
+  - path: prompts/initializer.md
+    sha256: eab0ad648ccae2f655dc81ed4ed1b46b3e0ab5a747fe84084be10f4069277f04
+    sources:
+      - Pasted markdown.md#6-iteration-contract
+      - Pasted markdown.md#16-execution-discipline
+      - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+      - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+      - docs/architecture/ADR-001-harness-boundary.md
+    transformation: >-
+      Converts pre-edit inspection, freeze, baseline, persistence, and outcome
+      rules into a reusable initializer prompt without implementation authority.
+  - path: prompts/worker.md
+    sha256: a9deef4b4025b42e8133a63eb61888adf6a5a902eee547b0c927f86ac8e71a5c
+    sources:
+      - Pasted markdown.md#6-iteration-contract
+      - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+      - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+      - docs/work/SECURITY_THREAT_BOUNDARY.md
+    transformation: >-
+      Converts the one-change generator contract into a bounded worker prompt
+      that cannot accept its own work or expand authority.
+  - path: prompts/reviewer.md
+    sha256: 59f10355301fb17f723f7af708c7b668df16eba6fb6aaba9ae334666a1a14a1a
+    sources:
+      - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+      - docs/work/SECURITY_THREAT_BOUNDARY.md
+    transformation: >-
+      Converts fresh read-only inspection and primary-evidence rules into an
+      actionable defect-review prompt separate from criterion aggregation.
+  - path: prompts/evaluator.md
+    sha256: 72dce777fe67079adad309ae2b09ee3e03d391296982a2f6f102553acc51b351
+    sources:
+      - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+      - schemas/verifier_result.schema.yaml
+    transformation: >-
+      Converts the independent criterion-verifier contract and exact verdict
+      aggregation into a schema-targeted read-only evaluator prompt.
+  - path: templates/WORKFLOW.md
+    sha256: dbc1d786da77c86735d57db95b2a4fa1d9ff29389fd91b4df1d2aaed93da0134
+    sources:
+      - Pasted markdown.md#6-iteration-contract
+      - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+      - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+      - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+    transformation: >-
+      Creates a human-readable run projection with frozen criteria, limits,
+      approvals, checkpoint, and recovery fields while retaining SQLite authority.
+  - path: templates/TASKS.json
+    sha256: df686d8cdda580d0b4fefdc2f36e30fed9cf47b5128a6e5d2f492fb53f575310
+    sources:
+      - Pasted markdown.md#7-durable-state
+      - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+      - schemas/work_loop_state.schema.yaml
+    transformation: >-
+      Creates a valid JSON planning projection with stable IDs, dependencies,
+      allowed/locked surfaces, validation, evidence, failure, and next action.
+  - path: templates/PROGRESS.md
+    sha256: b8e80e1560da03c3a4e496dc993c87616a3be49a01c80f3f2426ea68f3fd8ce7
+    sources:
+      - Pasted markdown.md#6-iteration-contract
+      - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+    transformation: >-
+      Creates an append-only human progress projection with evidence, verdict,
+      approval, checkpoint, budget, and recovery references.
+  - path: templates/DECISIONS.md
+    sha256: 336bd8736078246cdd5b717187c43f1442a49d171f5af870cd01a0d8779bb45a
+    sources:
+      - Pasted markdown.md#16-execution-discipline
+      - docs/architecture/ADR-001-harness-boundary.md
+    transformation: >-
+      Creates an append-only decision projection that routes architecture
+      decisions to ADRs and explicitly cannot grant approval.
+  - path: templates/BLOCKERS.md
+    sha256: 0d00b5d57eba3e10bbd63bb8b840eb8430e0929908ba20e1cd15ef95b9e5e964
+    sources:
+      - Pasted markdown.md#9-stop-and-continuation-rules
+      - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+    transformation: >-
+      Creates an append-only blocker/no-progress projection retaining direct
+      evidence, stable checkpoint, discriminating change, owner, and stop rule.
+
+verification:
+  required_paths_nonempty: PASS_9_OF_9
+  tasks_json_parse: PASS
+  markdown_local_links: PASS
+  canonical_state_boundary_terms: PASS
+  verdict_and_approval_vocabulary: PASS
+  accepted_tree_identity: PASS_3_OF_3
+  W200_deterministic_regression: PASS
+  scaffold_pytest: PASS_1_OF_1
+  scaffold_ruff: PASS
+  scaffold_mypy: PASS
+  diff_whitespace: PASS
+
+scope_exclusions:
+  - no accepted research, ADR, Work specification, schema, gate, or W-200 record rewritten
+  - no C-304 operating-document rewrite beyond the later minimal status update
+  - no C-305 fixture behavior or baseline scripts
+  - no C-306 validator implementation
+  - no lifecycle, state, adapter, orchestrator, CLI, persistence, or recovery code
+  - no commit, push, PR, merge, release, deployment, visibility change, or external mutation
+
+next_action: >-
+  Update current state for C-303 and run the complete deterministic regression
+  set. C-304 remains a separate next canonical task and is not authorized here.

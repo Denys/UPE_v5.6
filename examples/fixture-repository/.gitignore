@@ -1,0 +1,4 @@
+.fixture-output/
+.fixture-output.owner
+.fixture-output.test-backup/
+.fixture-adversarial-test/

@@ -1,0 +1,128 @@
+schema_version: '1.0'
+record_id: C-303-RESULT
+generated_at: '2026-07-19T23:43:24.3497438+02:00'
+task_id: C-303
+title: Materialize accepted research, ADR, schemas, templates, and prompts
+status: TESTED_LOCALLY
+
+repository:
+  identity: Denys/UPE_v5.6
+  branch: codex/c303-materialize-accepted-artifacts
+  base_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  origin_main_at_final_validation: a7e99bd32e71ef047296446c14f9e4376b444fcd
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c303'
+  worktree_state: EXPECTED_C303_CHANGES_ONLY
+
+prior_delivery:
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/4
+  state: MERGED
+  source_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
+  merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+
+materialization:
+  accepted_existing_trees:
+    docs/research: 7b12ef41e821658a7d22ad26a0696ad45e0302da
+    docs/architecture: 949b47afed272475d209b8fd9f983b5b7f5610f5
+    schemas: 7cc1724d9bb46a25950d6eefaf4cad09fe645373
+  existing_tree_handling: REUSED_IN_PLACE_WITHOUT_REWRITE
+  intentional_transformations:
+    prompts: 4
+    templates: 5
+    identity_record: validation/C-303-MATERIALIZATION.yaml
+
+files_created:
+  - agent/state/C-303-pre-edit-context.yaml
+  - agent/state/C-303-result.yaml
+  - prompts/initializer.md
+  - prompts/worker.md
+  - prompts/reviewer.md
+  - prompts/evaluator.md
+  - templates/WORKFLOW.md
+  - templates/TASKS.json
+  - templates/PROGRESS.md
+  - templates/DECISIONS.md
+  - templates/BLOCKERS.md
+  - validation/C-303-MATERIALIZATION.yaml
+files_changed:
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+
+record_hashes_sha256:
+  agent/state/C-303-pre-edit-context.yaml: a950b9223132d76ecf3170c96d2f1ea5d155fccd3b36ad31b36b25bd9bf5d288
+  validation/C-303-MATERIALIZATION.yaml: f86bbd6e34e5966475b387211e79af2c8b4425d5d9563ed5350c54bf87300939
+
+commands_run:
+  - git fetch origin main
+  - >-
+    git worktree add -b codex/c303-materialize-accepted-artifacts
+    C:\Users\denko\CodexWork\UPE_5.6_c303 origin/main
+  - git rev-parse --show-toplevel
+  - git branch --show-current
+  - git rev-parse HEAD
+  - git status --short --branch
+  - git remote -v
+  - git worktree list --porcelain
+  - py -3 --version
+  - uv --version
+  - uv sync --all-groups
+  - uv lock --check
+  - 'uv run python -c "import harness; print(harness.__version__)"'
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy src tests
+  - py -3 scripts\validate_work_specifications.py
+  - >-
+    py -3 -c "parse validation/C-303-MATERIALIZATION.yaml and
+    templates/TASKS.json; verify nine hashes, non-empty files, Markdown local
+    links, exact scope placeholders, and boundary vocabulary"
+  - git diff --check
+  - git diff --exit-code HEAD -- locked surfaces
+
+verification:
+  repository_and_ref_identity: PASS
+  origin_main_divergence: PASS_NONE
+  primary_worktree_preservation: PASS
+  accepted_research_tree_identity: PASS
+  accepted_architecture_tree_identity: PASS
+  accepted_schema_tree_identity: PASS
+  required_paths_nonempty: PASS_9_OF_9
+  intentional_transformation_mapping: PASS_9_OF_9
+  transformation_hashes: PASS_9_OF_9
+  tasks_json_parse_and_required_scope_placeholders: PASS
+  markdown_local_links: PASS
+  canonical_state_and_approval_boundaries: PASS
+  uv_environment_and_lock: PASS_13_PACKAGES
+  package_import: PASS_VERSION_0_1_0
+  pytest: PASS_1_OF_1
+  ruff_lint_and_format: PASS
+  mypy: PASS
+  W200_deterministic_regression: PASS
+  diff_whitespace: PASS
+  locked_surfaces: PASS_UNCHANGED
+  runtime_code_changes: PASS_NONE
+  external_mutations_during_C303: PASS_NONE
+
+scope_boundary:
+  implemented:
+    - required prompt and template artifacts
+    - identity/transformation evidence
+    - current state and recovery update
+  not_implemented:
+    - C-304 operating-document redesign
+    - C-305 fixture behavior or baseline scripts
+    - C-306 schema/package/reference validator code
+    - lifecycle, state, adapter, orchestrator, CLI, persistence, recovery, or security runtime
+    - App Server smoke test
+    - C-303 commit, push, pull request, merge, release, deployment, or visibility change
+
+unknowns:
+  - semantic prompt effectiveness is untested until later representative evaluations
+  - instantiated template behavior is untested until the owning runtime/fixture tasks
+  - Python 3.12 and 3.13 compatibility remains unverified
+  - CI remains absent
+
+next_action: >-
+  Review the local C-303 diff and evidence. The next canonical task is C-304,
+  but it and publication of C-303 require new explicit authorization.
