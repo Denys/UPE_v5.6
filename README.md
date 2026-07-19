@@ -4,14 +4,38 @@ This repository is building a minimal, resumable, independently verifiable softw
 
 ## Current status
 
-**Status date:** 2026-07-19  
-**Accepted baseline:** `main@507cccc1a8dda824220b67afc8c39480b7fb8104`  
-**Architecture:** `ADR-001` accepted; `G-ADR = PASS`  
-**Specification phase:** `W-201` through `W-210` = `PASS`  
-**Delivery ref:** `work/w201-w210-specification`; main adoption requires separately authorized merge  
-**Runtime implementation:** `NOT_STARTED`
+**Status date:** 2026-07-19
 
-The W-200 specification acceptance gate is `PASS`. The accepted delivery package does not authorize C-301 execution, merge, release, deployment, visibility changes, or other consequential actions.
+**Accepted baseline:** `main@d0fbfd56c6b533da62db3e4bea147496345b6c90`
+
+**Architecture:** `ADR-001` accepted; `G-ADR = PASS`
+
+**Specification phase:** `W-201` through `W-210` = `PASS`
+
+**Specification adoption:** PR `#3` merged at `d0fbfd56c6b533da62db3e4bea147496345b6c90`
+
+**Runtime implementation:** `C-301 = PASS`; `C-302 = TESTED_LOCALLY`
+
+The W-200 specification acceptance gate is `PASS`. The user separately authorized
+local implementation of `C-301` and `C-302`; that authorization does not include a
+commit, push, PR, merge, release, deployment, visibility change, or other external
+mutation.
+
+## Minimal local scaffold
+
+The current scaffold intentionally contains only package metadata, the importable
+`harness` package root, one package-level test, and the reserved fixture-repository
+boundary. State, adapters, orchestration, CLI, persistence, and recovery remain later
+canonical tasks.
+
+```powershell
+uv sync --all-groups
+uv run python -c "import harness; print(harness.__version__)"
+uv run pytest
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy src tests
+```
 
 ## Authority and current-state sources
 
@@ -51,4 +75,6 @@ Phase-level Web/Work artifacts also define the security/threat boundary, recover
 - Deterministic validation precedes optional read-only model evaluation.
 - v0 remains single-agent and fake-adapter-first.
 
-The next canonical local task is `C-301`, but it begins only after specification adoption and a new implementation authorization. Local Codex must re-inspect current repository state before any implementation edit.
+`C-301` and `C-302` are complete on the local implementation worktree. The next
+canonical task is `C-303`, which requires a new active task authorization. Publication
+of the local scaffold requires separate commit/push/PR authorization.

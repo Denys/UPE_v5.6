@@ -1,0 +1,144 @@
+schema_version: '1.0'
+record_id: C-301-PRE-EDIT-CONTEXT
+task_id: C-301
+captured_at: '2026-07-19T23:16:29.8153655+02:00'
+status: PASS
+
+repository:
+  identity: Denys/UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6_c301_c302'
+  branch: codex/c301-c302-python-scaffold
+  ref: refs/heads/codex/c301-c302-python-scaffold
+  head: d0fbfd56c6b533da62db3e4bea147496345b6c90
+  base_ref: refs/remotes/origin/main
+  base_head: d0fbfd56c6b533da62db3e4bea147496345b6c90
+  base_source: merged PR 3
+  worktree_state: CLEAN_BEFORE_C301_OUTPUT
+  origin: https://github.com/Denys/UPE_v5.6.git
+  upstream: https://github.com/denkovtll/UPE_v5.6.git
+
+delivery_evidence:
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/3
+  pull_request_state: MERGED
+  pull_request_head: b1a4e4b9a61cbef88504c380ce8bb509417da448
+  merge_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
+  w200_acceptance: PASS
+  w200_validator: PASS
+  w200_manifest_git_blob_check: PASS_33_OF_33
+  manifest_line_ending_note: >-
+    Direct working-tree SHA-256 differs because Git converts accepted LF text
+    to CRLF on this Windows checkout. Hashing `git show HEAD:<path>` bytes
+    verifies all 33 accepted manifest entries.
+
+runtime:
+  target: Windows-native Codex
+  python: '3.14.3'
+  python_required_by_architecture: '>=3.12'
+  python_supported_range: UNKNOWN_UNTIL_C302_RESOLUTION_AND_TESTS
+  uv: '0.11.25'
+  git: '2.53.0.windows.1'
+  codex_cli: '0.144.3'
+  codex_executable_sha256: e5dcc9f9b08102c58596af85345f689a69fd53a87d8d408bdc0fcdaf99fcf6e3
+  app_server: AVAILABLE_EXPERIMENTAL
+  wsl2: NOT_APPLICABLE
+  docker: NOT_REQUIRED_FOR_C301_C302
+
+unrelated_state_preserved:
+  primary_worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  primary_worktree_head: f4ff123e0723b5047bb17eaa23f419534bf5abb4
+  primary_worktree_tracking: origin/main
+  primary_worktree_behind_count_at_capture: 31
+  paths:
+    - 'RUN_01_COMPLETE_INPUTS_2026-07-18/Pasted markdown.md'
+    - UPE_v5.6.0_Complete_Documentation.pdf
+    - UPE_v5.6.0_Recommended_Project_Files.zip
+    - harness-for-every-task/extension_prompt.md
+  preservation_rule: >-
+    Do not stage, restore, copy, move, delete, or otherwise mutate these paths.
+    All C-301/C-302 writes remain in the isolated implementation worktree.
+
+selected_slice:
+  task_id: C-302
+  title: Create the minimal Python/uv repository scaffold
+  objective: >-
+    Create the smallest Windows-native Python/uv package that resolves its
+    environment, imports as `harness`, and passes pytest, Ruff, and mypy.
+  non_goals:
+    - lifecycle or state models
+    - provider or fake adapters
+    - orchestrator or CLI commands
+    - SQLite, outbox, JSONL, recovery, approvals, budgets, or path containment
+    - App Server calls or smoke tests
+    - C-303 through C-306 implementation
+  allowed_changes:
+    - agent/state/pre-edit-context.yaml
+    - agent/state/C-301-C-302-result.yaml
+    - pyproject.toml
+    - uv.lock
+    - src/harness/__init__.py
+    - tests/test_package.py
+    - examples/fixture-repository/README.md
+    - README.md
+    - AGENTS.md
+    - docs/research/research-state.yaml
+  locked_surfaces:
+    - docs/architecture/ADR-001-harness-boundary.md
+    - gate-records/ADR-001-PASS.yaml
+    - docs/work/
+    - schemas/
+    - evals/work_loop_acceptance_cases.yaml
+    - validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+    - validation/W-200-CONTENT-MANIFEST.sha256
+    - handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+
+baseline:
+  command: 'uv run python -c "import harness"'
+  exit_code: 1
+  result: EXPECTED_FAIL
+  error: "ModuleNotFoundError: No module named 'harness'"
+  pyproject_exists: false
+  uv_lock_exists: false
+
+acceptance_conditions:
+  C-301:
+    - repository, ref, HEAD, status, remotes, and worktrees recorded
+    - unrelated primary-worktree changes preserved
+    - smallest implementation slice selected
+    - exact tests, stop conditions, and rollback boundary stated
+  C-302:
+    - uv resolves and locks the declared environment on Windows Python 3.14.3
+    - package imports through the uv-managed project environment
+    - pytest, Ruff lint/format, and mypy pass
+    - no empty speculative harness modules are added
+    - existing accepted W-200 specifications and gate artifacts remain unchanged
+
+required_commands:
+  - uv sync --all-groups
+  - uv lock --check
+  - 'uv run python -c "import harness; print(harness.__version__)"'
+  - uv run pytest
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy src tests
+  - 'py -3 scripts\validate_work_specifications.py'
+  - git diff --check
+  - git status --short --branch
+
+stop_conditions:
+  - repository HEAD or origin/main diverges before the slice completes
+  - W-200 validator or immutable specification surfaces change unexpectedly
+  - uv cannot resolve on the observed Windows/Python runtime
+  - a dependency requires a broader implementation or unsupported platform claim
+  - credentials, destructive cleanup, commit, push, PR modification, merge, release, deployment, visibility change, or external mutation is required
+
+rollback:
+  stable_reference: d0fbfd56c6b533da62db3e4bea147496345b6c90
+  scope: isolated implementation worktree and only the allowed changes above
+  method: >-
+    Preserve a diff before any rollback, then restore only listed C-301/C-302
+    paths from the stable reference. Never reset or clean the primary worktree.
+  destructive_rollback_executed: false
+  commit_authorized: false
+  push_authorized: false
+  pull_request_authorized: false

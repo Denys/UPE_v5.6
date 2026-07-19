@@ -1,0 +1,157 @@
+schema_version: '1.0'
+record_id: C-301-C-302-RESULT
+generated_at: '2026-07-19T23:22:52.6395800+02:00'
+repository: Denys/UPE_v5.6
+branch: codex/c301-c302-python-scaffold
+base_commit: d0fbfd56c6b533da62db3e4bea147496345b6c90
+worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c301_c302'
+
+tasks:
+  C-301:
+    title: Re-inspect repository state immediately before edits
+    status: PASS
+    evidence:
+      - agent/state/pre-edit-context.yaml
+  C-302:
+    title: Create the minimal Python/uv repository scaffold
+    status: TESTED_LOCALLY
+    evidence:
+      - pyproject.toml
+      - uv.lock
+      - src/harness/__init__.py
+      - tests/test_package.py
+      - examples/fixture-repository/README.md
+
+environment:
+  operating_system: Windows-native
+  python_observed_and_tested: '3.14.3'
+  python_project_minimum: '>=3.12'
+  python_3_12_and_3_13: UNVERIFIED
+  uv: '0.11.25'
+  git: '2.53.0.windows.1'
+  codex_cli: '0.144.3'
+  app_server: AVAILABLE_EXPERIMENTAL_NOT_EXERCISED_BY_C302
+
+resolved_environment:
+  package_count: 13
+  project: upe-harness==0.1.0
+  direct_dev_dependencies:
+    mypy: 1.20.2
+    pytest: 9.1.1
+    ruff: 0.15.22
+
+files_created:
+  - .gitignore
+  - .python-version
+  - agent/state/pre-edit-context.yaml
+  - agent/state/C-301-C-302-result.yaml
+  - pyproject.toml
+  - uv.lock
+  - src/harness/__init__.py
+  - tests/test_package.py
+  - examples/fixture-repository/README.md
+files_changed:
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+
+content_hashes_sha256:
+  .python-version: 5ab05f548328863dd73c057cc6bde305fc62a87522b3f28eadb9bbdd3b1409be
+  pyproject.toml: 21159c34d07b07dea0c7013e7373420751a0c972e45d542437fbd18cd6290716
+  uv.lock: c1db329a8ad8b58d7ce58bdf835009c336bd25cd031372071105377e9991f4dc
+  src/harness/__init__.py: e99866470302ffff4532855d04bed2349933c3204916467fd2b0d13d1d8bad76
+  tests/test_package.py: 1f4d77eca2cdd1d678f4d03cf1fac094fa3ef4f607564e4d3cba4bc81223918f
+  examples/fixture-repository/README.md: 7bd05b7cbab582a189e2529072a7f2324fd187b5561f1911f47ef73d2f89fc08
+
+commands_run:
+  - git fetch origin main work/w201-w210-specification
+  - >-
+    git worktree add -b codex/c301-c302-python-scaffold
+    C:\Users\denko\CodexWork\UPE_5.6_c301_c302 origin/main
+  - git rev-parse --show-toplevel
+  - git branch --show-current
+  - git rev-parse HEAD
+  - git status --short --branch
+  - git remote -v
+  - git worktree list --porcelain
+  - py -3 --version
+  - uv --version
+  - git --version
+  - codex --version
+  - codex app-server --help
+  - >-
+    Get-FileHash -Algorithm SHA256
+    C:\Users\denko\AppData\Local\Programs\OpenAI\Codex\bin\codex.exe
+  - py -3 scripts\validate_work_specifications.py
+  - 'uv run python -c "import harness"'
+  - uv sync --all-groups
+  - uv lock --check
+  - 'uv run python -c "import harness; print(harness.__version__)"'
+  - uv run pytest
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy src tests
+  - git diff --check
+
+verification:
+  repository_and_ref_identity: PASS
+  primary_worktree_preservation: PASS
+  W200_acceptance_record: PASS
+  W200_deterministic_validator: PASS
+  W200_git_blob_manifest: PASS_33_OF_33
+  uv_resolution: PASS_13_PACKAGES
+  uv_lock_check: PASS
+  package_import: PASS_VERSION_0_1_0
+  pytest: PASS_1_OF_1
+  ruff_lint_with_two_locked_script_exclusions: PASS
+  ruff_format_with_two_locked_script_exclusions: PASS
+  mypy_src_tests: PASS
+  nonempty_new_files: PASS
+  locked_specification_surfaces_unchanged: PASS
+  external_mutations: PASS_NONE_OCCURRED
+
+observed_and_resolved_failures:
+  - command: 'uv run python -c "import harness"'
+    stage: baseline_before_scaffold
+    result: EXPECTED_FAIL
+    error: "ModuleNotFoundError: No module named 'harness'"
+    resolution: project package and lock were created; the same import now passes
+  - command: uv run ruff check .
+    stage: first_unscoped_scaffold_validation
+    result: FAIL
+    error: >-
+      Ruff inspected accepted W-200 and release-package scripts outside C-302
+      and reported 21 pre-existing E501 findings.
+    resolution: >-
+      `tool.ruff.extend-exclude` names only the two accepted pre-existing
+      scripts with known style debt. Future Python files remain in Ruff scope;
+      locked accepted scripts were not rewritten.
+
+scope_adjustments:
+  - path: .gitignore
+    reason: >-
+      The first tool run produced bytecode and mypy caches. Repository-local
+      ignore rules are required for a repeatably clean minimal Python scaffold.
+    impact: no runtime behavior or broader harness abstraction
+  - path: .python-version
+    reason: >-
+      Pin the observed and tested Windows development interpreter while the
+      package metadata retains the architecture minimum of Python 3.12.
+    impact: local uv interpreter selection only; no broader compatibility claim
+
+not_implemented:
+  - fixture initialization or baseline behavior; owned by C-305
+  - schemas/materialization work; owned by C-303 and C-306
+  - lifecycle, typed state, fake or real adapters, orchestrator, CLI, persistence, recovery, approval, budget, or workspace behavior
+  - App Server live protocol smoke test
+  - CI, release, deployment, visibility change, commit, push, or pull request
+
+remaining_unknowns:
+  - Python 3.12 and 3.13 dependency and test compatibility
+  - all runtime behavior beyond package installation/import
+  - CI behavior
+
+next_action: >-
+  Review the local C-301/C-302 diff. If accepted, explicitly authorize either
+  publication of this slice or the next canonical task C-303; neither is
+  authorized by the current implementation request.
