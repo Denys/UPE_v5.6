@@ -1,0 +1,1076 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/Denys/UPE_v5.6/schemas/handoff.schema.yaml
+title: Work and Codex handoff
+description: Versioned, self-contained transfer contract for Work-to-Codex and Codex-to-Work handoffs.
+type: object
+additionalProperties: false
+required:
+  - schema_version
+  - handoff_id
+  - revision
+  - direction
+  - created_at
+  - producer
+  - consumer
+  - task
+  - repository
+  - authoritative_inputs
+  - scope
+  - must_requirements
+  - outputs
+  - evidence
+  - approvals
+  - state_snapshot
+  - checkpoint
+  - external_actions
+  - verification
+  - unresolved
+  - recovery
+  - next_action
+properties:
+  schema_version:
+    const: 1.0.0
+  handoff_id:
+    type: string
+    pattern: '^HO-[A-Za-z0-9][A-Za-z0-9._-]{2,127}$'
+  revision:
+    type: integer
+    minimum: 1
+  supersedes:
+    type:
+      - string
+      - 'null'
+    pattern: '^HO-[A-Za-z0-9][A-Za-z0-9._-]{2,127}$'
+  direction:
+    enum:
+      - WORK_TO_CODEX
+      - CODEX_TO_WORK
+  created_at:
+    type: string
+    format: date-time
+  producer:
+    $ref: '#/$defs/party'
+  consumer:
+    $ref: '#/$defs/party'
+  task:
+    $ref: '#/$defs/task'
+  repository:
+    $ref: '#/$defs/repository'
+  authoritative_inputs:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/input'
+  scope:
+    $ref: '#/$defs/scope'
+  must_requirements:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/requirement'
+  outputs:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/output'
+  evidence:
+    type: array
+    items:
+      $ref: '#/$defs/evidence'
+  approvals:
+    $ref: '#/$defs/approvals'
+  state_snapshot:
+    $ref: '#/$defs/stateSnapshot'
+  checkpoint:
+    $ref: '#/$defs/checkpoint'
+  external_actions:
+    type: array
+    items:
+      $ref: '#/$defs/externalAction'
+  verification:
+    $ref: '#/$defs/verification'
+  unresolved:
+    type: array
+    items:
+      $ref: '#/$defs/unresolvedItem'
+  recovery:
+    $ref: '#/$defs/recovery'
+  next_action:
+    $ref: '#/$defs/nextAction'
+  notes:
+    type: array
+    items:
+      type: string
+      minLength: 1
+allOf:
+  - if:
+      properties:
+        direction:
+          const: WORK_TO_CODEX
+    then:
+      properties:
+        producer:
+          properties:
+            surface:
+              enum:
+                - WEB_WORK
+                - LOCAL_WORK
+        consumer:
+          properties:
+            surface:
+              const: LOCAL_CODEX
+  - if:
+      properties:
+        direction:
+          const: CODEX_TO_WORK
+    then:
+      properties:
+        producer:
+          properties:
+            surface:
+              const: LOCAL_CODEX
+        consumer:
+          properties:
+            surface:
+              enum:
+                - WEB_WORK
+                - LOCAL_WORK
+  - if:
+      properties:
+        state_snapshot:
+          properties:
+            authority:
+              const: TRUSTED_HOST_SQLITE
+    then:
+      properties:
+        state_snapshot:
+          properties:
+            run_id:
+              type: string
+              minLength: 1
+            event_seq:
+              type: integer
+              minimum: 0
+$defs:
+  nonEmptyString:
+    type: string
+    minLength: 1
+  stableId:
+    type: string
+    minLength: 1
+    maxLength: 128
+    pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]*$'
+  relativePath:
+    type: string
+    minLength: 1
+    maxLength: 2048
+    pattern: '^(?![A-Za-z]:[\\/])(?![\\/])(?!.*(?:^|[\\/])\.\.(?:[\\/]|$)).+$'
+  locationReference:
+    type: object
+    additionalProperties: false
+    required:
+      - kind
+      - ref
+      - description
+    properties:
+      kind:
+        enum:
+          - REPOSITORY_PATH
+          - ARTIFACT_PATH
+          - URI
+          - GIT_COMMIT
+          - PULL_REQUEST
+          - COMMAND_RESULT
+          - EXTERNAL_RESOURCE
+      ref:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      revision:
+        type:
+          - string
+          - 'null'
+        maxLength: 256
+      sha256:
+        type:
+          - string
+          - 'null'
+        pattern: '^[A-Fa-f0-9]{64}$'
+    allOf:
+      - if:
+          properties:
+            kind:
+              const: URI
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              format: uri
+      - if:
+          properties:
+            kind:
+              enum:
+                - REPOSITORY_PATH
+                - ARTIFACT_PATH
+                - COMMAND_RESULT
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              $ref: '#/$defs/relativePath'
+      - if:
+          properties:
+            kind:
+              const: GIT_COMMIT
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              pattern: '^[A-Fa-f0-9]{7,64}$'
+      - if:
+          properties:
+            kind:
+              const: PULL_REQUEST
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              format: uri
+  verdict:
+    enum:
+      - PASS
+      - FAIL
+      - INSUFFICIENT_EVIDENCE
+  surface:
+    enum:
+      - WEB_WORK
+      - LOCAL_WORK
+      - LOCAL_CODEX
+  party:
+    type: object
+    additionalProperties: false
+    required:
+      - surface
+      - actor
+    properties:
+      surface:
+        $ref: '#/$defs/surface'
+      actor:
+        $ref: '#/$defs/nonEmptyString'
+      runtime:
+        type:
+          - string
+          - 'null'
+  task:
+    type: object
+    additionalProperties: false
+    required:
+      - task_id
+      - goal_id
+      - goal_contract_ref
+      - title
+      - contract_version
+      - status
+    properties:
+      task_id:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z0-9._-]{1,127}$'
+      goal_id:
+        $ref: '#/$defs/stableId'
+      goal_contract_ref:
+        $ref: '#/$defs/locationReference'
+      title:
+        $ref: '#/$defs/nonEmptyString'
+      contract_version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+      status:
+        enum:
+          - PLANNED
+          - READY
+          - IN_PROGRESS
+          - VALIDATING
+          - CHECKPOINTED
+          - COMPLETE
+          - BLOCKED
+          - APPROVAL_REQUIRED
+          - FAILED
+          - CANCELLED
+  repository:
+    type: object
+    additionalProperties: false
+    required:
+      - provider
+      - owner
+      - name
+      - canonical_url
+      - base_ref
+      - observed_commit
+      - delivery_ref
+      - observed_at
+      - worktree_state
+      - dirty_paths
+    properties:
+      provider:
+        enum:
+          - GITHUB
+          - LOCAL_GIT
+          - OTHER_GIT
+      owner:
+        $ref: '#/$defs/nonEmptyString'
+      name:
+        $ref: '#/$defs/nonEmptyString'
+      canonical_url:
+        type: string
+        format: uri
+      base_ref:
+        $ref: '#/$defs/nonEmptyString'
+      observed_commit:
+        type: string
+        pattern: '^[0-9A-Fa-f]{7,64}$'
+      delivery_ref:
+        $ref: '#/$defs/nonEmptyString'
+      observed_at:
+        type: string
+        format: date-time
+      local_root:
+        type:
+          - string
+          - 'null'
+      worktree_state:
+        enum:
+          - CLEAN
+          - DIRTY
+          - UNKNOWN
+      dirty_paths:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      pull_request:
+        oneOf:
+          - type: 'null'
+          - type: object
+            additionalProperties: false
+            required:
+              - number
+              - url
+              - state
+            properties:
+              number:
+                type: integer
+                minimum: 1
+              url:
+                type: string
+                format: uri
+              state:
+                enum:
+                  - OPEN_DRAFT
+                  - OPEN_READY
+                  - MERGED
+                  - CLOSED
+  input:
+    type: object
+    additionalProperties: false
+    required:
+      - input_id
+      - kind
+      - location
+      - version_or_ref
+      - required
+    properties:
+      input_id:
+        type: string
+        pattern: '^IN-[A-Za-z0-9._-]+$'
+      kind:
+        enum:
+          - USER_INSTRUCTION
+          - REPOSITORY_FILE
+          - ADR
+          - GATE_RECORD
+          - SCHEMA
+          - SOURCE
+          - HANDOFF
+          - RUNTIME_EVIDENCE
+          - OTHER
+      location:
+        $ref: '#/$defs/nonEmptyString'
+      version_or_ref:
+        $ref: '#/$defs/nonEmptyString'
+      digest:
+        type:
+          - string
+          - 'null'
+      required:
+        type: boolean
+  scope:
+    type: object
+    additionalProperties: false
+    required:
+      - in_scope
+      - out_of_scope
+      - allowed_paths
+      - forbidden_actions
+    properties:
+      in_scope:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      out_of_scope:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      allowed_paths:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/relativePath'
+      forbidden_actions:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+  requirement:
+    type: object
+    additionalProperties: false
+    required:
+      - must_id
+      - statement
+      - critical
+      - status
+      - output_refs
+      - evidence_refs
+    properties:
+      must_id:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z0-9._-]{1,127}$'
+      statement:
+        $ref: '#/$defs/nonEmptyString'
+      critical:
+        type: boolean
+      status:
+        enum:
+          - PENDING
+          - PASS
+          - FAIL
+          - INSUFFICIENT_EVIDENCE
+      output_refs:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^OUT-[A-Za-z0-9._-]+$'
+      evidence_refs:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^EV-[A-Za-z0-9._-]+$'
+  output:
+    type: object
+    additionalProperties: false
+    required:
+      - output_id
+      - location
+      - media_type
+      - status
+      - digest
+      - evidence_refs
+    properties:
+      output_id:
+        type: string
+        pattern: '^OUT-[A-Za-z0-9._-]+$'
+      location:
+        $ref: '#/$defs/nonEmptyString'
+      media_type:
+        $ref: '#/$defs/nonEmptyString'
+      status:
+        enum:
+          - PLANNED
+          - CREATED
+          - MODIFIED
+          - VERIFIED
+          - BLOCKED
+      digest:
+        type:
+          - string
+          - 'null'
+      evidence_refs:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^EV-[A-Za-z0-9._-]+$'
+  evidence:
+    type: object
+    additionalProperties: false
+    required:
+      - evidence_id
+      - kind
+      - location
+      - captured_at
+      - supports
+      - result
+    properties:
+      evidence_id:
+        type: string
+        pattern: '^EV-[A-Za-z0-9._-]+$'
+      kind:
+        enum:
+          - SOURCE
+          - FILE
+          - DIFF
+          - COMMAND
+          - TEST
+          - SCHEMA_VALIDATION
+          - RUNTIME_OBSERVATION
+          - APPROVAL
+          - VERIFIER_RESULT
+          - OTHER
+      location:
+        $ref: '#/$defs/nonEmptyString'
+      captured_at:
+        type: string
+        format: date-time
+      version_or_ref:
+        type:
+          - string
+          - 'null'
+      digest:
+        type:
+          - string
+          - 'null'
+      supports:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      result:
+        $ref: '#/$defs/verdict'
+      summary:
+        type:
+          - string
+          - 'null'
+  approvals:
+    type: object
+    additionalProperties: false
+    required:
+      - policy
+      - records
+      - still_required
+      - forbidden_without_new_approval
+    properties:
+      policy:
+        const: EXPLICIT_FOR_CONSEQUENTIAL
+      records:
+        type: array
+        items:
+          $ref: '#/$defs/approvalRecord'
+      still_required:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/actionClass'
+      forbidden_without_new_approval:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/actionClass'
+  actionClass:
+    enum:
+      - WRITE
+      - COMMIT
+      - PUSH
+      - CREATE_PR
+      - UPDATE_PR
+      - MERGE
+      - RELEASE
+      - DEPLOY
+      - VISIBILITY_CHANGE
+      - EXTERNAL_MESSAGE
+      - PURCHASE
+      - PRODUCTION_MUTATION
+      - DESTRUCTIVE_ACTION
+      - SECRET_HANDLING
+      - OTHER_EXTERNAL_WRITE
+  approvalRecord:
+    type: object
+    additionalProperties: false
+    required:
+      - approval_id
+      - action
+      - target
+      - exact_scope
+      - status
+      - authority_ref
+      - recorded_at
+      - expires_at
+    properties:
+      approval_id:
+        type: string
+        pattern: '^AP-[A-Za-z0-9._-]+$'
+      action:
+        $ref: '#/$defs/actionClass'
+      target:
+        $ref: '#/$defs/nonEmptyString'
+      exact_scope:
+        $ref: '#/$defs/nonEmptyString'
+      status:
+        enum:
+          - REQUIRED
+          - REQUESTED
+          - GRANTED
+          - DENIED
+          - EXPIRED
+          - REVOKED
+      authority_ref:
+        type:
+          - string
+          - 'null'
+      recorded_at:
+        type: string
+        format: date-time
+      expires_at:
+        type:
+          - string
+          - 'null'
+        format: date-time
+    allOf:
+      - if:
+          properties:
+            status:
+              enum:
+                - REQUESTED
+                - GRANTED
+                - DENIED
+                - EXPIRED
+                - REVOKED
+          required:
+            - status
+        then:
+          properties:
+            authority_ref:
+              $ref: '#/$defs/nonEmptyString'
+  stateSnapshot:
+    type: object
+    additionalProperties: false
+    required:
+      - authority
+      - canonical_state_ref
+      - run_id
+      - lifecycle_state
+      - iteration
+      - event_seq
+      - last_transition_id
+      - captured_at
+    properties:
+      authority:
+        enum:
+          - TRUSTED_HOST_SQLITE
+          - REPOSITORY_HANDOFF
+      canonical_state_ref:
+        $ref: '#/$defs/nonEmptyString'
+      run_id:
+        type:
+          - string
+          - 'null'
+      lifecycle_state:
+        enum:
+          - CREATED
+          - INITIALIZING
+          - READY
+          - SELECTING_TASK
+          - EXECUTING
+          - VALIDATING
+          - EVALUATING
+          - CHECKPOINTING
+          - COMPLETED
+          - BLOCKED
+          - BUDGET_EXHAUSTED
+          - APPROVAL_REQUIRED
+          - FAILED
+          - CANCELLED
+          - NOT_APPLICABLE
+      iteration:
+        type: integer
+        minimum: 0
+      event_seq:
+        type:
+          - integer
+          - 'null'
+        minimum: 0
+      last_transition_id:
+        type:
+          - string
+          - 'null'
+      captured_at:
+        type: string
+        format: date-time
+  checkpoint:
+    type: object
+    additionalProperties: false
+    required:
+      - checkpoint_id
+      - kind
+      - reference
+      - created_at
+      - verified
+      - previous_checkpoint_id
+      - artifact_hashes
+      - validation_refs
+    properties:
+      checkpoint_id:
+        type: string
+        pattern: '^CP-[A-Za-z0-9._-]+$'
+      kind:
+        enum:
+          - HOST_SNAPSHOT
+          - REPOSITORY_ARTIFACT
+          - GIT_COMMIT
+          - REMOTE_COMMIT
+          - NONE
+      reference:
+        $ref: '#/$defs/nonEmptyString'
+      created_at:
+        type: string
+        format: date-time
+      verified:
+        type: boolean
+      previous_checkpoint_id:
+        type:
+          - string
+          - 'null'
+        pattern: '^CP-[A-Za-z0-9._-]+$'
+      artifact_hashes:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required:
+            - location
+            - algorithm
+            - digest
+          properties:
+            location:
+              $ref: '#/$defs/nonEmptyString'
+            algorithm:
+              enum:
+                - SHA256
+                - GIT_BLOB
+                - GIT_COMMIT
+            digest:
+              $ref: '#/$defs/nonEmptyString'
+      validation_refs:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^EV-[A-Za-z0-9._-]+$'
+  externalAction:
+    type: object
+    additionalProperties: false
+    required:
+      - action_id
+      - operation
+      - target
+      - status
+      - approval_id
+      - idempotency_key
+      - result_ref
+    properties:
+      action_id:
+        type: string
+        pattern: '^ACT-[A-Za-z0-9._-]+$'
+      operation:
+        $ref: '#/$defs/actionClass'
+      target:
+        $ref: '#/$defs/nonEmptyString'
+      status:
+        enum:
+          - PLANNED
+          - STARTED
+          - SUCCEEDED
+          - FAILED
+          - UNKNOWN
+          - CANCELLED
+      approval_id:
+        type: string
+        pattern: '^AP-[A-Za-z0-9._-]+$'
+      idempotency_key:
+        type:
+          - string
+          - 'null'
+      result_ref:
+        type:
+          - string
+          - 'null'
+  verification:
+    type: object
+    additionalProperties: false
+    required:
+      - overall
+      - criteria
+    properties:
+      overall:
+        $ref: '#/$defs/verdict'
+      criteria:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required:
+            - criterion_id
+            - verdict
+            - blocking
+            - evidence_refs
+            - smallest_correction
+            - missing_evidence
+          properties:
+            criterion_id:
+              type: string
+              pattern: '^[A-Za-z][A-Za-z0-9._-]{1,127}$'
+            verdict:
+              $ref: '#/$defs/verdict'
+            blocking:
+              type: boolean
+            evidence_refs:
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+                pattern: '^EV-[A-Za-z0-9._-]+$'
+            smallest_correction:
+              type:
+                - string
+                - 'null'
+            missing_evidence:
+              type: array
+              items:
+                $ref: '#/$defs/nonEmptyString'
+          allOf:
+            - if:
+                properties:
+                  verdict:
+                    const: PASS
+                required:
+                  - verdict
+              then:
+                properties:
+                  evidence_refs:
+                    type: array
+                    minItems: 1
+                  smallest_correction:
+                    type: 'null'
+                  missing_evidence:
+                    type: array
+                    maxItems: 0
+            - if:
+                properties:
+                  verdict:
+                    const: FAIL
+                required:
+                  - verdict
+              then:
+                properties:
+                  evidence_refs:
+                    type: array
+                    minItems: 1
+                  smallest_correction:
+                    type: string
+                    minLength: 1
+                  missing_evidence:
+                    type: array
+                    maxItems: 0
+            - if:
+                properties:
+                  verdict:
+                    const: INSUFFICIENT_EVIDENCE
+                required:
+                  - verdict
+              then:
+                properties:
+                  smallest_correction:
+                    type: string
+                    minLength: 1
+                  missing_evidence:
+                    type: array
+                    minItems: 1
+    allOf:
+      - if:
+          properties:
+            overall:
+              const: PASS
+          required:
+            - overall
+        then:
+          properties:
+            criteria:
+              not:
+                type: array
+                contains:
+                  type: object
+                  properties:
+                    verdict:
+                      enum:
+                        - FAIL
+                        - INSUFFICIENT_EVIDENCE
+                  required:
+                    - verdict
+      - if:
+          properties:
+            overall:
+              const: FAIL
+          required:
+            - overall
+        then:
+          properties:
+            criteria:
+              type: array
+              contains:
+                type: object
+                properties:
+                  verdict:
+                    const: FAIL
+                required:
+                  - verdict
+              minContains: 1
+      - if:
+          properties:
+            overall:
+              const: INSUFFICIENT_EVIDENCE
+          required:
+            - overall
+        then:
+          properties:
+            criteria:
+              allOf:
+                - type: array
+                  contains:
+                    type: object
+                    properties:
+                      verdict:
+                        const: INSUFFICIENT_EVIDENCE
+                    required:
+                      - verdict
+                  minContains: 1
+                - not:
+                    type: array
+                    contains:
+                      type: object
+                      properties:
+                        verdict:
+                          const: FAIL
+                      required:
+                        - verdict
+  unresolvedItem:
+    type: object
+    additionalProperties: false
+    required:
+      - issue_id
+      - description
+      - impact
+      - owner
+      - next_step
+    properties:
+      issue_id:
+        type: string
+        pattern: '^ISS-[A-Za-z0-9._-]+$'
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      impact:
+        enum:
+          - BLOCKING
+          - NON_BLOCKING
+      owner:
+        enum:
+          - WEB_WORK
+          - LOCAL_WORK
+          - LOCAL_CODEX
+          - OPERATOR
+      next_step:
+        $ref: '#/$defs/nonEmptyString'
+  recovery:
+    type: object
+    additionalProperties: false
+    required:
+      - last_stable_checkpoint_id
+      - resume_preconditions
+      - revalidate
+      - do_not_repeat
+      - reconciliation_required
+    properties:
+      last_stable_checkpoint_id:
+        type: string
+        pattern: '^CP-[A-Za-z0-9._-]+$'
+      resume_preconditions:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      revalidate:
+        type: array
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      do_not_repeat:
+        type: array
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      reconciliation_required:
+        type: boolean
+  nextAction:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - owner
+      - action
+      - preconditions
+      - stop_conditions
+      - approval_refs
+    properties:
+      status:
+        enum:
+          - READY
+          - WAITING_APPROVAL
+          - BLOCKED
+          - NONE
+      owner:
+        enum:
+          - WEB_WORK
+          - LOCAL_WORK
+          - LOCAL_CODEX
+          - OPERATOR
+          - NONE
+      action:
+        $ref: '#/$defs/nonEmptyString'
+      preconditions:
+        type: array
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      stop_conditions:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      approval_refs:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^AP-[A-Za-z0-9._-]+$'

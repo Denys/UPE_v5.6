@@ -1,0 +1,564 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/Denys/UPE_v5.6/schemas/goal_contract.schema.yaml
+title: UPE Work Goal Contract
+description: >-
+  Versioned contract for a bounded ChatGPT Work goal. It freezes objective,
+  scope, evidence-bearing completion conditions, constraints, capability needs,
+  approval boundaries, budgets, and output destinations before execution.
+type: object
+additionalProperties: false
+required:
+  - schema_version
+  - goal_id
+  - objective
+  - scope
+  - authoritative_inputs
+  - done_conditions
+  - constraints
+  - tools
+  - approvals
+  - budget
+  - outputs
+  - completion_policy
+  - created_at
+properties:
+  schema_version:
+    const: 1.0.0
+  goal_id:
+    $ref: '#/$defs/stableId'
+  objective:
+    $ref: '#/$defs/nonEmptyString'
+  scope:
+    type: object
+    additionalProperties: false
+    required:
+      - in_scope
+      - out_of_scope
+      - allowed_files
+      - allowed_systems
+    properties:
+      in_scope:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      out_of_scope:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+      allowed_files:
+        description: Repository or artifact locations that the goal may inspect or modify.
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/locationReference'
+      allowed_systems:
+        description: Named external or local systems explicitly placed in scope.
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/nonEmptyString'
+  authoritative_inputs:
+    type: array
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/locationReference'
+  done_conditions:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/doneCondition'
+  constraints:
+    type: object
+    additionalProperties: false
+    required:
+      - must
+      - must_not
+      - safety
+      - evidence
+    properties:
+      must:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/constraint'
+      must_not:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/constraint'
+      safety:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/constraint'
+      evidence:
+        description: Requirements governing inspection, freshness, citation, and validation.
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/constraint'
+  tools:
+    type: object
+    additionalProperties: false
+    required:
+      - required
+      - optional
+      - avoid_or_disable
+      - actual_exposure_required
+    properties:
+      required:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/capabilityRequirement'
+      optional:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/capabilityRequirement'
+      avoid_or_disable:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/avoidedCapability'
+      actual_exposure_required:
+        description: Capability availability must be observed, not inferred from a plan or subscription.
+        const: true
+  approvals:
+    type: object
+    additionalProperties: false
+    required:
+      - external_write_default
+      - consequential_action_default
+      - rules
+      - authorization_refs
+    properties:
+      external_write_default:
+        const: EXPLICIT_AUTHORIZATION
+      consequential_action_default:
+        const: STRICT_PREFLIGHT
+      rules:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/approvalRule'
+      authorization_refs:
+        description: Evidence of authorizations already granted for this exact goal and scope.
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/locationReference'
+  budget:
+    $ref: '#/$defs/budget'
+  outputs:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/output'
+  completion_policy:
+    type: object
+    additionalProperties: false
+    required:
+      - rule
+      - deterministic_validation_first
+      - evidence_required
+      - fail_blocks_completion
+      - insufficient_evidence_blocks_completion
+      - worker_self_attestation_sufficient
+    properties:
+      rule:
+        const: ALL_MANDATORY_CONDITIONS_PASS
+      deterministic_validation_first:
+        const: true
+      evidence_required:
+        const: true
+      fail_blocks_completion:
+        const: true
+      insufficient_evidence_blocks_completion:
+        const: true
+      worker_self_attestation_sufficient:
+        const: false
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: [string, 'null']
+    format: date-time
+$defs:
+  nonEmptyString:
+    type: string
+    minLength: 1
+    maxLength: 4096
+  stableId:
+    type: string
+    minLength: 1
+    maxLength: 128
+    pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]*$'
+  relativePath:
+    type: string
+    minLength: 1
+    maxLength: 2048
+    pattern: '^(?![A-Za-z]:[\\/])(?![\\/])(?!.*(?:^|[\\/])\.\.(?:[\\/]|$)).+$'
+  locationReference:
+    type: object
+    additionalProperties: false
+    required:
+      - kind
+      - ref
+      - description
+    properties:
+      kind:
+        enum:
+          - REPOSITORY_PATH
+          - ARTIFACT_PATH
+          - URI
+          - GIT_COMMIT
+          - PULL_REQUEST
+          - COMMAND_RESULT
+          - EXTERNAL_RESOURCE
+      ref:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      revision:
+        type: [string, 'null']
+        maxLength: 256
+      sha256:
+        type: [string, 'null']
+        pattern: '^[A-Fa-f0-9]{64}$'
+    allOf:
+      - if:
+          properties:
+            kind:
+              const: URI
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              format: uri
+      - if:
+          properties:
+            kind:
+              enum:
+                - REPOSITORY_PATH
+                - ARTIFACT_PATH
+                - COMMAND_RESULT
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              $ref: '#/$defs/relativePath'
+      - if:
+          properties:
+            kind:
+              const: GIT_COMMIT
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              pattern: '^[A-Fa-f0-9]{7,64}$'
+      - if:
+          properties:
+            kind:
+              const: PULL_REQUEST
+          required:
+            - kind
+        then:
+          properties:
+            ref:
+              type: string
+              format: uri
+  doneCondition:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - description
+      - mandatory
+      - verification
+      - output_ids
+      - release_blocking
+    properties:
+      id:
+        $ref: '#/$defs/stableId'
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      mandatory:
+        type: boolean
+      verification:
+        type: object
+        additionalProperties: false
+        required:
+          - method
+          - evidence_required
+          - validator_refs
+          - evaluator_access
+        properties:
+          method:
+            enum:
+              - DETERMINISTIC
+              - MODEL_EVALUATOR
+              - HUMAN_REVIEW
+          evidence_required:
+            const: true
+          validator_refs:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/$defs/locationReference'
+          evaluator_access:
+            enum:
+              - NOT_APPLICABLE
+              - READ_ONLY
+        allOf:
+          - if:
+              properties:
+                method:
+                  const: MODEL_EVALUATOR
+              required:
+                - method
+            then:
+              properties:
+                evaluator_access:
+                  const: READ_ONLY
+          - if:
+              properties:
+                method:
+                  const: DETERMINISTIC
+              required:
+                - method
+            then:
+              properties:
+                validator_refs:
+                  type: array
+                  minItems: 1
+      output_ids:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/stableId'
+      release_blocking:
+        type: boolean
+    allOf:
+      - if:
+          properties:
+            release_blocking:
+              const: true
+          required:
+            - release_blocking
+        then:
+          properties:
+            mandatory:
+              const: true
+  constraint:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - description
+    properties:
+      id:
+        $ref: '#/$defs/stableId'
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      source_ref:
+        anyOf:
+          - $ref: '#/$defs/locationReference'
+          - type: 'null'
+  capabilityRequirement:
+    type: object
+    additionalProperties: false
+    required:
+      - capability_id
+      - purpose
+      - required_action_scope
+      - fallback
+    properties:
+      capability_id:
+        $ref: '#/$defs/stableId'
+      purpose:
+        $ref: '#/$defs/nonEmptyString'
+      required_action_scope:
+        enum:
+          - NONE
+          - READ_ONLY
+          - TRANSFORM_ONLY
+          - DRAFT
+          - WRITE
+          - CONSEQUENTIAL
+          - IRREVERSIBLE
+      capability_record_ref:
+        anyOf:
+          - $ref: '#/$defs/locationReference'
+          - type: 'null'
+      fallback:
+        $ref: '#/$defs/nonEmptyString'
+  avoidedCapability:
+    type: object
+    additionalProperties: false
+    required:
+      - capability_id
+      - reason
+    properties:
+      capability_id:
+        $ref: '#/$defs/stableId'
+      reason:
+        $ref: '#/$defs/nonEmptyString'
+  approvalRule:
+    type: object
+    additionalProperties: false
+    required:
+      - action_class
+      - requirement
+      - scope
+    properties:
+      action_class:
+        enum:
+          - READ
+          - TRANSFORM
+          - DRAFT
+          - WRITE
+          - COMMIT
+          - PUSH
+          - CREATE_PR
+          - UPDATE_PR
+          - MERGE
+          - RELEASE
+          - DEPLOY
+          - VISIBILITY_CHANGE
+          - EXTERNAL_MESSAGE
+          - PURCHASE
+          - PRODUCTION_MUTATION
+          - DESTRUCTIVE_ACTION
+          - SECRET_HANDLING
+          - OTHER_EXTERNAL_WRITE
+          - IRREVERSIBLE_OR_HIGH_CONSEQUENCE
+      requirement:
+        enum:
+          - NONE
+          - EXPLICIT_AUTHORIZATION
+          - STRICT_PREFLIGHT
+          - FORBIDDEN
+      scope:
+        $ref: '#/$defs/nonEmptyString'
+      approver:
+        type: [string, 'null']
+        maxLength: 256
+  budget:
+    type: object
+    additionalProperties: false
+    required:
+      - max_iterations
+      - max_elapsed_seconds
+      - max_input_tokens
+      - max_output_tokens
+      - max_total_tokens
+      - max_cost
+      - retry_policy
+      - enforcement_owner
+      - stop_on_exhaustion
+    properties:
+      max_iterations:
+        type: [integer, 'null']
+        minimum: 1
+      max_elapsed_seconds:
+        type: [integer, 'null']
+        minimum: 1
+      max_input_tokens:
+        type: [integer, 'null']
+        minimum: 0
+      max_output_tokens:
+        type: [integer, 'null']
+        minimum: 0
+      max_total_tokens:
+        type: [integer, 'null']
+        minimum: 0
+      max_cost:
+        anyOf:
+          - type: 'null'
+          - $ref: '#/$defs/money'
+      retry_policy:
+        type: object
+        additionalProperties: false
+        required:
+          - max_transient_retries
+          - identical_failure_limit
+          - no_progress_iteration_limit
+        properties:
+          max_transient_retries:
+            type: integer
+            minimum: 0
+          identical_failure_limit:
+            type: integer
+            minimum: 1
+          no_progress_iteration_limit:
+            type: integer
+            minimum: 1
+      enforcement_owner:
+        enum:
+          - TRUSTED_HOST
+          - WORK_COORDINATOR
+          - HUMAN
+      stop_on_exhaustion:
+        const: true
+  money:
+    type: object
+    additionalProperties: false
+    required:
+      - amount
+      - currency
+    properties:
+      amount:
+        type: number
+        minimum: 0
+      currency:
+        type: string
+        pattern: '^[A-Z]{3}$'
+  output:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - description
+      - destination
+      - format
+      - required
+      - done_condition_ids
+    properties:
+      id:
+        $ref: '#/$defs/stableId'
+      description:
+        $ref: '#/$defs/nonEmptyString'
+      destination:
+        $ref: '#/$defs/locationReference'
+      format:
+        $ref: '#/$defs/nonEmptyString'
+      required:
+        type: boolean
+      done_condition_ids:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: '#/$defs/stableId'
+    allOf:
+      - if:
+          properties:
+            required:
+              const: true
+          required:
+            - required
+        then:
+          properties:
+            done_condition_ids:
+              type: array
+              minItems: 1

@@ -1,0 +1,95 @@
+schema_version: 1.0.0
+record_id: capability.github.repository.read
+goal_id: goal.w200.specification
+run_id: run.w200.2026-07-19
+task_id: W-208
+surface:
+  kind: CHATGPT_WORK_WEB
+  mode: WEB
+  label: GitHub repository connector
+  observed_at: '2026-07-19T00:00:00+02:00'
+capability:
+  capability_id: github.repository
+  name: GitHub repository access
+  kind: REPOSITORY
+  requirement: REQUIRED
+  purpose: Inspect the canonical repository and its current branch files.
+exposure:
+  status: VERIFIED_AVAILABLE
+  verification_method: DIRECT_PROBE
+  verified_at: '2026-07-19T00:00:00+02:00'
+  evidence_refs:
+    - kind: URI
+      ref: https://github.com/Denys/UPE_v5.6
+      description: Canonical repository successfully inspected.
+  unknown_reason: null
+permission:
+  action_scope: READ_ONLY
+  state: NOT_REQUIRED
+  scope:
+    - Denys/UPE_v5.6 repository metadata and files
+  approval_required: false
+  authorization_ref: null
+  enforcement_owner: RUNTIME_POLICY
+  expires_at: null
+action_boundary:
+  allowed_actions:
+    - Read repository metadata and files.
+  approval_gated_actions:
+    - Commit, push, or create a pull request.
+  forbidden_actions:
+    - Merge, release, or deploy.
+  side_effect_owner: NONE
+  network_access: ENABLED_SCOPED
+  filesystem_scope: []
+execution:
+  status: SUCCEEDED
+  action_id: null
+  operation: Inspect the repository identity and W-208 backlog entry.
+  started_at: '2026-07-19T00:00:00+02:00'
+  completed_at: '2026-07-19T00:00:01+02:00'
+  side_effects: []
+  provider_result_ref:
+    kind: REPOSITORY_PATH
+    ref: chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+    description: Canonical task mapping inspected through repository access.
+  error: null
+validation:
+  verdict: PASS
+  method: READ_ONLY_REVIEW
+  checks:
+    - check_id: check.repository.identity
+      verdict: PASS
+      summary: Repository owner, name, branch, and W-208 output path matched.
+      evidence_refs:
+        - kind: URI
+          ref: https://github.com/Denys/UPE_v5.6
+          description: Repository identity evidence.
+  evidence_refs:
+    - kind: URI
+      ref: https://github.com/Denys/UPE_v5.6
+      description: Validated repository identity.
+  validated_at: '2026-07-19T00:00:01+02:00'
+fallback:
+  status: NOT_NEEDED
+  description: null
+  capability_ids: []
+  evidence_refs: []
+  validation_verdict: NOT_RUN
+residual_limits:
+  - limit_id: limit.local-runtime
+    description: Read access does not execute local deterministic validators.
+    severity: INFORMATIONAL
+    mitigation: Hand off executable validation to Local Codex.
+    release_blocking: false
+evidence:
+  - kind: URI
+    ref: https://github.com/Denys/UPE_v5.6
+    description: Aggregate capability-exposure evidence.
+budget_usage:
+  calls: 2
+  elapsed_seconds: 1
+  input_tokens: null
+  output_tokens: null
+  cost: null
+recorded_at: '2026-07-19T00:00:01+02:00'

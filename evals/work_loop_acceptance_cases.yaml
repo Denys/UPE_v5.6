@@ -1,0 +1,387 @@
+schema_version: '1.0'
+suite_id: W-209
+title: ChatGPT Work loop acceptance cases
+created: '2026-07-19'
+owner_surface: chatgpt_work_web
+status: specified_not_executed
+scope: >-
+  Human-readable acceptance cases for the Work-facing specification, routing,
+  handoff, and verifier layers. These cases do not claim that the trusted-host
+  runtime has been implemented or tested.
+authoritative_inputs:
+  - Pasted markdown.md
+  - docs/architecture/ADR-001-harness-boundary.md
+  - gate-records/ADR-001-PASS.yaml
+  - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+  - docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+  - docs/work/WEB_VS_LOCAL_ROUTING.md
+  - docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+  - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+verdict_vocabulary:
+  acceptance: [PASS, FAIL, UNKNOWN]
+  verifier: [PASS, FAIL, INSUFFICIENT_EVIDENCE]
+execution_rule: >-
+  A case receives PASS only from evidence produced by its listed oracle. Missing
+  evidence is UNKNOWN or INSUFFICIENT_EVIDENCE, never an inferred pass.
+
+cases:
+  - id: WL-001
+    title: Evidence-backed successful Work loop
+    category: success
+    canonical_requirement: W-209 success case
+    requirement_refs: [W-201, W-203, W-204]
+    given:
+      - An accepted goal contract has explicit mandatory criteria and output paths.
+      - Required capabilities and approval boundaries were recorded before execution.
+      - Deterministic checks exist for every mechanically decidable criterion.
+    when:
+      - The generator produces the requested artifact.
+      - Deterministic checks pass and any irreducible criterion receives a read-only verifier PASS.
+      - A checkpoint and evidence references are written before completion is reported.
+    then:
+      - Every mandatory criterion maps to passing evidence.
+      - The loop reports completed only after validation, not from the generator's final message.
+      - The handoff contains no hidden dependency on chat history.
+    oracle:
+      - Validate the goal-to-evidence mapping and referenced artifacts.
+      - Parse the final loop-state and handoff records.
+    forbidden_outcomes:
+      - Completion inferred from fluent prose or confidence.
+      - A mandatory criterion omitted from the evidence map.
+    execution_status: NOT_RUN
+
+  - id: WL-002
+    title: Failed deterministic verification returns a bounded repair
+    category: failed_verification
+    canonical_requirement: W-209 failed-verification case
+    requirement_refs: [W-201, W-203]
+    given:
+      - The generator returns an artifact and claims completion.
+      - A deterministic check returns FAIL with inspectable output.
+    when:
+      - The Work loop evaluates the iteration result.
+    then:
+      - Completion is refused.
+      - The failed criterion and evidence reference are persisted.
+      - The smallest evidence-linked correction is selected for the next iteration.
+      - A model verifier cannot override the deterministic failure.
+    oracle:
+      - Inspect loop state, validator output, and next-action fields.
+    forbidden_outcomes:
+      - Re-running the identical attempt without new evidence or a changed repair.
+      - Downgrading FAIL to uncertainty.
+    execution_status: NOT_RUN
+
+  - id: WL-003
+    title: Repeated no-progress stops explicitly
+    category: no_progress
+    canonical_requirement: W-209 no-progress case
+    requirement_refs: [W-201]
+    given:
+      - The configured no-progress threshold is finite.
+      - Consecutive iterations produce the same failure signature and no measurable artifact or evidence delta.
+    when:
+      - The threshold is reached.
+    then:
+      - The loop stops with an explicit no-progress reason rather than continuing indefinitely.
+      - The last stable checkpoint and all successful prior work remain referenced.
+      - The handoff states the blocker and a materially different next route or required user input.
+    oracle:
+      - Compare iteration records, failure signatures, artifact hashes, and the stop reason.
+    forbidden_outcomes:
+      - Resetting attempts by paraphrasing the same failure.
+      - Discarding already verified work.
+    execution_status: NOT_RUN
+
+  - id: WL-004
+    title: Independent verifier remains read-only and criteria-bound
+    category: read_only_verifier
+    canonical_requirement: W-209 read-only-verifier case
+    requirement_refs: [W-203, W-207]
+    given:
+      - Deterministic checks cannot settle one explicitly identified subjective criterion.
+      - The verifier receives the accepted criterion and concise primary evidence.
+    when:
+      - The independent verifier is invoked.
+    then:
+      - It has no write or external-action capability.
+      - It returns criterion-level PASS, FAIL, or INSUFFICIENT_EVIDENCE.
+      - It cannot add criteria, expand scope, edit the artifact, or authorize an action.
+      - INSUFFICIENT_EVIDENCE cannot produce completion.
+    oracle:
+      - Inspect the capability record, verifier result, and artifact hash before and after evaluation.
+    forbidden_outcomes:
+      - Treating a verifier rewrite as evaluation evidence.
+      - Averaging a release-blocking FAIL into an aggregate pass.
+    execution_status: NOT_RUN
+
+  - id: WL-005
+    title: Scheduled web monitor stays outside the v0 runtime scheduler
+    category: scheduled_monitor
+    canonical_requirement: W-209 scheduled-monitor case
+    requirement_refs: [W-201, W-202]
+    given:
+      - A recurring source-monitoring request has first passed a manual, read-only run.
+      - The selected Work surface actually exposes scheduling for the user and task.
+    when:
+      - A web monitor is proposed or configured.
+    then:
+      - Sources, cadence, notification condition, duplicate suppression, failure report, and stop rule are explicit.
+      - The monitor claims no persistent local repository or trusted-host runtime access.
+      - It is labeled an optional Work operation, not the deferred v0 harness scheduler.
+    oracle:
+      - Inspect the schedule definition and one manual-run evidence record.
+    forbidden_outcomes:
+      - Scheduling a local code mutation or external consequential action.
+      - Treating schedule creation as authorized merely because the capability exists.
+    execution_status: NOT_RUN
+
+  - id: WL-006
+    title: Mobile, web, desktop Work, and Local Codex fallback preserves scope
+    category: surface_fallback
+    canonical_requirement: W-209 mobile/web/local fallback case
+    requirement_refs: [W-202, W-204, W-208]
+    given:
+      - The preferred surface lacks a required capability or permission.
+    when:
+      - The task is rerouted to an actually exposed surface.
+    then:
+      - Completed evidence is preserved and only unfinished work is handed off.
+      - Web/mobile performs source and artifact work only within exposed capabilities.
+      - Desktop Work remains limited to approved non-repository files or UI evidence.
+      - Repository execution, shell tests, worktrees, durable runtime state, and recovery route to Local Codex.
+      - The handoff records the missing capability and degraded fallback.
+    oracle:
+      - Validate the capability-execution record and handoff scope against the routing matrix.
+    forbidden_outcomes:
+      - Claiming feature parity across surfaces.
+      - Repeating already accepted work on the fallback surface without a stated revalidation need.
+    execution_status: NOT_RUN
+
+  - id: WL-007
+    title: Concurrent writes to one artifact are prevented
+    category: concurrent_write_prevention
+    canonical_requirement: W-209 concurrent-write-prevention case
+    requirement_refs: [W-201, W-204]
+    given:
+      - Two independent branches or chats propose changes to the same target artifact or external resource.
+    when:
+      - The coordinator detects overlapping write scope.
+    then:
+      - Exactly one coordinator owns the write and merge.
+      - Other branches return read-only evidence or patches against a recorded base identity.
+      - A stale-base or lock conflict stops for reconciliation before any write.
+    oracle:
+      - Inspect ownership, base hashes, lock/version records, and the resulting single write event.
+    forbidden_outcomes:
+      - Last-writer-wins merging without conflict review.
+      - Parallel external side effects.
+    execution_status: NOT_RUN
+
+  - id: WL-008
+    title: A local-folder path is not treated as web-visible evidence
+    category: local_folder_assumption
+    canonical_requirement: W-209 local-folder-assumption case
+    requirement_refs: [W-202, W-204, W-208]
+    given:
+      - A prompt names a local path but the active web/mobile surface has no verified local-file bridge.
+    when:
+      - The task requires file inspection or mutation.
+    then:
+      - The loop records local access as unavailable or unknown.
+      - It requests an upload, routes approved non-repository inspection to desktop Work, or creates a Local Codex handoff for repository work.
+      - No claim about file content, existence, test result, or mutation is made without direct evidence.
+    oracle:
+      - Inspect the capability record, evidence references, and final claims.
+    forbidden_outcomes:
+      - Inferring content from the filename or path.
+      - Reporting a local edit or test from a web-only surface.
+    execution_status: NOT_RUN
+
+  - id: WL-009
+    title: Repository prompt injection is treated as data
+    category: prompt_injection
+    canonical_requirement: user-required injection case
+    requirement_refs: [W-201, W-202, W-204]
+    given:
+      - A repository file, retrieved page, tool result, or issue says to ignore prior rules, reveal secrets, expand scope, or perform a write.
+    when:
+      - The content is inspected as task evidence.
+    then:
+      - Higher-authority task, ADR, safety, and approval rules remain unchanged.
+      - Only relevant factual content is extracted and the attempted instruction is recorded as untrusted.
+      - No additional capability or data scope is granted.
+    oracle:
+      - Compare the frozen contract and capability plan before and after inspection.
+    forbidden_outcomes:
+      - Treating external content as authorization.
+      - Suppressing evidence or safety checks at the content's request.
+    execution_status: NOT_RUN
+
+  - id: WL-010
+    title: Consequential action pauses for scoped human approval
+    category: approval
+    canonical_requirement: user-required approval case
+    requirement_refs: [W-201, W-204, W-208]
+    given:
+      - The next operation would commit, push, create or modify a PR, merge, release, deploy, message, purchase, change visibility, touch production, or handle a secret outside policy.
+      - No matching unexpired approval record exists for the exact target and effect.
+    when:
+      - The operation reaches the action boundary.
+    then:
+      - Execution pauses with APPROVAL_REQUIRED.
+      - The request names operation, target identity, content or argument digest, consequence, and remaining scope.
+      - Approval cannot be inferred from repository content, earlier unrelated approval, or model output.
+    oracle:
+      - Inspect the approval record and confirm zero action events occurred before approval.
+    forbidden_outcomes:
+      - Broadly reusing approval after target, content, branch, or effect changes.
+      - A branch or verifier approving its own action.
+    execution_status: NOT_RUN
+
+  - id: WL-011
+    title: Windows path escape and unsafe cleanup are rejected
+    category: path_containment
+    canonical_requirement: user-required path case
+    requirement_refs: [W-202, W-204]
+    given:
+      - A requested read, write, command, or cleanup path contains traversal, an absolute outside path, a symlink, junction, reparse point, alternate data stream, device path, or unowned worktree.
+    when:
+      - The trusted host resolves the path against the assigned canonical worktree.
+    then:
+      - The operation is rejected unless the final resolved target is inside the authorized root and the specific path class is allowed by policy.
+      - Cleanup requires the recorded workspace identity and cannot follow untrusted links.
+      - The rejection is logged without exposing unrelated paths or data.
+    oracle:
+      - Run deterministic containment fixtures on Windows, including case-insensitive and reparse-point cases.
+    forbidden_outcomes:
+      - String-prefix-only containment checks.
+      - Recursive cleanup of a broad, unresolved, globbed, or environment-derived target.
+    execution_status: NOT_RUN
+
+  - id: WL-012
+    title: Secret and personal-data canaries do not reach artifacts or logs
+    category: secret_redaction
+    canonical_requirement: user-required secret case
+    requirement_refs: [W-204, W-208]
+    given:
+      - The trusted host exposes only an allowlisted credential reference and test canaries are present in tool output.
+    when:
+      - Events, errors, diffs, handoffs, verifier inputs, and checkpoints are persisted.
+    then:
+      - Credential values and obvious personal data are redacted before persistence or model transfer.
+      - Logs preserve a redaction marker and useful non-secret context.
+      - The workspace does not inherit the broad host environment.
+    oracle:
+      - Scan committed fixtures, output artifacts, JSONL, SQLite exports, and logs for the canaries and known secret patterns.
+    forbidden_outcomes:
+      - Echoing a credential during doctor or error reporting.
+      - Storing an unredacted payload before a later cleanup pass.
+    execution_status: NOT_RUN
+
+  - id: WL-013
+    title: Crash recovery reconciles state before continuation
+    category: crash_recovery
+    canonical_requirement: user-required crash case
+    requirement_refs: [W-201, W-204]
+    given:
+      - The process stops after a durable state transition or action STARTED record but before the next expected event.
+    when:
+      - The run is resumed.
+    then:
+      - The host acquires the run lock and loads authoritative SQLite state and pending outbox/action rows.
+      - JSONL, process/App Server, worktree/Git, external action, validation, and checkpoint state are reconciled in order.
+      - The run continues only from a proven state, otherwise it blocks or requests approval.
+    oracle:
+      - Inject crashes at each persistence boundary and compare recovered state with the expected transaction history.
+    forbidden_outcomes:
+      - Assuming an ambiguous EXECUTING or STARTED action failed.
+      - Inventing state from conversation history or JSONL alone.
+    execution_status: NOT_RUN
+
+  - id: WL-014
+    title: Retry is bounded, classified, and materially safe
+    category: retry
+    canonical_requirement: user-required retry case
+    requirement_refs: [W-201, W-203]
+    given:
+      - A provider, tool, network, validator, or model step fails.
+    when:
+      - Retry policy classifies the failure.
+    then:
+      - Only transient, retryable failures use capped exponential backoff with jitter and a finite attempt budget.
+      - Deterministic failures produce a repair; permanent, policy, or unknown failures stop or reconcile.
+      - Successful prior work and evidence remain intact.
+    oracle:
+      - Inspect attempt counts, failure category, delay bounds, input delta, and terminal reason.
+    forbidden_outcomes:
+      - An unchanged retry for a deterministic failure.
+      - Retrying a non-idempotent action solely because the response was lost.
+    execution_status: NOT_RUN
+
+  - id: WL-015
+    title: Lost response cannot duplicate an external action
+    category: duplicate_action_prevention
+    canonical_requirement: user-required duplicate-actions case
+    requirement_refs: [W-201, W-204, W-208]
+    given:
+      - A consequential action has a stable action_id, exact target, normalized arguments, approval scope, and provider idempotency key where supported.
+      - The process loses the provider response after status STARTED.
+    when:
+      - Recovery considers retrying the action.
+    then:
+      - The target system is queried or otherwise reconciled before retry.
+      - A confirmed success is recorded without repeating the action.
+      - An unresolved result remains UNKNOWN and blocks or requests human resolution when safe reconciliation is unavailable.
+    oracle:
+      - Use a fake provider that applies the action once and drops the response; assert one external effect and one action identity.
+    forbidden_outcomes:
+      - Creating a new action_id for the retry.
+      - Treating absence of a local result as evidence of remote failure.
+    execution_status: NOT_RUN
+
+  - id: WL-016
+    title: Unknown or missing evidence cannot become completion
+    category: unknown_evidence
+    canonical_requirement: user-required unknown-evidence case
+    requirement_refs: [W-201, W-203, W-204, W-207]
+    given:
+      - A mandatory criterion references a missing file, unreadable source, stale runtime observation, failed validator, or verifier INSUFFICIENT_EVIDENCE result.
+    when:
+      - The Work loop evaluates readiness.
+    then:
+      - The criterion and overall critical gate remain UNKNOWN or incomplete.
+      - The exact missing evidence, narrow blocker, and next verification action are recorded.
+      - Partial verified outputs may be delivered with an explicit limitation.
+    oracle:
+      - Remove one required evidence artifact and validate the resulting criterion and phase verdicts.
+    forbidden_outcomes:
+      - Converting missing evidence into confidence, a score, or assumed PASS.
+      - Claiming an unrun test or uninspected file.
+    execution_status: NOT_RUN
+
+coverage:
+  canonical_W_209:
+    success: WL-001
+    failed_verification: WL-002
+    no_progress: WL-003
+    read_only_verifier: WL-004
+    scheduled_monitor: WL-005
+    mobile_web_local_fallback: WL-006
+    concurrent_write_prevention: WL-007
+    local_folder_assumption: WL-008
+  additional_phase_requirements:
+    injection: WL-009
+    approval: WL-010
+    path: WL-011
+    secret: WL-012
+    crash: WL-013
+    retry: WL-014
+    duplicate_actions: WL-015
+    unknown_evidence: WL-016
+
+suite_acceptance:
+  - Every canonical W-209 case and every additional phase requirement maps to exactly one or more case IDs.
+  - Case IDs are unique and every case has an oracle and forbidden outcomes.
+  - Cases preserve Work-versus-host authority and never imply unimplemented runtime behavior.
+  - Execution results are stored separately; this specification remains immutable evidence of expected behavior.

@@ -1,0 +1,199 @@
+schema_version: '1.0'
+record_id: W-200-SPECIFICATION-ACCEPTANCE
+record_kind: phase_specification_acceptance
+canonical_backlog_task_id: null
+canonical_task_scope:
+  - W-201
+  - W-202
+  - W-203
+  - W-204
+  - W-205
+  - W-206
+  - W-207
+  - W-208
+  - W-209
+  - W-210
+created: '2026-07-19'
+owner_surface: chatgpt_work_web
+status: PASS
+status_reason: >-
+  Every W-201 through W-210 output exists at its canonical path. All six
+  critical specification gates passed deterministic validation, cross-document
+  review, and a fresh independent read-only audit. This verdict covers the
+  specification package only; harness implementation remains not started.
+
+authoritative_inputs:
+  - AGENTS.md
+  - Pasted markdown.md
+  - docs/architecture/ADR-001-harness-boundary.md
+  - docs/architecture/ADR-001-PRO-REVIEW.md
+  - gate-records/ADR-001-PASS.yaml
+  - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+  - UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md
+  - UPE_v5.6.0_RELEASE/04_GPT_5.6_RUNTIME_PROFILE.md
+  - UPE_v5.6.0_RELEASE/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md
+  - UPE_v5.6.0_RELEASE/06_SOURCE_MAP.md
+  - UPE_v5.6.0_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml
+
+required_outputs:
+  canonical_tasks:
+    - task_id: W-201
+      title: Write the ChatGPT Work loop adapter
+      paths: [docs/work/CHATGPT_WORK_LOOP_ADAPTER.md]
+    - task_id: W-202
+      title: Finalize the web/local Work/local Codex routing matrix
+      paths: [docs/work/WEB_VS_LOCAL_ROUTING.md]
+    - task_id: W-203
+      title: Define the generator/verifier protocol
+      paths: [docs/work/GENERATOR_VERIFIER_PROTOCOL.md]
+    - task_id: W-204
+      title: Define the Work-to-Codex and Codex-to-Work handoff protocol
+      paths:
+        - docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md
+        - schemas/handoff.schema.yaml
+    - task_id: W-205
+      title: Design the Work goal contract schema
+      paths: [schemas/goal_contract.schema.yaml]
+    - task_id: W-206
+      title: Design the Work loop-state schema
+      paths: [schemas/work_loop_state.schema.yaml]
+    - task_id: W-207
+      title: Design the verifier-result schema
+      paths: [schemas/verifier_result.schema.yaml]
+    - task_id: W-208
+      title: Design the capability-execution record
+      paths: [schemas/capability_execution_record.schema.yaml]
+    - task_id: W-209
+      title: Create the human-readable Work acceptance cases
+      paths: [evals/work_loop_acceptance_cases.yaml]
+    - task_id: W-210
+      title: Write the dated model/effort routing reference
+      paths: [docs/work/MODEL_EFFORT_ROUTING.md]
+  phase_supporting_artifacts:
+    - path: docs/work/SECURITY_THREAT_BOUNDARY.md
+      purpose: Cross-cutting security and threat-boundary specification
+    - path: docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+      purpose: Cross-cutting recovery, evaluation, and operations specification
+    - path: handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+      purpose: Accepted-specification handoff to Local Codex
+    - path: handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+      purpose: Resumable phase checkpoint
+    - path: validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+      purpose: This phase acceptance record
+    - path: validation/W-200-CROSS-DOCUMENT-REVIEW.md
+      purpose: Requirement, vocabulary, identity, security, and recovery consistency review
+    - path: validation/W-200-STATIC-VALIDATION.json
+      purpose: Machine-readable deterministic validation result
+    - path: validation/W-200-CONTENT-MANIFEST.sha256
+      purpose: Non-self-referential accepted-content identity
+
+gates:
+  - id: G1-contract-and-coverage
+    critical: true
+    verdict: PASS
+    required_checks:
+      - Every canonical output exists at the backlog-defined path.
+      - Every W-201 through W-210 completion criterion maps to inspectable content.
+      - Supplemental phase artifacts are not misrepresented as canonical W tasks.
+      - Scope exclusions and done conditions are explicit.
+    evidence:
+      - validation/W-200-STATIC-VALIDATION.json#checks.canonical_task_mapping
+      - validation/W-200-CROSS-DOCUMENT-REVIEW.md#canonical-mapping
+      - README.md#W-201W-210-canonical-mapping
+
+  - id: G2-evidence-and-integrity
+    critical: true
+    verdict: PASS
+    required_checks:
+      - Current model/product claims are dated and source-grounded.
+      - Source-copy identity and referenced repository paths are verified.
+      - No implementation, test, App Server smoke, or external-action claim exceeds evidence.
+      - Missing evidence remains UNKNOWN or INSUFFICIENT_EVIDENCE.
+    evidence:
+      - docs/work/MODEL_EFFORT_ROUTING.md#source-basis
+      - handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml#source_identity
+      - validation/W-200-STATIC-VALIDATION.json#checks.example_repository_references
+
+  - id: G3-feasibility-safety-delivery
+    critical: true
+    verdict: PASS
+    required_checks:
+      - Work, desktop Work, Local Codex, model, effort, Pro, orchestration, and tool boundaries are consistent.
+      - Host-owned credentials, approvals, state, actions, recovery, and path security match ADR-001.
+      - Single-agent v0, fake-adapter-first, and deferred-feature boundaries are preserved.
+      - Local implementation brief is executable without hidden conversation context.
+    evidence:
+      - docs/work/SECURITY_THREAT_BOUNDARY.md
+      - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+      - validation/W-200-CROSS-DOCUMENT-REVIEW.md#contract-alignment
+      - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+
+  - id: G4-yaml-and-schema-static-validation
+    critical: true
+    verdict: PASS
+    required_checks:
+      - Every YAML artifact parses as exactly one document.
+      - All five JSON Schema documents have valid schema structure and unique identifiers.
+      - Positive examples validate and required-field/type/enum/additional-property negative examples fail.
+      - Schema references and repository paths resolve without network access.
+    evidence:
+      - validation/W-200-STATIC-VALIDATION.json
+      - scripts/validate_work_specifications.py
+      - examples/specifications/
+
+  - id: G5-cross-document-consistency
+    critical: true
+    verdict: PASS
+    required_checks:
+      - Status and verdict vocabularies translate explicitly without conflation.
+      - Goal, loop-state, verifier, capability, and handoff identifiers/reference fields align.
+      - Approval, evidence, retry, checkpoint, completion, and stop semantics do not conflict.
+      - W-209 cases cover the canonical list plus injection, approval, path, secret, crash, retry, duplicate-action, and unknown-evidence behavior.
+      - W-210 separates surface, model tier, effort, Pro mode, orchestration, and tools.
+    evidence:
+      - validation/W-200-CROSS-DOCUMENT-REVIEW.md
+      - validation/W-200-STATIC-VALIDATION.json#checks.cross_contract_examples
+      - evals/work_loop_acceptance_cases.yaml#coverage
+
+  - id: G6-local-handoff-readiness
+    critical: true
+    verdict: PASS
+    required_checks:
+      - The handoff names repository/ref verification, authoritative inputs, accepted outputs, constraints, unknowns, tests, rollback, and next canonical task.
+      - The Windows-native ADR override of stale WSL2 backlog wording is explicit.
+      - Future commit/push/PR/merge/release/deploy authority is not inferred from this phase.
+    evidence:
+      - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+      - handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+      - examples/specifications/local_implementation_goal.example.yaml
+      - examples/specifications/handoff.example.yaml
+
+blocking_unknowns: []
+
+later_phase_unknowns:
+  - Live App Server initialize/thread/turn/tool/approval/interrupt/reconnect behavior remains untested.
+  - Windows-target dependency resolution and supported Python range remain unproved.
+  - Harness runtime, persistence, recovery, path-security, redaction, idempotency, and evaluator behavior remain unimplemented.
+  - CI and release readiness remain later-phase work.
+
+finalization_evidence:
+  - Repository identity and base commit were re-inspected before branch creation.
+  - Canonical task mapping was parsed directly from the repository backlog.
+  - Deterministic validation completed with status PASS.
+  - Cross-document consistency review completed with status PASS.
+  - Fresh independent read-only audit completed with no blocking finding.
+  - Complete diff scope and content manifest verification passed before publication.
+
+vocabulary_boundary:
+  phase_gate: [PASS, FAIL, UNKNOWN]
+  criterion_verifier_and_handoff: [PASS, FAIL, INSUFFICIENT_EVIDENCE]
+  rule: >-
+    UNKNOWN remains available for a future phase gate that genuinely lacks
+    evidence, but no critical UNKNOWN remains in this accepted record. When a
+    phase UNKNOWN is materialized into a new criterion/verifier/handoff result,
+    translate it explicitly to INSUFFICIENT_EVIDENCE with the gap preserved;
+    never translate either value to PASS without evidence.
+
+decision_rule: >-
+  PASS requires all six critical gates to be PASS. Any critical FAIL blocks the
+  local implementation handoff. Any critical UNKNOWN leaves the phase incomplete.

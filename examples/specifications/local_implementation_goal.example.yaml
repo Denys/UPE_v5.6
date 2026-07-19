@@ -1,0 +1,105 @@
+schema_version: 1.0.0
+goal_id: goal.c301.pre-edit
+objective: Re-inspect repository state and create the canonical C-301 pre-edit context before implementation.
+scope:
+  in_scope:
+    - Read-only repository, ref, worktree, runtime-evidence, and accepted-specification inspection.
+    - Creation of the C-301 pre-edit context after explicit implementation authorization.
+  out_of_scope:
+    - Harness runtime implementation, commit, push, pull request, merge, release, or deployment.
+  allowed_files:
+    - kind: REPOSITORY_PATH
+      ref: agent/state/pre-edit-context.yaml
+      description: Canonical C-301 output.
+  allowed_systems:
+    - Denys/UPE_v5.6 local worktree
+authoritative_inputs:
+  - kind: REPOSITORY_PATH
+    ref: handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+    description: Accepted implementation handoff.
+  - kind: REPOSITORY_PATH
+    ref: chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+    description: Canonical C-301 mapping and acceptance criteria.
+done_conditions:
+  - id: done.c301-context
+    description: The pre-edit context records repo/ref/status, preserves unrelated changes, selects one slice, and names tests and rollback.
+    mandatory: true
+    verification:
+      method: HUMAN_REVIEW
+      evidence_required: true
+      validator_refs: []
+      evaluator_access: READ_ONLY
+    output_ids:
+      - output.c301-context
+    release_blocking: true
+constraints:
+  must:
+    - id: must.reinspect
+      description: Inspect current state; do not reuse C-101 observations as current evidence.
+  must_not:
+    - id: must-not.implement
+      description: Do not begin runtime implementation in C-301.
+  safety:
+    - id: safety.preserve
+      description: Preserve unrelated worktree state and stop on repository divergence.
+  evidence:
+    - id: evidence.current
+      description: Record exact commands or structured observations with the current ref and status.
+tools:
+  required:
+    - capability_id: local.repository
+      purpose: Inspect the exact repository and write the bounded pre-edit context.
+      required_action_scope: WRITE
+      capability_record_ref: null
+      fallback: Return a read-only blocker if the exact local repository cannot be verified.
+  optional: []
+  avoid_or_disable:
+    - capability_id: external.repository.write
+      reason: C-301 does not require a remote repository mutation.
+  actual_exposure_required: true
+approvals:
+  external_write_default: EXPLICIT_AUTHORIZATION
+  consequential_action_default: STRICT_PREFLIGHT
+  rules:
+    - action_class: WRITE
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Create or update only agent/state/pre-edit-context.yaml for C-301.
+      approver: user
+    - action_class: COMMIT
+      requirement: FORBIDDEN
+      scope: No implementation commit is authorized by this handoff.
+      approver: user
+  authorization_refs: []
+budget:
+  max_iterations: 3
+  max_elapsed_seconds: 1800
+  max_input_tokens: null
+  max_output_tokens: null
+  max_total_tokens: null
+  max_cost: null
+  retry_policy:
+    max_transient_retries: 1
+    identical_failure_limit: 1
+    no_progress_iteration_limit: 1
+  enforcement_owner: TRUSTED_HOST
+  stop_on_exhaustion: true
+outputs:
+  - id: output.c301-context
+    description: Current pre-edit repository and validation context.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: agent/state/pre-edit-context.yaml
+      description: Canonical C-301 output path.
+    format: YAML
+    required: true
+    done_condition_ids:
+      - done.c301-context
+completion_policy:
+  rule: ALL_MANDATORY_CONDITIONS_PASS
+  deterministic_validation_first: true
+  evidence_required: true
+  fail_blocks_completion: true
+  insufficient_evidence_blocks_completion: true
+  worker_self_attestation_sufficient: false
+created_at: '2026-07-19T00:00:00+02:00'
+updated_at: null

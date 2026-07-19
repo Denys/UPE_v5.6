@@ -1,0 +1,124 @@
+schema_version: 1.0.0
+state_id: state.w200.specification
+goal_id: goal.w200.specification
+run_id: run.w200.2026-07-19
+goal_contract_ref:
+  kind: REPOSITORY_PATH
+  ref: examples/specifications/goal_contract.example.yaml
+  description: Validated example goal contract.
+status: COMPLETED
+completion_verdict: PASS
+iteration:
+  current: 1
+  maximum: 20
+  last_progress_at: '2026-07-19T00:00:00+02:00'
+  identical_failure_count: 0
+  no_progress_count: 0
+completed:
+  - id: W-201
+    summary: Work loop adapter specification completed.
+    verdict: PASS
+    evidence_refs:
+      - kind: REPOSITORY_PATH
+        ref: docs/work/CHATGPT_WORK_LOOP_ADAPTER.md
+        description: W-201 output.
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-202
+    summary: Web/Local routing specification completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: docs/work/WEB_VS_LOCAL_ROUTING.md, description: W-202 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-203
+    summary: Generator/verifier protocol completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: docs/work/GENERATOR_VERIFIER_PROTOCOL.md, description: W-203 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-204
+    summary: Work-to-Codex handoff protocol and schema completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: schemas/handoff.schema.yaml, description: W-204 machine contract.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-205
+    summary: Goal-contract schema completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: schemas/goal_contract.schema.yaml, description: W-205 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-206
+    summary: Work-loop-state schema completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: schemas/work_loop_state.schema.yaml, description: W-206 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-207
+    summary: Verifier-result schema completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: schemas/verifier_result.schema.yaml, description: W-207 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-208
+    summary: Capability-execution-record schema completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: schemas/capability_execution_record.schema.yaml, description: W-208 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-209
+    summary: Work acceptance cases completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: evals/work_loop_acceptance_cases.yaml, description: W-209 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+  - id: W-210
+    summary: Dated model/effort routing reference completed.
+    verdict: PASS
+    evidence_refs:
+      - {kind: REPOSITORY_PATH, ref: docs/work/MODEL_EFFORT_ROUTING.md, description: W-210 output.}
+    completed_at: '2026-07-19T00:00:00+02:00'
+evidence:
+  - kind: COMMAND_RESULT
+    ref: scripts/validate_work_specifications.py
+    description: Deterministic specification validation result.
+    verdict: PASS
+    observed_at: '2026-07-19T00:00:00+02:00'
+failed_checks: []
+remaining: []
+approvals_needed: []
+budget:
+  limits:
+    iterations: 20
+    elapsed_seconds: 14400
+    input_tokens: null
+    output_tokens: null
+    total_tokens: null
+    cost: null
+  consumed:
+    iterations: 1
+    elapsed_seconds: 60
+    input_tokens: null
+    output_tokens: null
+    total_tokens: null
+    cost: null
+  exhausted_dimensions: []
+durability:
+  authority: WORK_PROJECT_ARTIFACT
+  host_state_ref: null
+  last_transition_id: null
+  event_seq: null
+  outbox_reconciliation: NOT_APPLICABLE
+  action_reconciliation: NOT_APPLICABLE
+checkpoint_ref:
+  kind: REPOSITORY_PATH
+  ref: handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+  description: Work specification checkpoint.
+next_action: null
+stop_reason:
+  code: COMPLETED
+  summary: All mandatory specification criteria passed.
+  evidence_refs:
+    - kind: REPOSITORY_PATH
+      ref: validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+      description: Specification acceptance gate.
+updated_at: '2026-07-19T00:00:00+02:00'

@@ -1,0 +1,157 @@
+schema_version: 1.0.0
+handoff_id: HO-W200-local-implementation
+revision: 1
+direction: WORK_TO_CODEX
+created_at: '2026-07-19T00:00:00+02:00'
+producer:
+  surface: WEB_WORK
+  actor: Work specification coordinator
+consumer:
+  surface: LOCAL_CODEX
+  actor: Local harness implementer
+task:
+  task_id: C-301
+  goal_id: goal.c301.pre-edit
+  goal_contract_ref:
+    kind: REPOSITORY_PATH
+    ref: examples/specifications/local_implementation_goal.example.yaml
+    description: C-301 pre-edit goal contract.
+  title: Re-inspect repository state immediately before edits
+  contract_version: 1.0.0
+  status: APPROVAL_REQUIRED
+repository:
+  provider: GITHUB
+  owner: Denys
+  name: UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6
+  base_ref: main
+  observed_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+  delivery_ref: work/w201-w210-specification
+  observed_at: '2026-07-19T00:00:00+02:00'
+  local_root: null
+  worktree_state: UNKNOWN
+  dirty_paths: []
+authoritative_inputs:
+  - input_id: IN-adr-001
+    kind: ADR
+    location: docs/architecture/ADR-001-harness-boundary.md
+    version_or_ref: main@507cccc1a8dda824220b67afc8c39480b7fb8104
+    digest: null
+    required: true
+  - input_id: IN-goal-schema
+    kind: SCHEMA
+    location: schemas/goal_contract.schema.yaml
+    version_or_ref: '1.0.0'
+    digest: null
+    required: true
+  - input_id: IN-c301-goal
+    kind: SCHEMA
+    location: examples/specifications/local_implementation_goal.example.yaml
+    version_or_ref: '1.0.0'
+    digest: null
+    required: true
+scope:
+  in_scope:
+    - Re-inspect repository identity, ref, status, and worktrees before local implementation edits.
+  out_of_scope:
+    - Harness runtime implementation before the pre-edit context is accepted.
+  allowed_paths:
+    - agent/state/pre-edit-context.yaml
+  forbidden_actions:
+    - Merge, release, deploy, or change repository visibility.
+must_requirements:
+  - must_id: MUST-pre-edit-context
+    statement: Record repository identity, current ref and status, unrelated changes, selected slice, tests, and rollback path.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-pre-edit-context
+    evidence_refs: []
+outputs:
+  - output_id: OUT-pre-edit-context
+    location: agent/state/pre-edit-context.yaml
+    media_type: application/yaml
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+evidence:
+  - evidence_id: EV-schema-validation
+    kind: SCHEMA_VALIDATION
+    location: validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+    captured_at: '2026-07-19T00:00:00+02:00'
+    version_or_ref: work/w201-w210-specification
+    digest: null
+    supports:
+      - C-301
+    result: PASS
+    summary: Draft 2020-12 schemas passed deterministic validation.
+approvals:
+  policy: EXPLICIT_FOR_CONSEQUENTIAL
+  records:
+    - approval_id: AP-c301-write
+      action: WRITE
+      target: agent/state/pre-edit-context.yaml
+      exact_scope: Authorize the bounded C-301 local repository edit; no approval has been requested.
+      status: REQUIRED
+      authority_ref: null
+      recorded_at: '2026-07-19T00:00:00+02:00'
+      expires_at: null
+  still_required:
+    - WRITE
+  forbidden_without_new_approval:
+    - COMMIT
+    - PUSH
+    - CREATE_PR
+    - MERGE
+    - RELEASE
+    - DEPLOY
+state_snapshot:
+  authority: REPOSITORY_HANDOFF
+  canonical_state_ref: examples/specifications/work_loop_state.example.yaml
+  run_id: null
+  lifecycle_state: NOT_APPLICABLE
+  iteration: 0
+  event_seq: null
+  last_transition_id: null
+  captured_at: '2026-07-19T00:00:00+02:00'
+checkpoint:
+  checkpoint_id: CP-W200-specification
+  kind: REPOSITORY_ARTIFACT
+  reference: validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+  created_at: '2026-07-19T00:00:00+02:00'
+  verified: true
+  previous_checkpoint_id: null
+  artifact_hashes: []
+  validation_refs:
+    - EV-schema-validation
+external_actions: []
+verification:
+  overall: PASS
+  criteria:
+    - criterion_id: criterion.schema-validation
+      verdict: PASS
+      blocking: true
+      evidence_refs:
+        - EV-schema-validation
+      smallest_correction: null
+      missing_evidence: []
+unresolved: []
+recovery:
+  last_stable_checkpoint_id: CP-W200-specification
+  resume_preconditions:
+    - Reinspect repository identity, ref, and working-tree status before edits.
+  revalidate:
+    - Re-run schema validation if any accepted schema changes.
+  do_not_repeat:
+    - Do not redesign the accepted W-205 through W-208 schemas.
+  reconciliation_required: false
+next_action:
+  status: WAITING_APPROVAL
+  owner: OPERATOR
+  action: Authorize the bounded C-301 local repository edit before Local Codex writes the pre-edit context.
+  preconditions:
+    - Preserve unrelated changes.
+  stop_conditions:
+    - Stop on repository divergence, missing authority, or a required consequential action.
+  approval_refs:
+    - AP-c301-write
