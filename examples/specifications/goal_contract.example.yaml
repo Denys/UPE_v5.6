@@ -1,0 +1,162 @@
+schema_version: 1.0.0
+goal_id: goal.w200.specification
+objective: Complete and validate the W-201 through W-210 Work specification bundle.
+scope:
+  in_scope:
+    - Work-facing protocols, schemas, acceptance cases, and handoffs.
+  out_of_scope:
+    - Harness runtime implementation.
+  allowed_files:
+    - kind: REPOSITORY_PATH
+      ref: docs/work/
+      description: Work specification documents.
+    - kind: REPOSITORY_PATH
+      ref: schemas/
+      description: Work-owned JSON Schemas.
+    - kind: REPOSITORY_PATH
+      ref: evals/
+      description: Work-loop acceptance cases.
+    - kind: REPOSITORY_PATH
+      ref: handoffs/
+      description: Phase checkpoint and Local Codex implementation brief.
+    - kind: REPOSITORY_PATH
+      ref: validation/
+      description: Static and cross-document acceptance evidence.
+    - kind: REPOSITORY_PATH
+      ref: examples/specifications/
+      description: Positive schema fixtures.
+    - kind: REPOSITORY_PATH
+      ref: scripts/
+      description: Deterministic specification validator.
+  allowed_systems:
+    - Denys/UPE_v5.6
+authoritative_inputs:
+  - kind: REPOSITORY_PATH
+    ref: docs/architecture/ADR-001-harness-boundary.md
+    description: Accepted architecture boundary.
+done_conditions:
+  - id: done.specification
+    description: Every canonical specification output exists and passes deterministic validation.
+    mandatory: true
+    verification:
+      method: DETERMINISTIC
+      evidence_required: true
+      validator_refs:
+        - kind: REPOSITORY_PATH
+          ref: scripts/validate_work_specifications.py
+          description: W-200 deterministic validator.
+      evaluator_access: NOT_APPLICABLE
+    output_ids:
+      - output.work-docs
+      - output.schemas
+      - output.acceptance
+      - output.phase-package
+    release_blocking: true
+constraints:
+  must:
+    - id: must.canonical-mapping
+      description: Preserve the canonical W-201 through W-210 task mapping.
+  must_not:
+    - id: must-not.runtime
+      description: Do not implement the harness runtime in this phase.
+  safety:
+    - id: safety.merge
+      description: Do not merge, release, or deploy.
+  evidence:
+    - id: evidence.files
+      description: Completion claims must reference inspected files and executed checks.
+tools:
+  required:
+    - capability_id: github.repository
+      purpose: Inspect and publish the authorized specification branch.
+      required_action_scope: WRITE
+      capability_record_ref: null
+      fallback: Stop before external publication if repository access is unavailable.
+  optional: []
+  avoid_or_disable:
+    - capability_id: browser.computer-use
+      reason: Structured repository and official-document access are sufficient.
+  actual_exposure_required: true
+approvals:
+  external_write_default: EXPLICIT_AUTHORIZATION
+  consequential_action_default: STRICT_PREFLIGHT
+  rules:
+    - action_class: COMMIT
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Exact repository, branch, files, and PR target.
+      approver: user
+    - action_class: PUSH
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Dedicated work/w201-w210-specification branch only.
+      approver: user
+    - action_class: CREATE_PR
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: One draft PR from the dedicated branch to main; merge excluded.
+      approver: user
+  authorization_refs:
+    - kind: EXTERNAL_RESOURCE
+      ref: user-authorization:2026-07-19/full-phase
+      description: User authorization for branch, commit, push, and draft PR; merge excluded.
+budget:
+  max_iterations: 20
+  max_elapsed_seconds: 14400
+  max_input_tokens: null
+  max_output_tokens: null
+  max_total_tokens: null
+  max_cost: null
+  retry_policy:
+    max_transient_retries: 2
+    identical_failure_limit: 2
+    no_progress_iteration_limit: 3
+  enforcement_owner: WORK_COORDINATOR
+  stop_on_exhaustion: true
+outputs:
+  - id: output.work-docs
+    description: Validated W-201 through W-210 human-readable specifications.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: docs/work/
+      description: Work specification document directory.
+    format: Markdown
+    required: true
+    done_condition_ids:
+      - done.specification
+  - id: output.schemas
+    description: Validated W-204 through W-208 machine contracts.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: schemas/
+      description: JSON Schema directory.
+    format: YAML JSON Schema Draft 2020-12
+    required: true
+    done_condition_ids:
+      - done.specification
+  - id: output.acceptance
+    description: Work-loop acceptance cases and executable fixtures.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/
+      description: Acceptance case directory.
+    format: YAML
+    required: true
+    done_condition_ids:
+      - done.specification
+  - id: output.phase-package
+    description: Acceptance, consistency, checkpoint, examples, and implementation handoff package.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: validation/
+      description: Phase acceptance evidence directory; related handoff and example paths are listed in scope.
+    format: Markdown, YAML, JSON, and SHA-256 manifest
+    required: true
+    done_condition_ids:
+      - done.specification
+completion_policy:
+  rule: ALL_MANDATORY_CONDITIONS_PASS
+  deterministic_validation_first: true
+  evidence_required: true
+  fail_blocks_completion: true
+  insufficient_evidence_blocks_completion: true
+  worker_self_attestation_sufficient: false
+created_at: '2026-07-19T00:00:00+02:00'
+updated_at: null

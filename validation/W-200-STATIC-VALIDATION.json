@@ -1,0 +1,131 @@
+{
+  "checks": {
+    "acceptance_case_coverage": {
+      "case_count": 16,
+      "errors": [],
+      "status": "PASS"
+    },
+    "canonical_task_mapping": {
+      "mapping_errors": [],
+      "missing_ids": [],
+      "status": "PASS"
+    },
+    "cross_contract_examples": {
+      "errors": [],
+      "status": "PASS"
+    },
+    "example_repository_references": {
+      "errors": [],
+      "status": "PASS"
+    },
+    "json_schema_2020_12": {
+      "additional_examples": {
+        "schemas/goal_contract.schema.yaml / examples/specifications/local_implementation_goal.example.yaml": "PASS"
+      },
+      "results": {
+        "schemas/capability_execution_record.schema.yaml": "PASS",
+        "schemas/goal_contract.schema.yaml": "PASS",
+        "schemas/handoff.schema.yaml": "PASS",
+        "schemas/verifier_result.schema.yaml": "PASS",
+        "schemas/work_loop_state.schema.yaml": "PASS"
+      },
+      "status": "PASS"
+    },
+    "markdown_local_links": {
+      "errors": [],
+      "files_checked": 10,
+      "status": "PASS"
+    },
+    "negative_schema_cases": {
+      "results": {
+        "schemas/capability_execution_record.schema.yaml": {
+          "additional_property": "PASS",
+          "enum_or_const": "PASS",
+          "occurred_effect_without_authorization_ref": "PASS",
+          "required_field": "PASS",
+          "type": "PASS"
+        },
+        "schemas/goal_contract.schema.yaml": {
+          "additional_property": "PASS",
+          "enum_or_const": "PASS",
+          "required_field": "PASS",
+          "type": "PASS"
+        },
+        "schemas/handoff.schema.yaml": {
+          "additional_property": "PASS",
+          "enum_or_const": "PASS",
+          "external_action_without_approval": "PASS",
+          "pass_with_failed_criterion": "PASS",
+          "required_field": "PASS",
+          "type": "PASS",
+          "unsafe_relative_path": "PASS"
+        },
+        "schemas/verifier_result.schema.yaml": {
+          "additional_property": "PASS",
+          "enum_or_const": "PASS",
+          "pass_with_insufficient_criterion": "PASS",
+          "required_field": "PASS",
+          "type": "PASS"
+        },
+        "schemas/work_loop_state.schema.yaml": {
+          "additional_property": "PASS",
+          "enum_or_const": "PASS",
+          "required_field": "PASS",
+          "type": "PASS"
+        }
+      },
+      "status": "PASS"
+    },
+    "required_files": {
+      "count": 19,
+      "expected": 19,
+      "missing": [],
+      "status": "PASS"
+    },
+    "schema_local_references_and_ids": {
+      "duplicate_ids": [],
+      "results": {
+        "schemas/capability_execution_record.schema.yaml": {
+          "count": 50,
+          "invalid": [],
+          "status": "PASS"
+        },
+        "schemas/goal_contract.schema.yaml": {
+          "count": 41,
+          "invalid": [],
+          "status": "PASS"
+        },
+        "schemas/handoff.schema.yaml": {
+          "count": 65,
+          "invalid": [],
+          "status": "PASS"
+        },
+        "schemas/verifier_result.schema.yaml": {
+          "count": 25,
+          "invalid": [],
+          "status": "PASS"
+        },
+        "schemas/work_loop_state.schema.yaml": {
+          "count": 56,
+          "invalid": [],
+          "status": "PASS"
+        }
+      },
+      "status": "PASS"
+    },
+    "yaml_json_parse": {
+      "count": 16,
+      "expected": 16,
+      "status": "PASS"
+    }
+  },
+  "errors": [],
+  "gate": "W-200-SPECIFICATION",
+  "runtime": {
+    "PyYAML": "6.0.3",
+    "jsonschema": "4.26.0",
+    "python": "3.12.13"
+  },
+  "schema_version": "1.0",
+  "status": "PASS"
+}

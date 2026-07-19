@@ -1,0 +1,142 @@
+schema_version: '1.0'
+checkpoint_id: W-200-SPECIFICATION-CHECKPOINT
+record_kind: phase_checkpoint
+canonical_backlog_task_id: null
+phase: 3-web-specification
+created: '2026-07-19'
+status: PASS
+status_reason: >-
+  W-201 through W-210 and the supporting Web-owned phase package passed
+  deterministic and cross-document validation. Accepted content is identified
+  by a SHA-256 manifest; the provider-assigned commit is resolved from the
+  delivery ref after publication rather than embedded self-referentially.
+
+goal: >-
+  Produce an internally consistent, statically valid W-201 through W-210
+  specification package and an executable, evidence-complete handoff to the
+  Windows-native Local Codex implementation phase.
+
+repository:
+  identity: Denys/UPE_v5.6
+  base_branch: main
+  base_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+  working_branch: work/w201-w210-specification
+  accepted_content_manifest: validation/W-200-CONTENT-MANIFEST.sha256
+  provider_commit: RESOLVE_DELIVERY_REF_AFTER_PUBLICATION
+  dirty_state_at_finalization: EXPECTED_W200_SCOPE_ONLY
+  identity_rule: >-
+    Resolve refs/heads/work/w201-w210-specification to its provider commit,
+    then verify the content manifest. The commit cannot be embedded in content
+    that contributes to that same commit without creating a recursive identity.
+
+canonical_scope:
+  - W-201
+  - W-202
+  - W-203
+  - W-204
+  - W-205
+  - W-206
+  - W-207
+  - W-208
+  - W-209
+  - W-210
+
+authoritative_inputs:
+  - AGENTS.md
+  - Pasted markdown.md
+  - docs/architecture/ADR-001-harness-boundary.md
+  - gate-records/ADR-001-PASS.yaml
+  - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+  - UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md
+  - UPE_v5.6.0_RELEASE/04_GPT_5.6_RUNTIME_PROFILE.md
+  - UPE_v5.6.0_RELEASE/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md
+  - UPE_v5.6.0_RELEASE/06_SOURCE_MAP.md
+  - UPE_v5.6.0_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml
+
+source_identity:
+  attached_copies_match_repository_release: true
+  comparison: raw_byte_identity
+  files:
+    - path: UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md
+      sha256: 94d5c2d16432fdd8dd8f424dda9eae46cdf311c57ea6b7a743f56acbe5c1b99b
+    - path: UPE_v5.6.0_RELEASE/04_GPT_5.6_RUNTIME_PROFILE.md
+      sha256: c8011a405440909c6327d38bf91d23b49b7572b710e0d6aabf4614b270b5da1f
+    - path: UPE_v5.6.0_RELEASE/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md
+      sha256: 1c175a3f5ba07b3178edef934254cc5a677f0d61e63551d845242d5876882790
+    - path: UPE_v5.6.0_RELEASE/06_SOURCE_MAP.md
+      sha256: 91a8fe530f910bc68b96d0cc0b00043aaf7cd34cc505de2ae069b2ab356c7a85
+    - path: UPE_v5.6.0_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml
+      sha256: d617cd75885f1f2917d983e5d2bafa2b9b6b8d9f1db6f598bf0cd4220260428f
+  note: The coordinator should re-run the comparison if either attached or repository copies change.
+
+must_status:
+  W-201: {artifact: docs/work/CHATGPT_WORK_LOOP_ADAPTER.md, status: PASS}
+  W-202: {artifact: docs/work/WEB_VS_LOCAL_ROUTING.md, status: PASS}
+  W-203: {artifact: docs/work/GENERATOR_VERIFIER_PROTOCOL.md, status: PASS}
+  W-204:
+    artifacts: [docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md, schemas/handoff.schema.yaml]
+    status: PASS
+  W-205: {artifact: schemas/goal_contract.schema.yaml, status: PASS}
+  W-206: {artifact: schemas/work_loop_state.schema.yaml, status: PASS}
+  W-207: {artifact: schemas/verifier_result.schema.yaml, status: PASS}
+  W-208: {artifact: schemas/capability_execution_record.schema.yaml, status: PASS}
+  W-209: {artifact: evals/work_loop_acceptance_cases.yaml, status: PASS}
+  W-210: {artifact: docs/work/MODEL_EFFORT_ROUTING.md, status: PASS}
+
+supporting_artifacts:
+  - docs/work/SECURITY_THREAT_BOUNDARY.md
+  - docs/work/RECOVERY_EVALUATION_OPERATIONS.md
+  - validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+  - validation/W-200-CROSS-DOCUMENT-REVIEW.md
+  - validation/W-200-STATIC-VALIDATION.json
+  - validation/W-200-CONTENT-MANIFEST.sha256
+  - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+  - examples/specifications/
+
+confirmed_decisions:
+  - ChatGPT Work owns research, specification, gates, review, and handoff; the trusted host owns runtime enforcement.
+  - Windows-native Codex is the current target; WSL2 language in C-302 is superseded by ADR-001.
+  - SQLite plus transactional outbox is authoritative; JSONL is repairable and deduplicated.
+  - External actions use stable action identities, scoped approvals, and reconciliation before retry.
+  - Deterministic validation precedes an optional read-only verifier.
+  - Routine checkpoints are host snapshots; Git commits are separately approval-gated.
+  - v0 remains single-agent and fake-adapter first.
+
+verification:
+  file_presence: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  yaml_parse: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  json_schema_static: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  positive_negative_schema_examples: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  local_reference_resolution: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  cross_document_consistency: {verdict: PASS, evidence: [validation/W-200-CROSS-DOCUMENT-REVIEW.md]}
+  acceptance_case_coverage: {verdict: PASS, evidence: [validation/W-200-STATIC-VALIDATION.json]}
+  security_and_recovery_review: {verdict: PASS, evidence: [validation/W-200-CROSS-DOCUMENT-REVIEW.md]}
+  diff_scope_review: {verdict: PASS, evidence: [validation/W-200-CONTENT-MANIFEST.sha256]}
+
+unresolved:
+  - Live App Server behavior, Python dependency compatibility, CI, and runtime tests remain later-phase unknowns.
+  - C-301 local implementation work requires a separately authorized implementation task.
+
+external_state_changes:
+  - >-
+    The user authorized creation/update of the dedicated specification branch,
+    commit/push, and one draft PR for this phase. No merge, release, deployment,
+    visibility change, or future implementation action is authorized by this checkpoint.
+
+recovery:
+  resume_from: >-
+    Inspect the working branch and all required paths; preserve completed files;
+    run only missing integration and validation work.
+  do_not_repeat:
+    - ADR-001 architecture research and Pro review
+    - G-ADR decision
+    - Attached-versus-release source identity comparison unless either copy changes
+  next_actions:
+    - Resolve the published delivery ref and verify validation/W-200-CONTENT-MANIFEST.sha256.
+    - Review the draft specification PR; merge remains separately authorization-gated.
+    - After specification adoption and a new implementation authorization, hand off canonical task C-301 to Local Codex.
+
+acceptance_rule: >-
+  This checkpoint is accepted only when the phase acceptance record is PASS,
+  every canonical W task is PASS, every critical verification item is PASS, and
+  the accepted-content manifest verifies against the resolved delivery ref.

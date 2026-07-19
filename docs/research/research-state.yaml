@@ -1,8 +1,20 @@
 upe_state:
   goal: >-
-    Research current OpenAI and Anthropic harness-engineering evidence, merge
-    target-environment observations, freeze the minimum v0 architecture, and
-    complete a fresh-context Pro review before implementation.
+    Complete and accept the Web/Work-owned W-201 through W-210 specification
+    package, repair current repository status records, and hand the next
+    canonical local task to Local Codex without claiming runtime implementation.
+
+  repository_status:
+    identity: Denys/UPE_v5.6
+    canonical_url: https://github.com/Denys/UPE_v5.6
+    default_branch: main
+    observed_main_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+    prior_target_pr_1:
+      state: MERGED
+      merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+    specification_delivery_ref: work/w201-w210-specification
+    main_adoption: PENDING_SEPARATE_MERGE_AUTHORIZATION
+
   must_status:
     research_matrix: PASS
     pattern_comparison: PASS
@@ -11,69 +23,97 @@ upe_state:
     adr_001: PASS
     pro_review: PASS
     adr_gate: PASS
+    repository_status_reconciliation: PASS
+    W-201: PASS
+    W-202: PASS
+    W-203: PASS
+    W-204: PASS
+    W-205: PASS
+    W-206: PASS
+    W-207: PASS
+    W-208: PASS
+    W-209: PASS
+    W-210: PASS
+    specification_acceptance: PASS
     harness_implementation: NOT_STARTED
+    local_implementation_authorization: NOT_GRANTED
+
   authoritative_inputs:
     - Pasted markdown.md
-    - docs/research/source-matrix.md
-    - docs/research/pattern-comparison.md
-    - docs/research/chatgpt-work-applicability.md
-    - docs/research/W-101-target-runtime-reconciliation.md
-    - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
-    - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
-    - docs/research/codex-runtime-observations.md
-    - docs/research/local-target-context.md
-    - docs/research/app-server-protocol-observations.md
-    - docs/research/generated-app-server-schema/codex-cli-0.144.3/
-    - docs/architecture/ADR-001-evidence-packet.md
+    - AGENTS.md
+    - README.md
+    - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
     - docs/architecture/ADR-001-harness-boundary.md
     - docs/architecture/ADR-001-PRO-REVIEW.md
     - gate-records/ADR-001-PASS.yaml
+    - UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md
+    - UPE_v5.6.0_RELEASE/04_GPT_5.6_RUNTIME_PROFILE.md
+    - UPE_v5.6.0_RELEASE/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md
+    - UPE_v5.6.0_RELEASE/06_SOURCE_MAP.md
+    - UPE_v5.6.0_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml
+    - docs/work/
+    - schemas/
+    - evals/work_loop_acceptance_cases.yaml
+    - validation/W-200-SPECIFICATION-ACCEPTANCE.yaml
+    - validation/W-200-CROSS-DOCUMENT-REVIEW.md
+    - handoffs/W-200-SPECIFICATION-CHECKPOINT.yaml
+    - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
+
   findings:
-    - Codex App Server remains the minimum v0 execution boundary; rebuilding Codex core in Agents SDK is not justified.
-    - The trusted-host contract is portable, while Windows-native Codex is the current v0 target. Earlier WSL2-first text is historical context, not an active dependency.
-    - The installed App Server surface is pinned to Codex CLI 0.144.3 and schema-validated; a live lifecycle smoke test remains required before adapter completion.
-    - SQLite is authoritative state and uses a transactional outbox to produce a replayable and deduplicated JSONL audit mirror.
-    - Potentially non-idempotent external actions use stable action IDs, recorded approval scope and reconciliation before retry.
-    - Routine rollback uses host-managed patch snapshots; Git commits are explicit approval-gated milestones.
-    - Deterministic validation precedes any read-only model evaluator.
-    - Single-agent v0 remains mandatory; planner, evaluator loops and multi-agent execution require representative eval evidence.
-    - The legacy-upstream merge is a recorded safety incident, not authorization for target-repository merge or release.
+    - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
+    - The later PR #1 merge and the phase-delivery authorization grant no standing authority for another merge, release, deployment, visibility change, or implementation publication.
+    - Canonical W-201 through W-210 titles, outputs, surfaces, and dependencies are taken directly from the repository backlog.
+    - Work owns the specification/gate/handoff phase; the trusted Windows host and Local Codex own runtime enforcement and executable proof.
+    - Five Draft 2020-12 schemas and six positive instances pass; required/type/value/additional-property and targeted safety negatives are rejected.
+    - W-209 contains the canonical eight cases plus eight requested security/recovery cases with unique IDs, oracles, and forbidden outcomes.
+    - Current v0 remains Windows-native, single-agent, fake-adapter first, SQLite-authoritative, transactional-outbox based, deterministic-first, and approval-gated.
+
   completed:
-    - Opened and classified all 30 requested live pages and repositories.
-    - Materialized the build brief and four accepted research files at canonical repository paths.
-    - Merged Windows-native repository, runtime and App Server observations for C-101 through C-105.
-    - Rechecked critical current official sources for App Server, harness engineering, Symphony, Agents SDK and evaluation design.
-    - Created the environment conflict log, ADR evidence packet and ADR-001.
-    - Applied the ADR gate.
-    - Completed a fresh-context Pro review.
-    - Repaired SQLite/JSONL crash consistency, external-action recovery and checkpoint-approval ambiguity.
-    - Removed temporary scratch files from the delivery branch.
+    - Re-inspected exact repository identity, default branch, current main commit, files, and PR #1 history.
+    - Repaired README, AGENTS, ADR/W-101/Run-02 follow-up, ADR gate follow-up, and this current state without rewriting dated historical snapshots.
+    - Completed all canonical W-201 through W-210 outputs and the supporting security, recovery, validation, example, checkpoint, and local implementation package.
+    - Ran duplicate-key YAML parsing, Draft 2020-12 meta/instance validation, positive and negative schema cases, local-reference checks, exact backlog mapping, W-209 coverage, and Markdown-link checks.
+    - Completed coordinator and fresh independent cross-document reviews with no blocking finding.
+
   unresolved:
-    - Run a controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
-    - Establish Python dependency compatibility after pyproject.toml exists; Windows Python 3.14.3 is observed but not yet a project runtime contract.
-    - Add CI before release readiness; no status checks currently protect the target PR.
-    - The actor and authorization history of the legacy-upstream merge remain unknown; no inference is made.
-    - Target repository visibility remains intentionally public until a separately authorized post-gate change.
+    - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
+    - Establish dependency and supported Python compatibility on the Windows target after a project manifest exists.
+    - Implement and test harness lifecycle, state/outbox, worktrees, action reconciliation, recovery, path containment, redaction, budgets, evaluator, and CLI in the C-series phases.
+    - Add CI and complete release/security review before release readiness.
+    - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
+    - Repository visibility remains public unless separately authorized to change.
+
   verification:
     method:
-      - local handoff YAML and Markdown review
-      - generated App Server archive integrity and inventory inspection
-      - current official-source refresh
-      - criterion-to-ADR mapping
-      - fresh-context Pro review
-      - YAML gate validation
-      - draft-branch scope and scratch-file review
+      - exact repository/backlog/status inspection
+      - attachment-to-release byte-identity comparison
+      - duplicate-key YAML parsing
+      - Draft 2020-12 schema meta-validation and positive/negative instances
+      - local schema/reference and Markdown-link resolution
+      - canonical task mapping and W-209 coverage checks
+      - cross-document vocabulary, identity, approval, security, and recovery review
+      - accepted-content SHA-256 manifest and diff-scope inspection
     result: PASS
-    note: >-
-      Architecture is accepted for v0 after Pro repair. Runtime adapter
-      functionality is not claimed until the controlled App Server smoke test
-      passes. Merge, release and deployment remain unauthorized.
+    scope_note: >-
+      PASS accepts the W-201 through W-210 specification phase only. Runtime
+      functionality, C-301 execution, merge, release, and deployment are not claimed.
+
+  historical_snapshots:
+    - WEB_RUN_01_REPORT.md
+    - WEB_RUN_02_REPORT.md
+    - handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml
+    - handoffs/CODEX_ENVIRONMENT_EVIDENCE.md
+    - docs/research/local-target-context.md
+    - chatgpt_work_harness_implementation_routing_2026-07-18/
+
   recovery: >-
-    Resume from W-201 through W-210. Preserve the draft PR, portable trusted-host
-    contract, Windows-native v0 target, transactional-outbox and action-journal
-    rules, single-agent v0, and fake-adapter-first ordering.
+    Resume from the accepted delivery ref and
+    validation/W-200-CONTENT-MANIFEST.sha256. Preserve W-201 through W-210,
+    the accepted architecture, and the explicit later-phase unknowns. Resolve
+    the delivery ref to its provider commit and verify the manifest before reuse.
+
   next_action: >-
-    Proceed to W-201 through W-210: freeze schemas, templates, prompts,
-    state/recovery contracts, security, evaluation and operations specifications.
-    Do not merge the draft PR or implement the real Codex adapter until the
-    relevant gates and smoke checks pass.
+    Review the draft W-201 through W-210 specification PR. Merge remains
+    separately authorization-gated. After specification adoption and a new
+    implementation authorization, execute canonical C-301: re-inspect current
+    repository state and write agent/state/pre-edit-context.yaml before edits.

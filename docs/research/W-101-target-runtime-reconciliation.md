@@ -43,9 +43,7 @@ They remain visible because evidence should not be rewritten merely because the 
 
 ## Safety reconciliation
 
-The separately observed legacy-upstream merge is a safety incident, not project authorization. The target PR remains draft and unmerged. Commit, push, PR, merge, release, deployment, visibility changes, external messages, purchases and production mutation remain approval-gated.
-
-The user's current instruction authorizes committing and pushing the reviewed architecture updates to `agent/windows-materialization-handoff-refresh`. It does not authorize merging the PR or modifying another branch.
+The separately observed legacy-upstream merge remains a historical safety incident, not project authorization. Target PR #1 was subsequently merged into `main` as `507cccc1a8dda824220b67afc8c39480b7fb8104`. The earlier authorization to update and push `agent/windows-materialization-handoff-refresh` was scoped to that delivery and grants no standing authority for later commits, pushes, PR changes, merges, releases, deployments, visibility changes, external messages, purchases, production mutation or unrelated repository mutation.
 
 ## Review condition
 

@@ -1,0 +1,43 @@
+schema_version: 1.0.0
+result_id: verifier.w200.pass
+goal_id: goal.w200.specification
+task_id: W-200
+evaluator:
+  evaluator_id: deterministic.w200
+  kind: DETERMINISTIC_VALIDATOR
+  independent_from_generator: true
+  access_mode: READ_ONLY
+  actual_artifact_inspection: true
+  runtime_identity: Python 3.12 with jsonschema Draft 2020-12
+goal_contract_ref:
+  kind: REPOSITORY_PATH
+  ref: examples/specifications/goal_contract.example.yaml
+  description: Frozen goal contract used by the verifier.
+artifact_refs:
+  - kind: REPOSITORY_PATH
+    ref: docs/work/
+    description: Work specification documents inspected by the verifier.
+criteria:
+  - criterion_id: criterion.required-files
+    statement: Every mandatory W-201 through W-210 output exists.
+    mandatory: true
+    verdict: PASS
+    evidence_refs:
+      - kind: COMMAND_RESULT
+        ref: scripts/validate_work_specifications.py
+        description: Required-file check result.
+    missing_evidence: []
+    smallest_correction: null
+    release_blocking: false
+overall_verdict: PASS
+release_blocking: false
+smallest_correction: null
+insufficient_evidence: []
+scope_preserved: true
+criteria_preserved: true
+evaluated_at: '2026-07-19T00:00:00+02:00'
+budget_usage:
+  elapsed_seconds: 1
+  input_tokens: null
+  output_tokens: null
+  cost: null

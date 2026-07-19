@@ -125,7 +125,7 @@ Recovery order is:
 
 Routine iteration checkpoints are host-managed snapshots containing the current diff or patch, file hashes, lifecycle state, validation evidence and recovery metadata. They do **not** require a Git commit.
 
-A local Git commit is a separate consequential action and requires explicit authorization. A previously authorized draft-branch update is limited to the stated branch and scope; it does not authorize merge, release, deployment or unrelated repository mutation.
+A local Git commit is a separate consequential action and requires explicit authorization. Authorization is bounded to its stated repository, branch, operation and scope; completed delivery authorization grants no standing authority for later commits, PR changes, merges, releases, deployments or unrelated mutation.
 
 ### 8. Authority and security
 
@@ -135,7 +135,7 @@ Explicit approval is required for:
 
 - commit;
 - push;
-- PR creation or modification beyond the currently authorized draft branch;
+- PR creation or modification;
 - merge;
 - release or deployment;
 - repository visibility or private recreation;
@@ -230,7 +230,7 @@ Rejected until representative evaluations identify independent workstreams and m
 - Live protocol behavior still requires a smoke test.
 - Windows-specific path containment requires careful testing.
 - SQLite outbox and action reconciliation add implementation complexity.
-- No CI currently protects the draft PR.
+- No tracked CI workflow or required status-check configuration currently protects `main`.
 - Python dependency compatibility is unresolved until the manifest exists.
 
 ## Implementation gates

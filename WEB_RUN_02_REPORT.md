@@ -31,18 +31,20 @@ ADR-001 now requires a SQLite transactional outbox, JSONL replay and deduplicati
 
 `gate-records/ADR-001-PASS.yaml` remains `PASS` at schema version `1.1`.
 
-The unexplained legacy-upstream merge remains a safety finding but does not block architecture. The target `Denys/UPE_v5.6#1` PR remains draft and unmerged.
+The unexplained legacy-upstream merge remains a safety finding but does not block architecture. The target `Denys/UPE_v5.6#1` PR was draft and unmerged when this report completed.
 
 ## Delivery state
 
-The reviewed ADR, gate, evidence packet, runtime reconciliation, Work applicability and research state are committed and pushed to:
+At report completion, the reviewed ADR, gate, evidence packet, runtime reconciliation, Work applicability and research state were committed and pushed to:
 
 `agent/windows-materialization-handoff-refresh`
 
 Temporary `TEMP_DO_NOT_USE*` files have been removed from the branch.
 
+**Repository follow-up — 2026-07-19:** PR #1 was merged into `main` as `507cccc1a8dda824220b67afc8c39480b7fb8104`; the delivery branch is no longer the current repository ref.
+
 ## Next executable range
 
 `W-201` through `W-210`: schemas, templates, prompts, state and recovery contracts, security, evaluation and operations specifications.
 
-Do not merge, release or deploy without separate explicit authorization.
+Any further merge, release or deployment requires separate explicit authorization.

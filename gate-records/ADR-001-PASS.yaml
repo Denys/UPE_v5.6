@@ -59,13 +59,13 @@ non_blocking_unknowns:
   - Legacy-upstream merge actor and authorization history is unknown.
   - Repository remains intentionally public.
 conditions:
-  - Proceed to W-201 through W-210.
+  - At the gate decision, proceed to W-201 through W-210; the current follow-up records that range as complete.
   - Specify transactional-outbox, deduplication, action-journal and recovery semantics before implementing persistent state.
   - Use host-managed patch snapshots for routine checkpoints; require approval for Git commits.
   - Do not mark the real Codex adapter tested until the controlled live smoke test passes.
-  - Do not merge the target draft PR or perform release or deployment without explicit authorization.
+  - At the gate decision, do not merge target PR #1 or perform release or deployment without explicit authorization.
   - Preserve single-agent v0 and fake-adapter-first implementation.
-next_backlog_range:
+next_backlog_range_at_decision:
   - W-201
   - W-202
   - W-203
@@ -76,3 +76,14 @@ next_backlog_range:
   - W-208
   - W-209
   - W-210
+current_follow_up:
+  observed_at: '2026-07-19'
+  target_pr_1:
+    state: MERGED
+    merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
+  W-201_through_W-210: PASS_ON_SPECIFICATION_DELIVERY_BRANCH
+  next_canonical_task_after_specification_adoption: C-301
+  authority_note: >-
+    The later PR #1 merge is repository history, not standing authorization.
+    This gate grants no authority for any new merge, release, deployment,
+    visibility change, implementation commit, push, or pull request.
