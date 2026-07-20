@@ -1,0 +1,118 @@
+schema_version: '1.0'
+record_id: C-403-RESULT
+generated_at: '2026-07-20T15:04:02.4365813+02:00'
+status: TESTED_LOCALLY
+
+task:
+  id: C-403
+  title: Implement the lifecycle/orchestrator against the fake adapter
+  verdict: PASS
+  gate: validation/C-403-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  C_401_dependency_committed: false
+  C_402_dependency_committed: false
+  C_403_committed: false
+
+authorization:
+  source: active user request authorizing C-403
+  granted:
+    - add lifecycle sequencing and canonical provider-event conversion
+    - add one-task synchronous orchestration against the deterministic fake adapter
+    - add focused tests and bounded C-403 evidence/current-state records
+  excluded:
+    - staging, commit, push, pull request, merge, release, and deployment
+    - external/network actions, visibility changes, and messages
+    - real providers, durable persistence, validator execution, executable policy, recovery, and C-404-plus behavior
+
+files_created:
+  - agent/state/C-403-pre-edit-context.yaml
+  - agent/state/C-403-result.yaml
+  - src/harness/lifecycle.py
+  - src/harness/orchestrator.py
+  - tests/unit/test_lifecycle.py
+  - validation/C-403-GATE.yaml
+files_updated:
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+
+implemented:
+  lifecycle_coordinator:
+    - runtime-checkable synchronous LifecycleCommitter port accepting an atomic Run/Event pair before returning
+    - deterministic transition IDs derived from run identity, next run-level event sequence, and next lifecycle state
+    - C-401 transition validation with commit acknowledgement before the updated Run is returned
+    - provider-local events converted to immutable canonical Event records with run-level sequencing, provider identity, local event/sequence references, correlation, evidence, error, and redaction data
+    - explicit reasoned stop and evidence-gated completion helpers
+  orchestrator:
+    - CREATED to INITIALIZING is committed before adapter start/preflight/session creation; successful setup then commits READY
+    - each invocation selects and dispatches exactly one READY Task through SELECTING_TASK and EXECUTING
+    - EXECUTING is committed before turn submission, and every yielded provider event is committed before the next event is requested
+    - success enters VALIDATING rather than completing from provider output; approval, expected failure, interruption, cancellation, malformed streams, and adapter exceptions map to typed reasoned outcomes
+    - finalization accepts only explicit passing validation/evaluation references and a checkpoint reference before READY or COMPLETED
+    - optional evaluation follows VALIDATING to EVALUATING to CHECKPOINTING; deterministic-only evidence follows VALIDATING directly to CHECKPOINTING
+  boundaries:
+    - LifecycleCommitter proves ordering but does not claim SQLite/outbox durability; C-406 owns the durable implementation
+    - finalization transports evidence references but does not run or interpret validators; C-404 owns deterministic validation
+    - approval continuation and stopped-run resume edges are not invented; C-503 owns resume and reconciliation
+    - no filesystem, subprocess, socket, network, model, database, dependency, schema, package-root export, or real-provider behavior was added
+
+verification:
+  result: PASS
+  summary:
+    recorded_dependency_hashes_pre_edit: PASS_C401_10_OF_10_C402_8_OF_8
+    focused_C403_pytest: 31_passed
+    integrated_C401_C402_C403_pytest: 179_passed
+    full_pytest: 198_passed
+    uv_sync_locked: PASS_33_PACKAGES
+    uv_lock: PASS
+    ruff: PASS
+    ruff_format: PASS_23_FILES
+    strict_mypy: PASS_17_SOURCE_FILES
+    reference_validator: PASS_41_LOCATION_237_SCHEMA
+    git_diff_check: PASS
+
+scoped_review:
+  verdict: PASS_NO_BLOCKING_FINDING
+  evidence:
+    - transition/event sequencing and every exception-to-stop path were inspected after focused tests
+    - shared test timelines prove INITIALIZING before adapter start, EXECUTING before submit, and each provider-event commit before the next yield
+    - lifecycle/orchestrator source imports no filesystem, subprocess, socket, network client, SQLite, validator runner, or real-provider module
+    - completion accepts explicit evidence records only and never derives PASS from output text or provider terminal success
+    - status and path inspection show no staging and no edit to protected user artifacts, stash, separate worktree, C-401 models/schemas, or C-402 adapter sources
+  independent_review_claimed: false
+
+evidence_hashes_sha256:
+  agent/state/C-403-pre-edit-context.yaml: 86c6d44924ad453a66990d83148b6e0cb6d79f9994dfbc9b85719cd49c127bee
+  src/harness/lifecycle.py: e4b0496cd552b3914c56d8a37aa1c2ebb9738f15e5f5b3349355daa133a4251f
+  src/harness/orchestrator.py: 23e3df5761fd16caa67b504b82f4e3edef82a4169d4485eea3addbd5bfaa345f
+  tests/unit/test_lifecycle.py: e1b6eaf58bc659a7c8c1712e846dbcf348758fe5b77d544d9201e45b7db16765
+  AGENTS.md: a41698cc450046775dde7283d3ff42cff8647fb904f1a628e26040c82f4fc545
+  README.md: 4caf8193879ef474b6bfbb9a8448323ba865707f27cb8a33c944107c410b92b5
+  docs/research/research-state.yaml: 9d863aab5cf56e95c03efe940ba9a978276b5d0d47710a99a9c1217b5ab57e80
+
+preserved_state:
+  pre_existing_C401_C402_state: preserved
+  protected_user_artifact_count: 5
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  staged_paths: 0
+  consequential_git_or_external_action: false
+
+known_limits:
+  - only installed Python 3.14.3 is verified; Python 3.12 and 3.13 remain unverified
+  - the interface is synchronous and single-agent; concurrency and re-entrancy are deferred
+  - LifecycleCommitter has no durable implementation in C-403; process restart recovery is not claimed
+  - explicit evidence references are accepted but not generated or semantically evaluated in C-403
+  - approval continuation and stopped-run resume/reconciliation remain deferred to their assigned tasks
+  - the Codex App Server adapter and live protocol smoke evidence remain C-501/C-502
+
+next_action: >-
+  Preserve the combined C-401/C-402/C-403 diff locally and uncommitted. Begin
+  C-404 only under a new bounded authorization; do not infer staging, commit,
+  remote, release, deployment, or C-404-plus authority.

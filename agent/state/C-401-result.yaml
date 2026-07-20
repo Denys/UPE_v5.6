@@ -1,0 +1,137 @@
+schema_version: '1.0'
+record_id: C-401-RESULT
+generated_at: '2026-07-20T12:31:08.2523881+02:00'
+status: TESTED_LOCALLY
+
+task:
+  id: C-401
+  title: Implement typed Goal, Task, Run, Event, configuration, and lifecycle models
+  verdict: PASS
+  gate: validation/C-401-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  committed: false
+
+authorization:
+  source: active user request
+  granted:
+    - create the local codex/c401-typed-models branch from verified main
+    - repair the clean-checkout validator-test regression
+    - implement, test, review, and record the bounded C-401 slice
+  excluded:
+    - commit, push, pull request, merge, release, and deployment
+    - adapters, orchestration, persistence, worktrees, recovery, evaluator, CLI, and App Server behavior
+    - executable budget, retry, or external-action enforcement
+
+files_changed:
+  - .gitignore
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+  - pyproject.toml
+  - tests/validators/test_validate_references.py
+  - tests/validators/test_validate_release.py
+  - tests/validators/test_validate_schema.py
+files_created:
+  - agent/state/C-401-pre-edit-context.yaml
+  - agent/state/C-401-result.yaml
+  - schemas/config.schema.json
+  - schemas/event.schema.json
+  - schemas/goal.schema.json
+  - schemas/run-state.schema.json
+  - schemas/task.schema.json
+  - src/harness/config.py
+  - src/harness/state.py
+  - tests/unit/test_config.py
+  - tests/unit/test_state.py
+  - validation/C-401-GATE.yaml
+
+implemented:
+  state:
+    - strict frozen, slotted, keyword-only standard-library dataclasses and StrEnum vocabularies
+    - lossless accepted W-205 Goal types with reciprocal criterion/output references
+    - strict Task, Run, Event, budget, approval, stop-reason, and terminal invariants
+    - UTC RFC 3339 serialization and strict mapping rejection of unknown keys, coercion, naive timestamps, invalid IDs, and duplicate references
+    - exact C-401 lifecycle graph and pure immutable transition_run Run/Event pairs
+    - typed state, transition, invalid-transition, and duplicate-transition errors
+  configuration:
+    - model-only provider, host limit, retry/backoff, validation ceiling, and fail-closed policy settings
+    - absolute local Windows path structural validation and lexical root separation
+    - derived database, event, checkpoint, and artifact locations below one host-state root
+    - no credential-value fields, file loader, discovery, environment precedence, or runtime dependency
+  schemas:
+    - five closed Draft 2020-12 JSON schemas at version 1.0.0
+    - structural W-205 parity for goal.schema.json, excluding only JSON-specific id/title identity
+    - unchanged accepted YAML schemas and unchanged package-root exports
+  baseline_repair:
+    - validator tests use pytest tmp_path rather than children of a pre-existing .pytest_cache
+    - pytest base temp is a repository-local ignored pytest-owned directory because the host default temp root is ACL-blocked
+
+verification:
+  result: PASS
+  summary:
+    clean_cache_validator_pytest: 17_passed
+    focused_state_pytest: 30_passed
+    focused_config_pytest: 98_passed
+    integrated_state_config_pytest: 128_passed
+    full_pytest: 147_passed
+    ruff: PASS
+    ruff_format: PASS
+    strict_mypy: PASS
+    uv_sync_locked: PASS_33_PACKAGES
+    uv_lock: PASS
+    C401_schema_unique_key_meta_validation: PASS_5_SCHEMAS
+    goal_schema_structural_parity: PASS
+    accepted_schema_validator: PASS_6_INSTANCES
+    reference_validator: PASS_41_LOCATION_237_SCHEMA
+    release_validator: PASS_26_FILES
+    W200_specification_regression: PASS
+    fixture_exit_matrix: PASS_0_0_0_1_1
+
+independent_review:
+  initial_verdict: CHANGES_REQUIRED
+  findings:
+    - transition_run allowed a timestamp earlier than the prior Run.updated_at
+    - resolved approval decisions could remain in live Run state outside APPROVAL_REQUIRED
+  corrections:
+    - require nondecreasing transition timestamps
+    - permit only REQUIRED or REQUESTED on APPROVAL_REQUIRED and require null elsewhere
+    - align run-state schema and add regression coverage
+  follow_up_verdict: PASS_NO_REMAINING_FINDINGS
+
+evidence_hashes_sha256:
+  agent/state/C-401-pre-edit-context.yaml: 42ffdeb12bdccf52989894d7131a0cdb7ba9c602407b87f9fb99273d42df897b
+  src/harness/state.py: 0a9f3a476bafac1a11b2fec087105c1da3f34def21077af4e2baa33bdba55f2f
+  src/harness/config.py: e6087914560bdf276263b16321af2d0cb81e775ed006c832f03bd31e8f926956
+  schemas/goal.schema.json: d1fe731b2ede6a0836e789d045330fc32b37a91cb18cf92b24bd2adef67ee809
+  schemas/task.schema.json: 9f83f10b7e8c8832d7abf16c82ef915c2929e7accb6e895e37c481ba6959c6c5
+  schemas/run-state.schema.json: 509d4345f8431583377f1b90e6e97a8207f5f8f8fac313fb8cf1ebceaeaabf29
+  schemas/event.schema.json: 736e39c58860b96fd614c4bacbc6aa00d459b65d3e90e2acb19b80d8a331ff4f
+  schemas/config.schema.json: 9e708bf337160b8b6110c47afdf72d0cad225625678f8567526064868d1807e5
+  tests/unit/test_state.py: e1f5d0ceb5a01998825e18bf8f34b27a3b91cad4ab85860ebc61ef360af2f3ee
+  tests/unit/test_config.py: a587ace3634ab6c0bba9322cc6a35c5696c6f41efa295aa7765bf0619b873e12
+
+preserved_state:
+  untracked_user_artifacts:
+    - UPE_v5.6.0_Complete_Documentation.pdf
+    - UPE_v5.6.0_Recommended_Project_Files.zip
+    - harness-for-every-task/extension_prompt.md
+    - re-fresh-continue-upe-harness-implementation.md
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  historical_C304_C306_records_modified: false
+
+known_limits:
+  - only installed Python 3.14.3 is verified; Python 3.12 and 3.13 remain unverified
+  - transition-ID reuse is checked against the last transition only; durable history uniqueness belongs to persistence
+  - filesystem identity, reparse-point, and live containment enforcement remain C-405
+  - stopped-state resume and reconciliation transitions remain C-503
+
+next_action: >-
+  Keep this verified diff local and uncommitted. C-402 may begin only under a new
+  bounded authorization; C-402 and C-403 remain sequential.

@@ -30,12 +30,23 @@ evidence, not authority for an external or destructive action.
 - `ADR-001`, `G-ADR`, `W-200`, and canonical `W-201` through `W-210` are accepted.
 - `C-301/C-302` are merged by PR `#4` at
   `a7e99bd32e71ef047296446c14f9e4376b444fcd`.
-- `C-303` through `C-306` are tested locally on the PR `#5` branch. The
-  deterministic integration result is `PASS` in
+- `C-303` through `C-306` are adopted on `main` by PR `#5` at
+  `a8c611b09297fb226f046d54fdfa0f64e84d9396`. Their deterministic result is `PASS` in
   `validation/C-304-C-306-GATE.yaml`.
-- The active authorization permits publishing this bounded slice to PR `#5`
-  and merging that PR only after the recorded gate and exact GitHub head pass.
-- Do not begin `C-401` or later work without a new bounded task authorization
+- `C-401` typed Goal, Task, Run, Event, lifecycle, and configuration contracts are
+  tested locally on `codex/c401-typed-models`; the bounded result is recorded in
+  `validation/C-401-GATE.yaml`.
+- `C-402` adds the provider-neutral synchronous interface and deterministic fake
+  adapter on the same uncommitted dependency chain; its local gate is
+  `validation/C-402-GATE.yaml`.
+- `C-403` adds lifecycle sequencing, canonical provider-event conversion, and
+  one-task fake-adapter orchestration; its local gate is
+  `validation/C-403-GATE.yaml`.
+- The 2026-07-20 integration authorization covers only staging, committing,
+  pushing, PR creation, and merge of the verified C-401 through C-403
+  task-owned paths into `Denys/UPE_v5.6` `main`. It excludes protected or
+  unrelated artifacts, release, deployment, and C-404-plus implementation.
+- Do not begin `C-404` or later work without a new bounded task authorization
   and satisfied dependencies.
 
 ## Repository map
@@ -61,13 +72,13 @@ the source for all canonical IDs, outputs, dependencies, and completion evidence
 Run from the repository root with Windows-native Python and `uv`:
 
 ```powershell
-uv sync --all-groups
+uv sync --group dev --locked
 uv lock --check
 uv run python -c "import harness; print(harness.__version__)"
 uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy src tests
+uv run mypy --strict src tests
 uv run python scripts/validate_work_specifications.py
 ```
 

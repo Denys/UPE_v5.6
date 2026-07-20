@@ -25,7 +25,7 @@ dev = [
 packages = ["src/harness"]
 
 [tool.pytest.ini_options]
-addopts = ["--strict-config", "--strict-markers", "-ra"]
+addopts = ["--strict-config", "--strict-markers", "--basetemp=.pytest-tmp", "-ra"]
 testpaths = ["tests"]
 
 [tool.ruff]

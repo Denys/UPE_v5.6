@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Complete canonical local tasks C-304 through C-306: publish a concise
-    operating map, a deterministic Windows-native fixture/baseline contract,
-    and mechanical schema/reference/release validators to pull request 5.
+    Integrate the verified C-401 through C-403 task-owned paths into
+    Denys/UPE_v5.6 main through a scoped GitHub pull request. Exclude protected
+    and unrelated artifacts; do not release, deploy, or begin C-404-plus work.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
+    observed_main_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -22,12 +22,29 @@ upe_state:
       state: MERGED
       head_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
       merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
-    local_implementation_branch: codex/c303-materialize-accepted-artifacts
-    local_implementation_base: a7e99bd32e71ef047296446c14f9e4376b444fcd
+    local_implementation_branch: codex/c401-typed-models
+    local_implementation_base: a8c611b09297fb226f046d54fdfa0f64e84d9396
     implementation_pr_5:
-      state: OPEN_DRAFT_READY_TO_MERGE
+      state: MERGED
       published_C-303_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
+      combined_head_commit: 1d70a8f001af6daebfd093b2b73a408d0e1722b8
+      merge_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
       combined_gate: validation/C-304-C-306-GATE.yaml
+    C_401_local_slice:
+      state: TESTED_LOCALLY
+      branch: codex/c401-typed-models
+      base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+      gate: validation/C-401-GATE.yaml
+    C_402_local_slice:
+      state: TESTED_LOCALLY
+      branch: codex/c401-typed-models
+      base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+      gate: validation/C-402-GATE.yaml
+    C_403_local_slice:
+      state: TESTED_LOCALLY
+      branch: codex/c401-typed-models
+      base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+      gate: validation/C-403-GATE.yaml
 
   must_status:
     research_matrix: PASS
@@ -51,12 +68,15 @@ upe_state:
     specification_acceptance: PASS
     C-301: PASS
     C-302: MERGED
-    C-303: PUBLISHED_PR_5
-    C-304: PASS
-    C-305: PASS
-    C-306: PASS
-    harness_implementation: PRE_CORE_FOUNDATION_TESTED_LOCALLY
-    local_implementation_authorization: GRANTED_C304_C306_AND_PR5_MERGE
+    C-303: MERGED_PR_5
+    C-304: MERGED_PR_5_PASS
+    C-305: MERGED_PR_5_PASS
+    C-306: MERGED_PR_5_PASS
+    C-401: PASS_LOCAL
+    C-402: PASS_LOCAL
+    C-403: PASS_LOCAL
+    harness_implementation: FAKE_ADAPTER_ORCHESTRATION_TESTED_LOCALLY
+    local_implementation_authorization: GRANTED_C401_C403_GITHUB_INTEGRATION_ONLY
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -86,7 +106,8 @@ upe_state:
     - Every template is a projection and explicitly cannot replace SQLite/outbox state, validation evidence, or approval authority.
     - PR #3 is merged into main at d0fbfd56c6b533da62db3e4bea147496345b6c90; the W-201 through W-210 specifications are adopted.
     - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
-    - The active user request authorizes C-304 through C-306 implementation, publication to PR #5, and merge of that PR after the combined gate passes; it does not authorize C-401+, release, deployment, or a visibility change.
+    - PR #5 is merged into main at a8c611b09297fb226f046d54fdfa0f64e84d9396; its C-303 through C-306 result and gate remain historical evidence.
+    - The active user request authorizes staging, committing, pushing, opening a pull request, and merging only the verified C-401 through C-403 task-owned paths into Denys/UPE_v5.6 main; protected/unrelated artifacts, release, deployment, visibility changes, and C-404-plus work remain excluded.
     - C-301 used an isolated worktree at the merged main commit and preserved the dirty, stale primary worktree without mutation.
     - The uv environment resolves and the package imports on observed Windows Python 3.14.3; this proves that runtime only, not the entire Python 3.12+ range.
     - The C-302 scaffold contains no lifecycle, state, adapter, orchestrator, CLI, persistence, recovery, or other speculative modules.
@@ -98,6 +119,11 @@ upe_state:
     - The deterministic fixture reproduces Git HEAD ed95abccdb7593a6fa0760ad6b26b5a817db8f82 and exposes explicit passing and known-failure exit contracts.
     - Fixture cleanup and execution share Windows reparse, adjacent-marker, and exact-containment guards; junction tampering is refused before deletion or code execution.
     - The new validators accept six schema instances, 41 location references, 237 local schema references, and the 26-file historical release manifest while rejecting 14 focused negative cases.
+    - C-401 adds dependency-free immutable typed contracts and five closed Draft 2020-12 JSON schemas; those models themselves perform no orchestration, persistence, recovery, or executable policy.
+    - C-402 adds a synchronous provider-neutral protocol and deterministic in-memory fake with typed success, failure, interruption, cancellation, and approval behavior; it adds no real provider or I/O.
+    - C-403 adds a synchronous lifecycle coordinator and one-task orchestrator that commit each transition before provider dispatch, convert provider-local events into run-sequenced canonical events, and require explicit non-provider evidence before checkpoint or completion.
+    - C-403's LifecycleCommitter is an ordering port only; C-406 still owns SQLite/outbox durability, and C-404 still owns deterministic validator execution and evidence creation.
+    - Resumable stop states have no outbound C-401 edge; actual resume and reconciliation transitions remain assigned to C-503.
 
   completed:
     - Created and validated four bounded prompts for initialization, generation, read-only review, and independent evaluation.
@@ -118,13 +144,20 @@ upe_state:
     - Completed C-306 schema, reference, and release validators plus focused actionable negative tests.
     - Resolved a fresh independent review finding by adding a shared Windows junction/reparse guard and adversarial sentinel-preservation tests.
     - Passed the combined C-304 through C-306 gate with 19 pytest cases, Ruff, formatting, mypy, lock, Bash syntax, W-200, C-303 hash, and diff regression checks.
+    - Repaired the clean-checkout validator-test defect by using pytest-owned temporary paths and a repository-local ignored pytest base temp.
+    - Implemented strict Goal, Task, Run, Event, lifecycle, configuration, and transition-error models without adding a runtime dependency or changing package-root exports.
+    - Added goal, task, run-state, event, and config Draft 2020-12 JSON schemas while preserving all accepted YAML schemas unchanged.
+    - Implemented the provider-neutral adapter interface with compatibility identity, session create/resume, turn submission, typed event streaming, approval response, interrupt, and cancel contracts.
+    - Implemented a deterministic FIFO fake adapter with immutable operation traces and scripted success, normalized failure, interruption, cancellation, and approval-gated continuation.
+    - Passed 20 focused fake-adapter tests, 148 combined C-401/C-402 tests, and the complete 167-test repository suite with Ruff, formatting, strict mypy, lock, reference, build/package, and diff checks.
+    - Implemented deterministic lifecycle transition IDs, atomic Run/Event commit acknowledgements, provider-event canonicalization, initialization, one-task execution, reasoned terminal mapping, and evidence-only checkpoint/completion sequencing.
+    - Passed 31 focused C-403 tests, 179 combined C-401/C-402/C-403 tests, and the complete 198-test repository suite with locked dependencies, Ruff, formatting, strict mypy, references, and diff checks.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Merge PR #5 only after the recorded local gate is committed, pushed, and the exact GitHub head remains mergeable.
-    - Begin C-401 only after PR #5 adoption and a new bounded task authorization.
-    - Implement and test harness lifecycle, state/outbox, worktrees, action reconciliation, recovery, path containment, redaction, budgets, evaluator, and CLI in the C-series phases.
+    - Implement C-404 deterministic validation/evidence only under a new bounded authorization; C-403 does not execute validators or infer completion from provider messages.
+    - Implement and test the real provider adapter, state/outbox durability, worktrees, action reconciliation, recovery, path containment, redaction, executable budgets, evaluator, and CLI in their assigned later phases.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -152,12 +185,19 @@ upe_state:
       - standalone schema, local-reference/cross-record, and release/package/archive validators
       - 14 focused negative validator cases and complete 19-test repository suite
       - fresh read-only integration review and bounded correction rerun
+      - C-401 model/schema round trips, exhaustive lifecycle-edge matrix, typed transition failures, and strict configuration/path negative cases
+      - first-run validator tests with no pre-existing .pytest_cache
+      - C-402 strict adapter records, runtime protocol conformance, deterministic fake scripts, ordering, terminal, approval, interruption, cancellation, and forged-handle negative cases
+      - wheel-content inspection confirming harness.adapters packaging
+      - C-403 deterministic transition/event sequencing, commit-before-dispatch timeline assertions, one-task execution, explicit reasoned stops, malformed stream handling, and evidence-only checkpoint/completion tests
     result: PASS
     scope_note: >-
-      PASS accepts the local C-304 through C-306 operating documentation,
-      deterministic fixture/baselines, and validators while preserving C-301
-      through C-303 evidence. C-401+ harness behavior, broader Python
-      compatibility, release, and deployment are not claimed.
+      PASS accepts the local C-401 typed model/schema contracts and the C-402
+      provider-neutral interface/deterministic fake plus bounded C-403 lifecycle
+      sequencing and fake-adapter orchestration while preserving the accepted
+      C-301 through C-306 evidence. Real provider calls, durable persistence,
+      validator execution, executable budget/retry behavior, resume/recovery,
+      broader Python compatibility, release, and deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -168,12 +208,14 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from branch codex/c303-materialize-accepted-artifacts and PR #5.
-    Preserve the isolated worktree, unrelated unstaged archive deletion,
-    agent/state/C-304-C-306-pre-edit-context.yaml, and
-    validation/C-304-C-306-GATE.yaml. Re-run the combined deterministic gate.
+    Reconcile main and the codex/c401-typed-models GitHub integration before
+    repeating publication. Preserve the five protected untracked user artifacts,
+    recovery stash, separate UPE_5.6_pr1_fix worktree, and historical C-304
+    through C-306 records. Re-run validation/C-401-GATE.yaml through
+    validation/C-403-GATE.yaml.
 
   next_action: >-
-    Commit and push the bounded C-304 through C-306 bundle to PR #5, reverify
-    its exact head and mergeability, and perform the explicitly authorized
-    merge. C-401 remains unauthorized until a later active task.
+    After the scoped C-401/C-402/C-403 GitHub integration, preserve that accepted
+    baseline. Begin C-404 only under a later explicit bounded authorization; do
+    not infer authority for release, deployment, visibility changes, or
+    C-404-plus implementation.

@@ -1,0 +1,128 @@
+schema_version: '1.0'
+gate_id: C-401-TYPED-MODELS
+generated_at: '2026-07-20T12:31:08.2523881+02:00'
+status: PASS
+status_reason: >-
+  The dependency-free typed state/configuration contracts, exact C-401 lifecycle
+  legality, strict mappings, five JSON schemas, clean-checkout repair, and bounded
+  evidence satisfy the authorized C-401 acceptance contract. Fresh review findings
+  were corrected and independently rechecked with no remaining finding.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  committed: false
+
+criteria:
+  - id: C-401-STATE
+    verdict: PASS
+    evidence:
+      - Goal losslessly maps both accepted W-205 examples and enforces reciprocal done-condition/output references.
+      - Task terminal, blocked, approval, failure, ID, type, duplicate, and strict mapping invariants are tested.
+      - Run terminal PASS/evidence/checkpoint, stop reason, budget, pending approval, timestamp, and sequence invariants are tested.
+      - Event transition metadata is complete only for lifecycle/terminal events and null for every other normalized event type.
+  - id: C-401-LIFECYCLE
+    verdict: PASS
+    evidence:
+      - The exhaustive state-pair matrix accepts only the frozen ordinary and explicit stop edges.
+      - VALIDATING may bypass optional evaluation directly to CHECKPOINTING.
+      - Stopped states have no outgoing C-401 edge; skips, reversals, and self-transitions are rejected.
+      - transition_run returns one new Run/Event pair, increments event_seq once, rejects last-ID reuse and backward timestamps, and performs no I/O.
+  - id: C-401-CONFIG
+    verdict: PASS
+    evidence:
+      - Provider defaults to fake; network, Docker, and external actions default disabled.
+      - Explicit limits, retry/backoff, validation ceilings, and fail-closed host allowlisting are bounded and tested.
+      - Windows traversal, glob/environment syntax, UNC/device/ADS, reserved names, and lexical root overlap are rejected.
+      - Derived database/events/checkpoints/artifacts paths remain below host_state_root and no credential-value field exists.
+  - id: C-401-SCHEMAS
+    verdict: PASS
+    evidence:
+      - Five self-contained closed Draft 2020-12 schemas have unique JSON keys and meta-validate.
+      - goal.schema.json is structurally equal to accepted W-205 after excluding only id/title identity.
+      - Model-to-mapping-to-schema-to-model equality and targeted negative conditions pass.
+      - Accepted YAML schemas are unchanged and evaluation.schema.json remains deferred.
+  - id: CLEAN-CHECKOUT-REGRESSION
+    verdict: PASS
+    evidence:
+      - With .pytest_cache recoverably parked, the ordinary validator test command passed 17 tests on its first run.
+      - All repaired validator tests use pytest tmp_path; the host-inaccessible default temp root is replaced by ignored .pytest-tmp.
+  - id: REGRESSION
+    verdict: PASS
+    evidence:
+      - Full pytest suite passed 147 tests after review corrections.
+      - Locked sync/lock, Ruff lint/format, strict mypy, accepted schema/reference/release, and five-schema parity checks pass.
+      - Git-Bash fixture exit matrix is 0/0/0/1/1 for bootstrap, fast/full success, and fast/full known failure.
+  - id: INDEPENDENT-REVIEW
+    verdict: PASS
+    evidence:
+      - Fresh read-only review found timestamp regression and live resolved-approval-state gaps.
+      - Both were corrected in model, schema, and tests.
+      - Follow-up review confirmed both fixes, no duplicate run-state schema keys, and no remaining finding.
+  - id: SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - No adapter, orchestration, persistence, worktree manager, evaluator, CLI, App Server, executable budget, or resume behavior was added.
+      - No runtime dependency, lock change, or package-root export was added.
+      - Four user artifacts, the recovery stash, separate worktree, and historical C-304 through C-306 result/gate remain protected.
+
+commands:
+  - uv sync --group dev --locked
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_config.py
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - unique-key Draft 2020-12 validation for the five C-401 JSON schemas
+  - structural comparison of goal.schema.json with schemas/goal_contract.schema.yaml
+  - uv run python scripts/validate_schema.py
+  - uv run python scripts/validate_references.py
+  - >-
+    uv run python scripts/validate_release.py UPE_v5.6.0_RELEASE
+    --manifest UPE_v5.6.0_RELEASE/MANIFEST.json --normalize-text-eol
+  - uv run python scripts/validate_work_specifications.py
+  - >-
+    C:\Program Files\Git\usr\bin\bash.exe -n scripts/fixture-guard.sh
+    scripts/bootstrap.sh scripts/verify-fast.sh scripts/verify-full.sh
+  - C:\Program Files\Git\usr\bin\bash.exe scripts/bootstrap.sh
+  - C:\Program Files\Git\usr\bin\bash.exe scripts/verify-fast.sh
+  - C:\Program Files\Git\usr\bin\bash.exe scripts/verify-full.sh
+  - C:\Program Files\Git\usr\bin\bash.exe scripts/verify-fast.sh --known-failure
+  - C:\Program Files\Git\usr\bin\bash.exe scripts/verify-full.sh --known-failure
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  uv: 0.11.25
+  resolved_packages: 33
+  focused_state_tests: 30_passed
+  focused_config_tests: 98_passed
+  integrated_state_config_tests: 128_passed
+  full_tests: 147_passed
+  schema_instances: 6
+  location_references: 41
+  schema_references: 237
+  release_manifest_files: 26
+  C401_json_schemas: 5_unique_key_meta_valid
+  W200_specification_regression: PASS
+  fixture_head: ed95abccdb7593a6fa0760ad6b26b5a817db8f82
+  fixture_exit_matrix:
+    syntax: 0
+    bootstrap: 0
+    verify_fast: 0
+    verify_full: 0
+    verify_fast_known_failure: 1
+    verify_full_known_failure: 1
+
+known_limits:
+  - Python 3.12 and 3.13 remain unverified; only installed Python 3.14.3 is observed.
+  - JSON Schema cannot express sibling numeric/path ordering; Python enforces budget exhaustion, backoff ordering, timestamp ordering, root overlap, and reciprocal references.
+  - Full transition-ID history uniqueness, filesystem identity/reparse checks, persistence, execution, resume, and reconciliation remain later tasks.
+
+next_action: >-
+  Preserve this local uncommitted result. Begin C-402 only after a new bounded
+  authorization; do not infer commit, remote, release, or deployment authority.

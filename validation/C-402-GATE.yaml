@@ -1,0 +1,104 @@
+schema_version: '1.0'
+gate_id: C-402-PROVIDER-FAKE-ADAPTER
+generated_at: '2026-07-20T14:28:02.8266183+02:00'
+status: PASS
+status_reason: >-
+  The synchronous provider-neutral protocol, strict typed records, deterministic
+  in-memory fake, and focused success/failure/interruption/cancellation/approval
+  evidence satisfy the bounded C-402 contract without adding a real provider,
+  orchestration, persistence, I/O, dependency, or consequential action.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  committed: false
+
+criteria:
+  - id: C-402-PROTOCOL
+    verdict: PASS
+    evidence:
+      - ProviderAdapter is a runtime-checkable synchronous protocol covering identity, lifecycle, compatibility, session, turn, event, approval, interrupt, and cancel operations.
+      - Public records are strict frozen/slotted dataclasses; enums and identifiers reject coercion and malformed values.
+      - TurnRequest consumes C-401 Run and Task and rejects mismatched goal/task identities, non-EXECUTING runs, non-IN_PROGRESS tasks, and missing workspaces.
+      - Provider-local events do not expose canonical lifecycle transition fields or own Run event sequencing.
+  - id: C-402-FAKE-DETERMINISM
+    verdict: PASS
+    evidence:
+      - Identical scripts, base time, and call sequences produce equal handles, events, timestamps, outcomes, and operation traces.
+      - FIFO scripts reproduce success, normalized failure, scripted interruption, and approval-gated success.
+      - Session, turn, global event, per-turn event, and operation sequences are monotonic and provider-local.
+      - Each scripted event is emitted once; a terminal turn yields no later event.
+  - id: C-402-CONTROL
+    verdict: PASS
+    evidence:
+      - Approval pauses event streaming until a matching GRANTED or DENIED response arrives.
+      - Grant resumes the remaining script; denial and explicit interrupt terminate as INTERRUPTED; session cancel terminates every active turn as CANCELLED.
+      - Wrong approval IDs, duplicate responses/requests, unknown or forged handles, calls before startup, incompatibility, and script exhaustion fail closed with normalized errors.
+  - id: C-402-BOUNDARY
+    verdict: PASS
+    evidence:
+      - FakeAdapter performs no filesystem, subprocess, socket, network, model, persistence, lifecycle, or external action.
+      - C-401 recorded hashes remain unchanged; harness.__init__, state/configuration contracts, schemas, dependencies, and lock remain unchanged by C-402.
+      - Provider session resume is explicitly separate from stopped-Run lifecycle resume and reconciliation.
+  - id: C-402-REGRESSION
+    verdict: PASS
+    evidence:
+      - Twenty focused fake-adapter tests and 148 combined C-401/C-402 tests pass.
+      - The complete repository suite passes 167 tests.
+      - Locked sync/lock, import, Ruff lint/format, strict mypy, references, wheel contents, and diff checks pass.
+  - id: C-402-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - No real provider, orchestrator, persistence, executable policy, evaluator, CLI, schema, or second adapter was added.
+      - Five protected user artifacts, the recovery stash, separate worktree, and all pre-existing dirty C-401 state remain preserved and unstaged.
+      - No commit, push, PR, merge, release, deployment, external message, visibility change, or other consequential action occurred.
+
+commands:
+  - uv sync --group dev --locked
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_fake_adapter.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_config.py tests/unit/test_fake_adapter.py
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - uv build --wheel --out-dir .pytest-tmp\c402-wheel
+  - wheel member inspection for harness/__init__.py and harness/adapters/*.py
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  uv: 0.11.25
+  resolved_packages: 33
+  focused_fake_adapter_tests: 20_passed
+  integrated_C401_C402_tests: 148_passed
+  full_tests: 167_passed
+  mypy_source_files: 14
+  ruff_format_files: 20
+  location_references: 41
+  schema_references: 237
+  wheel_adapter_members: 4
+  C401_hashes: 10_of_10_match
+
+review:
+  verdict: PASS_NO_BLOCKING_FINDING
+  independent_review_claimed: false
+  notes:
+    - Scoped source/import/type/diff review found no untyped provider payload escape hatch or prohibited I/O.
+    - Independent fresh-context review was not required by the C-402 backlog and is not claimed.
+
+known_limits:
+  - Python 3.12 and 3.13 remain unverified; only installed Python 3.14.3 is observed.
+  - The fake is synchronous, single-agent, and process-local; durability and concurrency are later work.
+  - C-403 owns orchestration and canonical Event/Run transitions.
+  - C-501/C-502 own the real Codex App Server adapter and controlled live smoke evidence.
+  - C-503 owns stopped-run resume and reconciliation.
+
+next_action: >-
+  Keep the C-401/C-402 result local and uncommitted. Begin C-403 only after a new
+  bounded authorization; do not infer staging, commit, remote, release, deployment,
+  or later-task authority.

@@ -1,0 +1,153 @@
+schema_version: '1.0'
+record_id: C-401-PRE-EDIT-CONTEXT
+task_id: C-401
+captured_at: '2026-07-20T11:54:08.6559660+02:00'
+status: READY_WITH_KNOWN_BASELINE_TEST_DEFECT
+
+authorization:
+  source: active user request
+  granted:
+    - create local branch codex/c401-typed-models from verified main
+    - repair the clean-cache validator-test regression
+    - implement and test the bounded C-401 typed state and configuration slice
+    - update current operating state and create local C-401 evidence records
+  excluded:
+    - commit, push, pull request creation or modification, and merge
+    - release, deployment, visibility change, or external message
+    - destructive cleanup or mutation outside owned ignored test outputs
+    - C-402 or later runtime implementation
+
+repository:
+  identity: Denys/UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6.git
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  ref: refs/heads/codex/c401-typed-models
+  head: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  base_ref: refs/heads/main
+  base_head: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  origin_main: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  remote_main_observed: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  tracked_state_before_output: CLEAN
+
+dependencies:
+  C-304: PASS
+  C-305: PASS
+  C-306: PASS
+  combined_gate: validation/C-304-C-306-GATE.yaml
+  combined_gate_status: PASS
+  W-200_specification_acceptance: PASS
+
+runtime:
+  target: Windows-native Codex
+  python_observed: '3.14.3'
+  python_3_12_compatibility: UNVERIFIED
+  python_3_13_compatibility: UNVERIFIED
+  uv: '0.11.25'
+  git: '2.53.0.windows.1'
+  codex_cli: '0.144.3'
+  locked_packages: 33
+  new_runtime_dependencies_allowed: false
+
+preserved_unrelated_state:
+  untracked_paths:
+    - UPE_v5.6.0_Complete_Documentation.pdf
+    - UPE_v5.6.0_Recommended_Project_Files.zip
+    - harness-for-every-task/extension_prompt.md
+    - re-fresh-continue-upe-harness-implementation.md
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  preservation_rule: >-
+    Do not stage, move, delete, rewrite, or otherwise mutate these user-owned
+    paths, the recovery stash, or the separate evidence worktree.
+
+selected_slice:
+  title: Implement typed Goal, Task, Run, Event, configuration, and lifecycle models
+  scope: State and configuration contracts first; no provider calls.
+  outputs:
+    - src/harness/state.py
+    - src/harness/config.py
+    - schemas/goal.schema.json
+    - schemas/task.schema.json
+    - schemas/run-state.schema.json
+    - schemas/event.schema.json
+    - schemas/config.schema.json
+    - tests/unit/test_state.py
+    - tests/unit/test_config.py
+  supporting_repairs_and_evidence:
+    - .gitignore
+    - pyproject.toml
+    - tests/validators/test_validate_schema.py
+    - tests/validators/test_validate_references.py
+    - tests/validators/test_validate_release.py
+    - AGENTS.md
+    - README.md
+    - docs/research/research-state.yaml
+    - agent/state/C-401-pre-edit-context.yaml
+    - agent/state/C-401-result.yaml
+    - validation/C-401-GATE.yaml
+  non_goals:
+    - provider or fake adapters
+    - lifecycle orchestration and task selection
+    - validator execution, workspace containment, SQLite, outbox, or JSONL
+    - executable budget, retry, evaluator, CLI, recovery, approval, or App Server behavior
+
+parallel_ownership:
+  state_worker:
+    - src/harness/state.py
+    - tests/unit/test_state.py
+  schema_worker:
+    - schemas/goal.schema.json
+    - schemas/task.schema.json
+    - schemas/run-state.schema.json
+    - schemas/event.schema.json
+  configuration_worker:
+    - src/harness/config.py
+    - schemas/config.schema.json
+    - tests/unit/test_config.py
+  coordinator:
+    - .gitignore
+    - pyproject.toml
+    - tests/validators/test_validate_schema.py
+    - tests/validators/test_validate_references.py
+    - tests/validators/test_validate_release.py
+    - AGENTS.md
+    - README.md
+    - docs/research/research-state.yaml
+    - agent/state/C-401-pre-edit-context.yaml
+    - agent/state/C-401-result.yaml
+    - validation/C-401-GATE.yaml
+
+known_baseline_defect:
+  status: REPRODUCED_IN_PLANNING_SESSION
+  summary: >-
+    A first pytest run without an existing .pytest_cache failed 15 of 19 tests
+    because three validator test modules requested TemporaryDirectory children
+    inside that missing directory. A warm rerun passed after pytest created the
+    cache. The tracked tests will be repaired to use pytest-owned temporary paths.
+
+acceptance_conditions:
+  - valid lifecycle transitions pass and invalid transitions fail
+  - schemas meta-validate and model-to-mapping-to-schema-to-model round trips pass
+  - terminal and interrupted states require explicit structured reasons
+  - Goal preserves the accepted W-205 contract and cross-reference invariants
+  - configuration is fail-closed, dependency-free, mapping-only, and Windows-structural
+  - the full suite passes on the first run without a pre-existing .pytest_cache
+  - lint, format, strict typing, validators, fixture checks, and reference checks pass
+  - protected user state and historical gate/result records remain unchanged
+
+stop_conditions:
+  - repository, branch, or origin/main diverges unexpectedly
+  - an agent edits outside its assigned ownership
+  - accepted W-205 or architecture invariants cannot be represented without scope expansion
+  - a new runtime dependency or C-402-plus implementation becomes necessary
+  - deterministic acceptance remains failing after bounded integration repairs
+  - commit, push, PR, merge, release, deployment, or destructive action becomes necessary
+
+rollback:
+  stable_reference: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  method: >-
+    Preserve a diff, then restore only an explicitly owned C-401 path from the
+    stable reference. Never reset or clean the repository, protected untracked
+    files, recovery stash, or separate evidence worktree.
+  destructive_rollback_executed: false

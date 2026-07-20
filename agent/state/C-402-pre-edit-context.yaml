@@ -1,0 +1,119 @@
+schema_version: '1.0'
+record_id: C-402-PRE-EDIT-CONTEXT
+task_id: C-402
+captured_at: '2026-07-20T14:13:28.0299351+02:00'
+status: READY
+
+authorization:
+  source: active user request to implement the accepted C-402 plan
+  granted:
+    - implement the synchronous provider-neutral adapter protocol
+    - implement and test one deterministic in-memory fake adapter
+    - create bounded C-402 pre-edit, result, gate, and current-state evidence
+  excluded:
+    - commit, staging, push, pull request creation or modification, and merge
+    - release, deployment, visibility change, external message, or network action
+    - destructive cleanup or mutation outside newly owned C-402 paths
+    - real provider adapters, lifecycle orchestration, persistence, recovery, or C-403-plus behavior
+
+repository:
+  identity: Denys/UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6.git
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  ref: refs/heads/codex/c401-typed-models
+  head: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  main: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  origin_main: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  tracked_and_untracked_state: EXPECTED_UNCOMMITTED_C401_BASELINE
+  branch_created_for_C402: false
+
+dependency:
+  task: C-401
+  result: PASS
+  result_record: agent/state/C-401-result.yaml
+  gate: validation/C-401-GATE.yaml
+  recorded_hashes_checked: 10
+  recorded_hash_mismatches: 0
+  focused_state_config_tests: 128_passed
+  lock_check: PASS_33_PACKAGES
+  diff_check: PASS
+
+runtime:
+  target: Windows-native Codex
+  python_observed: '3.14.3'
+  python_3_12_compatibility: UNVERIFIED
+  python_3_13_compatibility: UNVERIFIED
+  uv: '0.11.25'
+  locked_packages: 33
+  new_runtime_dependencies_allowed: false
+
+preserved_user_artifacts:
+  - path: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    sha256: 3373916921599512c54ec8cb2523cb51a71c24ff29856dd8d1dccd75b95fceb5
+  - path: UPE_v5.6.0_Complete_Documentation.pdf
+    sha256: 8e1dc5d2d1512a705cfd58461dbbd118756d0df11fa34e0c6a0b005a92ad204f
+  - path: UPE_v5.6.0_Recommended_Project_Files.zip
+    sha256: d0e6089f98e43dfea7ef205e99eea464002cde9c926d271d7ec66edda7bf6db2
+  - path: harness-for-every-task/extension_prompt.md
+    sha256: 72c491ef48ec0a32a553eebf8c9d2d39a7a19a9ed60b7b53c451f23583a3eea0
+  - path: re-fresh-continue-upe-harness-implementation.md
+    sha256: 133b441b052411839607b02432cec2b61eeef15972eb017f45d40ae2dc50c321
+
+preserved_recovery_state:
+  stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  preservation_rule: >-
+    Preserve every pre-existing dirty path, the five named user artifacts,
+    recovery stash, and separate worktree. Do not stage, move, delete, or rewrite them.
+
+selected_slice:
+  title: Implement the provider adapter interface and deterministic fake adapter
+  functional_outputs:
+    - src/harness/adapters/__init__.py
+    - src/harness/adapters/base.py
+    - src/harness/adapters/fake.py
+    - tests/unit/test_fake_adapter.py
+  evidence_and_current_state:
+    - agent/state/C-402-pre-edit-context.yaml
+    - agent/state/C-402-result.yaml
+    - validation/C-402-GATE.yaml
+    - AGENTS.md
+    - README.md
+    - docs/research/research-state.yaml
+  non_goals:
+    - Codex App Server or any other real provider adapter
+    - lifecycle orchestration, canonical Event conversion, or Run transitions
+    - SQLite, JSONL, state persistence, action reconciliation, or resume edges
+    - executable budgets, retries, evaluator, CLI, schema, or dependency changes
+
+interface_decisions:
+  execution_model: synchronous_single_agent
+  event_model: provider-local typed events distinct from canonical state.Event
+  fake_behavior: deterministic FIFO scripts with injected base time and monotonic identifiers
+  expected_failure_transport: typed terminal event
+  exceptional_failure_transport: normalized ProviderAdapterError
+  raw_protocol_or_untyped_payloads_allowed: false
+
+acceptance_conditions:
+  - strict immutable adapter types consume C-401 Run and Task without weakening them
+  - startup, compatibility, session create/resume, turn submit, stream, approval, interrupt, and cancel are typed
+  - scripted success, normalized failure, interruption, cancellation, and approval paths are reproducible
+  - events emit once, approval pauses fail closed, and invalid ordering is rejected
+  - fake adapter performs no filesystem, subprocess, network, persistence, lifecycle, or model action
+  - focused and full pytest, Ruff, format, strict mypy, lock, reference, and diff checks pass
+  - all pre-existing dirty and user-owned state remains unchanged and unstaged
+
+stop_conditions:
+  - repository, branch, main, origin/main, C-401 hashes, stash, or worktree state diverges
+  - the interface requires changing C-401 state/configuration contracts or adding a dependency
+  - real provider, orchestration, persistence, recovery, or executable policy becomes necessary
+  - tests require external access or a consequential Git action
+  - deterministic acceptance remains failing after bounded local repair and review
+
+rollback:
+  stable_reference: verified uncommitted C-401 state on a8c611b09297fb226f046d54fdfa0f64e84d9396
+  method: >-
+    Remove or repair only explicitly owned C-402 additions using a reviewed patch.
+    Never reset, clean, restore, stage, or otherwise rewrite the existing dirty baseline.
+  destructive_rollback_executed: false

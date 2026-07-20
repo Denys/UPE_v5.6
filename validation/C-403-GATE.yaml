@@ -1,0 +1,116 @@
+schema_version: '1.0'
+gate_id: C-403-LIFECYCLE-ORCHESTRATOR
+generated_at: '2026-07-20T15:04:02.4365813+02:00'
+status: PASS
+status_reason: >-
+  The bounded synchronous lifecycle coordinator and fake-adapter orchestrator
+  commit transitions before provider dispatch, process one coherent task per
+  iteration, assign canonical run-level event sequences, emit explicit reasoned
+  stops, and require passing non-provider evidence before checkpoint/completion.
+  Durable persistence, validators, real providers, and resume remain unclaimed.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  committed: false
+
+criteria:
+  - id: C-403-LIFECYCLE-ORDERING
+    verdict: PASS
+    evidence:
+      - LifecycleCoordinator derives deterministic transition IDs and delegates every edge to the accepted C-401 transition contract.
+      - LifecycleCommitter must acknowledge one atomic Run/Event pair before transition returns; a failed commit prevents the next adapter action.
+      - Focused timelines prove INITIALIZING commit before adapter start and EXECUTING commit before turn submission.
+      - C-406 remains responsible for the actual SQLite/outbox implementation, so no durable-persistence claim is made.
+  - id: C-403-ONE-TASK-ITERATION
+    verdict: PASS
+    evidence:
+      - One execute_iteration call accepts exactly one READY Task, increments its attempt and Run iteration once, and submits one TurnRequest.
+      - Run.current_task_id, Task identity, goal identity, selected workspace, session identity, and turn identity must remain aligned.
+      - Input Run and Task records remain immutable and unmodified.
+  - id: C-403-CANONICAL-EVENTS
+    verdict: PASS
+    evidence:
+      - Provider events remain distinct from lifecycle transitions while receiving monotonic run-level Event.event_seq values.
+      - Canonical events retain provider event ID, provider-local sequence, correlation, references, evidence, normalized error category, and redaction status.
+      - Every provider event is committed before the iterator is advanced; gaps, duplicates, identity mismatch, stale timestamps, and unterminated streams fail closed.
+  - id: C-403-REASONED-STOPS
+    verdict: PASS
+    evidence:
+      - Approval enters APPROVAL_REQUIRED with REQUESTED status and an explicit next action without silently responding or continuing.
+      - Expected provider failure enters FAILED; interruption enters BLOCKED; cancellation enters CANCELLED.
+      - Adapter state/protocol exceptions enter FAILED, while compatibility/transient/permanent transport exceptions enter reasoned BLOCKED states.
+      - Explicit BLOCKED, BUDGET_EXHAUSTED, APPROVAL_REQUIRED, FAILED, and CANCELLED transition evidence is tested.
+  - id: C-403-EVIDENCE-ONLY-COMPLETION
+    verdict: PASS
+    evidence:
+      - Provider terminal success enters VALIDATING and cannot set PASS or complete the Task.
+      - Finalization rejects missing/non-PASS validation evidence, incomplete optional evaluation evidence, missing checkpoint identity, and missing completion evidence.
+      - Passing deterministic evidence reaches CHECKPOINTING then READY; optional passing evaluation follows EVALUATING before CHECKPOINTING.
+      - COMPLETED requires an explicit checkpoint and explicit completion evidence; worker output is not copied into Run completion evidence.
+  - id: C-403-BOUNDARY
+    verdict: PASS
+    evidence:
+      - C-403 performs no filesystem, subprocess, socket, network, model, database, validator, executable budget/retry, resume, or real-provider operation.
+      - C-401 state/configuration and schemas, C-402 adapter sources, dependencies, lock, and package-root exports remain unchanged by C-403 functional edits.
+      - The functional diff is confined to src/harness/lifecycle.py, src/harness/orchestrator.py, and tests/unit/test_lifecycle.py.
+  - id: C-403-REGRESSION
+    verdict: PASS
+    evidence:
+      - Thirty-one focused lifecycle/orchestrator tests and 179 combined C-401/C-402/C-403 unit tests pass.
+      - The complete repository suite passes 198 tests.
+      - Locked sync/lock, Ruff lint/format, strict mypy, reference validation, and diff checks pass.
+  - id: C-403-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - Five protected user artifacts, the named recovery stash, separate worktree, and all pre-existing dirty C-401/C-402 state remain preserved and unstaged.
+      - No commit, push, PR, merge, release, deployment, external message, visibility change, or other consequential action occurred.
+
+commands:
+  - uv sync --group dev --locked
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_lifecycle.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_config.py tests/unit/test_fake_adapter.py tests/unit/test_lifecycle.py
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  uv: 0.11.25
+  resolved_packages: 33
+  focused_C403_tests: 31_passed
+  integrated_C401_C402_C403_tests: 179_passed
+  full_tests: 198_passed
+  mypy_source_files: 17
+  ruff_format_files: 23
+  location_references: 41
+  schema_references: 237
+  C401_pre_edit_hashes: 10_of_10_match
+  C402_pre_edit_hashes: 8_of_8_match
+
+review:
+  verdict: PASS_NO_BLOCKING_FINDING
+  independent_review_claimed: false
+  notes:
+    - Scoped source/import/type/path review found no persistence overclaim, hidden provider action, or worker-message completion path.
+    - Independent fresh-context review was not required by the C-403 backlog and is not claimed.
+
+known_limits:
+  - Python 3.12 and 3.13 remain unverified; only installed Python 3.14.3 is observed.
+  - The coordinator is synchronous and single-agent; concurrency and re-entrancy are later work.
+  - LifecycleCommitter proves acknowledged ordering only; C-406 must provide transactional durability.
+  - C-404 must generate deterministic validation evidence before the end-to-end harness can validate real task work.
+  - C-503 owns stopped-run resume and reconciliation.
+  - C-501/C-502 own the real Codex App Server adapter and controlled live smoke evidence.
+
+next_action: >-
+  Keep the C-401/C-402/C-403 result local and uncommitted. Begin C-404 only
+  after a new bounded authorization; do not infer staging, commit, remote,
+  release, deployment, or later-task authority.

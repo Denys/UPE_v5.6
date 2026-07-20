@@ -1,0 +1,133 @@
+schema_version: '1.0'
+record_id: C-403-PRE-EDIT-CONTEXT
+task_id: C-403
+captured_at: '2026-07-20T14:42:09.2470164+02:00'
+status: READY
+
+authorization:
+  source: active user message "authorized c-403"
+  granted:
+    - implement the bounded lifecycle/orchestrator against the deterministic fake adapter
+    - add focused lifecycle/orchestration tests
+    - create bounded C-403 pre-edit, result, gate, and current-state evidence
+  excluded:
+    - staging, commit, push, pull request creation or modification, and merge
+    - release, deployment, visibility change, external message, or network action
+    - real provider, SQLite/JSONL persistence, validation execution, worktree management, recovery, and C-404-plus behavior
+
+repository:
+  identity: Denys/UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6.git
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  ref: refs/heads/codex/c401-typed-models
+  head: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  main: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  origin_main: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  tracked_and_untracked_state: EXPECTED_UNCOMMITTED_C401_C402_BASELINE
+  branch_created_for_C403: false
+
+dependencies:
+  C_401:
+    result: PASS
+    evidence_hashes_checked: 10
+    evidence_hash_mismatches: 0
+    gate: validation/C-401-GATE.yaml
+  C_402:
+    result: PASS
+    evidence_hashes_checked: 8
+    evidence_hash_mismatches: 0
+    gate: validation/C-402-GATE.yaml
+  fresh_integrated_tests: 148_passed
+  recorded_full_C402_suite: 167_passed
+
+runtime:
+  target: Windows-native Codex
+  python_observed: '3.14.3'
+  python_3_12_compatibility: UNVERIFIED
+  python_3_13_compatibility: UNVERIFIED
+  uv: '0.11.25'
+  locked_packages: 33
+  new_runtime_dependencies_allowed: false
+
+preserved_user_artifacts:
+  - path: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    sha256: 3373916921599512c54ec8cb2523cb51a71c24ff29856dd8d1dccd75b95fceb5
+  - path: UPE_v5.6.0_Complete_Documentation.pdf
+    sha256: 8e1dc5d2d1512a705cfd58461dbbd118756d0df11fa34e0c6a0b005a92ad204f
+  - path: UPE_v5.6.0_Recommended_Project_Files.zip
+    sha256: d0e6089f98e43dfea7ef205e99eea464002cde9c926d271d7ec66edda7bf6db2
+  - path: harness-for-every-task/extension_prompt.md
+    sha256: 72c491ef48ec0a32a553eebf8c9d2d39a7a19a9ed60b7b53c451f23583a3eea0
+  - path: re-fresh-continue-upe-harness-implementation.md
+    sha256: 133b441b052411839607b02432cec2b61eeef15972eb017f45d40ae2dc50c321
+
+preserved_recovery_state:
+  stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  preservation_rule: >-
+    Preserve every pre-existing dirty path, the five named user artifacts,
+    recovery stash, and separate worktree. Do not stage, move, delete, or rewrite them.
+
+selected_slice:
+  title: Implement the lifecycle/orchestrator against the fake adapter
+  functional_outputs:
+    - src/harness/lifecycle.py
+    - src/harness/orchestrator.py
+    - tests/unit/test_lifecycle.py
+  evidence_and_current_state:
+    - agent/state/C-403-pre-edit-context.yaml
+    - agent/state/C-403-result.yaml
+    - validation/C-403-GATE.yaml
+    - AGENTS.md
+    - README.md
+    - docs/research/research-state.yaml
+  non_goals:
+    - real provider adapters or raw provider protocol handling
+    - SQLite, JSONL, transactional outbox, action journal, locks, or durable recovery
+    - validator command execution, evaluator judgment, executable budgets/retries, workspace containment, CLI, or schemas
+    - stopped-run resume edges or approval continuation after APPROVAL_REQUIRED
+
+interface_decisions:
+  lifecycle_committer: >-
+    A synchronous port commits each Run/Event pair and returns only after the
+    caller's atomic recording boundary succeeds. C-403 proves call ordering;
+    C-406 owns actual SQLite/outbox durability.
+  lifecycle_coordinator:
+    - creates deterministic stable transition IDs
+    - calls C-401 transition_run and commits before returning the new Run
+    - converts C-402 ProviderEvent values into canonical non-transition Event values
+    - rejects backward provider timestamps, identity mismatch, and generic COMPLETED stops
+  orchestrator:
+    - initialize CREATED through INITIALIZING to READY around adapter startup/preflight/session creation
+    - execute exactly one READY task through SELECTING_TASK and EXECUTING
+    - commit EXECUTING before turn submission and commit each provider event before requesting the next
+    - map provider success to VALIDATING and failure/interruption/cancellation/approval to reasoned stop states
+    - finalize VALIDATING through optional EVALUATING and CHECKPOINTING to READY or COMPLETED only from explicit validation/checkpoint evidence
+  worker_message_completion_allowed: false
+
+acceptance_conditions:
+  - CREATED reaches READY only after INITIALIZING is committed before adapter actions
+  - one READY task is selected, recorded in Run.current_task_id, and submitted once per iteration
+  - provider events become canonical ordered events without lifecycle metadata or raw payload leakage
+  - success stops at VALIDATING until explicit validation/checkpoint evidence is supplied
+  - optional evaluation and direct validation-to-checkpoint paths both reach CHECKPOINTING then READY
+  - COMPLETED requires checkpoint plus explicit validation/completion evidence and PASS
+  - approval, provider failure, interruption, cancellation, adapter error, and explicit host stops emit structured reasons
+  - a failed commit prevents the following adapter action
+  - focused/full pytest, Ruff, format, strict mypy, lock, reference, package, and diff checks pass
+  - all pre-existing dirty and user-owned state remains unchanged and unstaged
+
+stop_conditions:
+  - repository, branch, main, origin/main, C-401/C-402 hashes, stash, or worktree state diverges
+  - C-403 requires changing C-401/C-402 contracts, adding a dependency, or claiming real durability
+  - event ordering cannot remain deterministic without re-entrancy, concurrency, or recovery scope
+  - validator/evaluator execution, real provider behavior, or C-404-plus work becomes necessary
+  - tests require external access or a consequential Git action
+
+rollback:
+  stable_reference: verified uncommitted C-401/C-402 state on a8c611b09297fb226f046d54fdfa0f64e84d9396
+  method: >-
+    Remove or repair only explicitly owned C-403 additions using a reviewed patch.
+    Never reset, clean, restore, stage, or otherwise rewrite the existing dirty baseline.
+  destructive_rollback_executed: false

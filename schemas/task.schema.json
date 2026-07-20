@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Denys/UPE_v5.6/schemas/task.schema.json",
+  "title": "UPE Runtime Task",
+  "description": "Strict provider-neutral state for one bounded runtime task.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "goal_id",
+    "description",
+    "dependencies",
+    "status",
+    "attempts",
+    "selected_workspace",
+    "allowed_paths",
+    "locked_paths",
+    "criterion_ids",
+    "validation_commands",
+    "evidence_paths",
+    "last_failure",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "task_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "goal_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "description": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "dependencies": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/stableId"
+      }
+    },
+    "status": {
+      "enum": [
+        "PLANNED",
+        "READY",
+        "IN_PROGRESS",
+        "VALIDATING",
+        "CHECKPOINTED",
+        "COMPLETE",
+        "BLOCKED",
+        "APPROVAL_REQUIRED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "selected_workspace": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/pathString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "allowed_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/pathString"
+      }
+    },
+    "locked_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/pathString"
+      }
+    },
+    "criterion_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/stableId"
+      }
+    },
+    "validation_commands": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/commandString"
+      }
+    },
+    "evidence_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/pathString"
+      }
+    },
+    "last_failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "next_action": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "COMPLETE"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence_paths": {
+            "type": "array",
+            "minItems": 1
+          },
+          "next_action": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "BLOCKED",
+              "APPROVAL_REQUIRED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "next_action": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "FAILED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "last_failure": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "commandString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192
+    },
+    "pathString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[^\\u0000]+$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    }
+  }
+}
