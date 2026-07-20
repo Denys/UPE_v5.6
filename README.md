@@ -3,22 +3,28 @@
 UPE is building a minimal, resumable, independently verifiable
 software-engineering harness around a portable trusted-host contract and a
 Windows-native Codex App Server adapter. The repository currently contains the
-accepted specification package and the C-301…C-306 implementation foundation;
-it does not yet contain the v0 lifecycle, state engine, provider adapter,
-orchestration, recovery, or CLI.
+accepted specification package, the C-301…C-306 implementation foundation, and
+the C-401 typed state/configuration contracts plus the C-402 provider-neutral
+interface and deterministic fake adapter. C-403 adds lifecycle sequencing and a
+single-task orchestrator against that fake. The repository does not yet contain a
+real provider adapter, durable persistence, recovery, executable validators,
+evaluator, or CLI.
 
 ## Current implementation slice
 
-**Status date:** 2026-07-19
+**Status date:** 2026-07-20
 
 | Task | Canonical outcome | Current evidence |
 |---|---|---|
 | `C-301` | Re-inspect repository state immediately before edits | `PASS`; pre-edit context is recorded. |
 | `C-302` | Create the minimal Python/uv repository scaffold | Merged by PR `#4` at `a7e99bd32e71ef047296446c14f9e4376b444fcd`. |
-| `C-303` | Materialize accepted research, ADR, schemas, templates, and prompts | Tested locally and published at `049bdec9f826761a9f362385ce0f6d165d99fe3e` in [draft PR #5](https://github.com/Denys/UPE_v5.6/pull/5). |
+| `C-303` | Materialize accepted research, ADR, schemas, templates, and prompts | Adopted with C-304…C-306 by merged [PR #5](https://github.com/Denys/UPE_v5.6/pull/5) at `a8c611b09297fb226f046d54fdfa0f64e84d9396`. |
 | `C-304` | Create a short `AGENTS.md` map and repository operating README | `PASS`; concise operating map, commands, invariants, definition of done, and prohibited actions are validated. |
 | `C-305` | Create the fixture repository and deterministic baseline commands | `PASS`; reproducible fixture HEAD, positive/known-failure exits, and Windows reparse safety are tested. |
 | `C-306` | Create schema and package validators | `PASS`; schema, reference, release, and 14 negative validator cases are tested. |
+| `C-401` | Implement typed Goal, Task, Run, Event, configuration, and lifecycle models | `PASS` locally; strict immutable models, five JSON schemas, transition legality, and clean-checkout reliability are recorded in [`validation/C-401-GATE.yaml`](validation/C-401-GATE.yaml). |
+| `C-402` | Implement the provider adapter interface and fake adapter | `PASS` locally; the synchronous provider protocol and deterministic success/failure/interruption/approval scripts are recorded in [`validation/C-402-GATE.yaml`](validation/C-402-GATE.yaml). |
+| `C-403` | Implement lifecycle/orchestration against the fake adapter | `PASS` locally; commit-before-dispatch ordering, canonical provider events, one-task iterations, reasoned stops, and evidence-only completion are recorded in [`validation/C-403-GATE.yaml`](validation/C-403-GATE.yaml). |
 
 The accepted architecture and Work specification baseline is on `main`: ADR-001
 and `G-ADR` are `PASS`; canonical `W-201` through `W-210` and the W-200 gate are
@@ -33,18 +39,22 @@ Prerequisites are Windows-native Python 3.12+ and
 observed on Python 3.14.3 only; Python 3.12 and 3.13 remain unverified.
 
 ```powershell
-uv sync --all-groups
+uv sync --group dev --locked
 uv lock --check
 uv run python -c "import harness; print(harness.__version__)"
 uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy src tests
+uv run mypy --strict src tests
 ```
 
-The current package exposes only the importable `harness` root and version.
-Commands such as `uv run harness doctor` and `uv run harness init ...` are v0
-acceptance targets, not implemented operating commands.
+The package root still exports only `harness.__version__`. C-401 contracts are
+imported explicitly from `harness.state` and `harness.config`; C-402 contracts
+and the fake are imported from `harness.adapters`; C-403 sequencing is imported
+from `harness.lifecycle` and `harness.orchestrator`. No real provider, durable
+persistence, loader, discovery, or CLI behavior is implied. Commands such as
+`uv run harness doctor` and `uv run harness init ...` remain unimplemented v0
+acceptance targets.
 
 ## Specification and slice validation
 
@@ -145,8 +155,14 @@ and local implementation handoff. They do not create additional W task IDs.
 - Deterministic validation precedes optional read-only model evaluation.
 - v0 remains single-agent and fake-adapter-first.
 
-Those runtime rules are accepted contracts, not implemented behavior. Recovery is
-currently repository/checkpoint based as recorded in the mutable research state.
-Do not call this repository production-ready. C-304…C-306 now have passing
-integration evidence, but `C-401` or later runtime work still requires a new
-bounded authorization after PR #5 is adopted.
+The C-401 lifecycle and configuration layer is a pure model contract; it performs
+no persistence, provider call, external action, executable budget enforcement, or
+resume/reconciliation behavior. The C-402 fake is in-memory and deterministic; it
+does not perform model, filesystem, subprocess, network, persistence, or lifecycle
+work. C-403 uses a synchronous commit port to prove that each transition is
+acknowledged before provider dispatch; C-406 still owns actual SQLite/outbox
+durability. C-403 accepts explicit validation/evaluation/checkpoint references but
+does not execute or interpret validators; C-404 owns that layer. Recovery remains
+repository/checkpoint based as recorded in the mutable research state. Do not call
+this repository production-ready. `C-404` and later behavior require their own
+bounded authorization.

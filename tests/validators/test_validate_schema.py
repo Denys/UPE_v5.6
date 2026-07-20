@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -46,7 +45,7 @@ def test_accepted_examples_pass() -> None:
     ],
 )
 def test_invalid_examples_fail_nonzero_with_actionable_message(
-    mutation: str, expected_rule: str, expected_detail: str
+    mutation: str, expected_rule: str, expected_detail: str, tmp_path: Path
 ) -> None:
     schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -75,21 +74,19 @@ def test_invalid_examples_fail_nonzero_with_actionable_message(
     elif mutation == "format":
         instance["source"] = "not a URI"
 
-    with tempfile.TemporaryDirectory(prefix="c306-schema-", dir=ROOT / ".pytest_cache") as tmp:
-        tmp_path = Path(tmp)
-        schema_path = tmp_path / "schema.json"
-        instance_path = tmp_path / "instance.json"
-        write_json(schema_path, schema)
-        write_json(instance_path, instance)
+    schema_path = tmp_path / "schema.json"
+    instance_path = tmp_path / "instance.json"
+    write_json(schema_path, schema)
+    write_json(instance_path, instance)
 
-        result = run_validator(
-            "--root",
-            str(tmp_path),
-            "--schema",
-            schema_path.name,
-            "--instance",
-            instance_path.name,
-        )
+    result = run_validator(
+        "--root",
+        str(tmp_path),
+        "--schema",
+        schema_path.name,
+        "--instance",
+        instance_path.name,
+    )
 
     assert result.returncode == 1
     assert "FAIL schema validation" in result.stderr

@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Denys/UPE_v5.6/schemas/event.schema.json",
+  "title": "UPE Runtime Event",
+  "description": "Strict normalized audit event; provider protocol payloads remain outside this contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_seq",
+    "timestamp",
+    "run_id",
+    "task_id",
+    "event_type",
+    "source",
+    "action_summary",
+    "input_refs",
+    "output_refs",
+    "evidence_refs",
+    "result",
+    "error_category",
+    "redaction_status",
+    "transition_id",
+    "prior_state",
+    "next_state",
+    "reason",
+    "correlation_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "event_seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/stableId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "event_type": {
+      "$ref": "#/$defs/eventType"
+    },
+    "source": {
+      "$ref": "#/$defs/shortString"
+    },
+    "action_summary": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "input_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/referenceString"
+      }
+    },
+    "output_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/referenceString"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/referenceString"
+      }
+    },
+    "result": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "error_category": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/shortString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "redaction_status": {
+      "enum": [
+        "NOT_REQUIRED",
+        "REDACTED"
+      ]
+    },
+    "transition_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/stableId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prior_state": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/lifecycleState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "next_state": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/lifecycleState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/stableId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "enum": [
+              "LIFECYCLE",
+              "TERMINAL"
+            ]
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "transition_id": {
+            "$ref": "#/$defs/stableId"
+          },
+          "prior_state": {
+            "$ref": "#/$defs/lifecycleState"
+          },
+          "next_state": {
+            "$ref": "#/$defs/lifecycleState"
+          },
+          "reason": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "transition_id": {
+            "type": "null"
+          },
+          "prior_state": {
+            "type": "null"
+          },
+          "next_state": {
+            "type": "null"
+          },
+          "reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "TERMINAL"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "next_state": {
+            "$ref": "#/$defs/stoppedLifecycleState"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\u0000-\\u001F]+$"
+    },
+    "shortString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\u0000-\\u001F]+$"
+    },
+    "referenceString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\u0000-\\u001F]+$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "eventType": {
+      "enum": [
+        "LIFECYCLE",
+        "VALIDATION",
+        "APPROVAL",
+        "ACTION",
+        "RETRY",
+        "CHECKPOINT",
+        "RECOVERY",
+        "POLICY",
+        "TERMINAL"
+      ]
+    },
+    "lifecycleState": {
+      "enum": [
+        "CREATED",
+        "INITIALIZING",
+        "READY",
+        "SELECTING_TASK",
+        "EXECUTING",
+        "VALIDATING",
+        "EVALUATING",
+        "CHECKPOINTING",
+        "COMPLETED",
+        "BLOCKED",
+        "BUDGET_EXHAUSTED",
+        "APPROVAL_REQUIRED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "stoppedLifecycleState": {
+      "enum": [
+        "COMPLETED",
+        "BLOCKED",
+        "BUDGET_EXHAUSTED",
+        "APPROVAL_REQUIRED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  }
+}

@@ -5,7 +5,6 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -75,14 +74,13 @@ def test_accepted_references_and_identities_pass() -> None:
     ],
 )
 def test_invalid_reference_or_identity_fails_nonzero(
-    filename: str, old: str, new: str, expected: str
+    filename: str, old: str, new: str, expected: str, tmp_path: Path
 ) -> None:
-    with tempfile.TemporaryDirectory(prefix="c306-refs-", dir=ROOT / ".pytest_cache") as tmp:
-        examples = Path(tmp) / "specifications"
-        shutil.copytree(ACCEPTED_EXAMPLES, examples)
-        replace_once(examples / filename, old, new)
+    examples = tmp_path / "specifications"
+    shutil.copytree(ACCEPTED_EXAMPLES, examples)
+    replace_once(examples / filename, old, new)
 
-        result = run_validator("--root", str(ROOT), "--examples-dir", str(examples))
+    result = run_validator("--root", str(ROOT), "--examples-dir", str(examples))
 
     assert result.returncode == 1
     assert "FAIL reference validation" in result.stderr

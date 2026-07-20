@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Denys/UPE_v5.6/schemas/config.schema.json",
+  "title": "UPE Trusted-Host Harness Configuration",
+  "description": "Fully materialized, credential-free configuration contract for the Windows-native v0 harness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "paths",
+    "provider",
+    "limits",
+    "retry",
+    "validation",
+    "policy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "paths": {
+      "$ref": "#/$defs/harnessPaths"
+    },
+    "provider": {
+      "$ref": "#/$defs/providerSettings"
+    },
+    "limits": {
+      "$ref": "#/$defs/hostLimits"
+    },
+    "retry": {
+      "$ref": "#/$defs/retrySettings"
+    },
+    "validation": {
+      "$ref": "#/$defs/validationSettings"
+    },
+    "policy": {
+      "$ref": "#/$defs/policySettings"
+    }
+  },
+  "$defs": {
+    "absoluteWindowsPath": {
+      "description": "Absolute local drive path validated lexically; filesystem existence and reparse-point checks are deferred.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32767,
+      "pattern": "^[A-Za-z]:[\\\\/][^:<>\"|\\u0000-\\u001F]*$",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "(^|[\\\\/])\\.{1,2}([\\\\/]|$)"
+          }
+        },
+        {
+          "not": {
+            "pattern": "[%$~*?\\[\\]{}]"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(^|[\\\\/])(?:[Aa][Uu][Xx]|[Cc][Oo][Nn]|[Cc][Oo][Nn][Ii][Nn]\\$|[Cc][Oo][Nn][Oo][Uu][Tt]\\$|[Nn][Uu][Ll]|[Pp][Rr][Nn]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])(?:\\.[^\\\\/]*)?([\\\\/]|$)"
+          }
+        },
+        {
+          "not": {
+            "pattern": "[. ]([\\\\/]|$)"
+          }
+        }
+      ]
+    },
+    "boundedOptionalString": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "nullableNonnegativeInteger": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "harnessPaths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_root",
+        "worktree_root",
+        "host_state_root"
+      ],
+      "properties": {
+        "repository_root": {
+          "$ref": "#/$defs/absoluteWindowsPath"
+        },
+        "worktree_root": {
+          "$ref": "#/$defs/absoluteWindowsPath"
+        },
+        "host_state_root": {
+          "$ref": "#/$defs/absoluteWindowsPath"
+        }
+      }
+    },
+    "providerSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "model",
+        "reasoning_effort"
+      ],
+      "properties": {
+        "adapter": {
+          "enum": [
+            "fake",
+            "codex_app_server"
+          ],
+          "default": "fake"
+        },
+        "model": {
+          "$ref": "#/$defs/boundedOptionalString",
+          "default": null
+        },
+        "reasoning_effort": {
+          "$ref": "#/$defs/boundedOptionalString",
+          "default": null
+        }
+      }
+    },
+    "hostLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_iterations",
+        "max_elapsed_seconds",
+        "max_input_tokens",
+        "max_output_tokens",
+        "max_total_tokens",
+        "max_cost",
+        "max_external_actions"
+      ],
+      "properties": {
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_elapsed_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_input_tokens": {
+          "$ref": "#/$defs/nullableNonnegativeInteger",
+          "default": null
+        },
+        "max_output_tokens": {
+          "$ref": "#/$defs/nullableNonnegativeInteger",
+          "default": null
+        },
+        "max_total_tokens": {
+          "$ref": "#/$defs/nullableNonnegativeInteger",
+          "default": null
+        },
+        "max_cost": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "max_external_actions": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      }
+    },
+    "retrySettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_transient_retries",
+        "identical_failure_limit",
+        "no_progress_iteration_limit",
+        "initial_backoff_seconds",
+        "maximum_backoff_seconds",
+        "backoff_multiplier",
+        "jitter_ratio"
+      ],
+      "properties": {
+        "max_transient_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identical_failure_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "no_progress_iteration_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "initial_backoff_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maximum_backoff_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "$comment": "The model additionally enforces maximum_backoff_seconds >= initial_backoff_seconds; standard JSON Schema has no cross-property numeric comparison."
+        },
+        "backoff_multiplier": {
+          "type": "number",
+          "minimum": 1
+        },
+        "jitter_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "validationSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_timeout_seconds",
+        "max_output_bytes"
+      ],
+      "properties": {
+        "default_timeout_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "max_output_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "policySettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network_enabled",
+        "allowed_hosts",
+        "docker_enabled"
+      ],
+      "properties": {
+        "network_enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowed_hosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253,
+            "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "$comment": "The model requires already-normalized lowercase hosts and additionally rejects case-insensitive duplicates."
+        },
+        "docker_enabled": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "network_enabled": {
+                "const": false
+              }
+            },
+            "required": [
+              "network_enabled"
+            ]
+          },
+          "then": {
+            "properties": {
+              "allowed_hosts": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

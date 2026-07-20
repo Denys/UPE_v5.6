@@ -1,0 +1,120 @@
+schema_version: '1.0'
+record_id: C-402-RESULT
+generated_at: '2026-07-20T14:28:02.8266183+02:00'
+status: TESTED_LOCALLY
+
+task:
+  id: C-402
+  title: Implement the provider adapter interface and fake adapter
+  verdict: PASS
+  gate: validation/C-402-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6'
+  branch: codex/c401-typed-models
+  base_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  head_commit: a8c611b09297fb226f046d54fdfa0f64e84d9396
+  C_401_dependency_committed: false
+  C_402_committed: false
+
+authorization:
+  source: active user request to implement the accepted C-402 plan
+  granted:
+    - add the synchronous provider-neutral adapter interface
+    - add one deterministic in-memory fake adapter and focused tests
+    - update bounded current-state and C-402 evidence records
+  excluded:
+    - staging, commit, push, pull request, merge, release, and deployment
+    - external/network actions, visibility changes, and messages
+    - real provider adapters, lifecycle orchestration, persistence, recovery, and C-403-plus behavior
+
+files_created:
+  - agent/state/C-402-pre-edit-context.yaml
+  - agent/state/C-402-result.yaml
+  - src/harness/adapters/__init__.py
+  - src/harness/adapters/base.py
+  - src/harness/adapters/fake.py
+  - tests/unit/test_fake_adapter.py
+  - validation/C-402-GATE.yaml
+files_updated:
+  - AGENTS.md
+  - README.md
+  - docs/research/research-state.yaml
+
+implemented:
+  provider_contract:
+    - runtime-checkable synchronous ProviderAdapter protocol
+    - typed identity, compatibility preflight, start/stop, session create/resume, turn submit, event stream, approval response, interrupt, and cancel operations
+    - frozen, slotted, keyword-only records with strict no-coercion identifiers, references, UTC timestamps, and event payload invariants
+    - TurnRequest consumes immutable C-401 Run and Task and requires aligned goal/task identity, EXECUTING Run, IN_PROGRESS Task, and selected workspace
+    - provider-local events remain distinct from canonical state.Event and carry no lifecycle transition metadata
+    - expected turn failure is a typed terminal event; exceptional state, compatibility, protocol, transient, and permanent failures use ProviderAdapterError
+  fake_adapter:
+    - deterministic FIFO scripts with fixed or injected UTC base time and monotonic session, turn, event, event-sequence, and operation identities
+    - scripted success, normalized failure, interruption, and approval-then-success factories
+    - exactly-once segmented streaming that stops at approval or terminal state
+    - approval grant continuation and deterministic denial, interrupt, and session-cancel terminal outcomes
+    - fail-closed unknown/forged handles, duplicate requests/responses, mismatched approvals, invalid ordering, incompatibility, and script exhaustion
+    - immutable operation trace with no filesystem, subprocess, network, model, persistence, or lifecycle side effect
+  packaging:
+    - harness.adapters exports the bounded protocol and fake surface
+    - root harness.__init__ remains unchanged and exports only harness.__version__
+    - no runtime dependency, schema, lock, configuration, or C-401 state change
+
+verification:
+  result: PASS
+  summary:
+    C_401_recorded_hashes: PASS_10_OF_10
+    focused_fake_adapter_pytest: 20_passed
+    integrated_C401_C402_pytest: 148_passed
+    full_pytest: 167_passed
+    uv_sync_locked: PASS_33_PACKAGES
+    uv_lock: PASS
+    ruff: PASS
+    ruff_format: PASS_20_FILES
+    strict_mypy: PASS_14_SOURCE_FILES
+    reference_validator: PASS_41_LOCATION_237_SCHEMA
+    git_diff_check: PASS
+    adapter_import: PASS
+    wheel_content: PASS_4_HARNESS_ADAPTER_FILES
+
+scoped_review:
+  verdict: PASS_NO_BLOCKING_FINDING
+  evidence:
+    - public adapter records are frozen and slotted; mutable state is private to FakeAdapter
+    - adapter source imports no filesystem, subprocess, socket, network client, SQLite, transition_run, or untyped payload surface
+    - C-401 recorded evidence hashes still match after C-402 implementation
+    - status and diff inspection show no staging and no edit to protected user artifacts, stash, or separate worktree
+  independent_review_claimed: false
+
+evidence_hashes_sha256:
+  agent/state/C-402-pre-edit-context.yaml: ebce9482fac31fc9361d95f17bec9e380be7efa32742af79b327cc48acfb3288
+  src/harness/adapters/__init__.py: 8fe2c0e2055a7494c4860d1600fe1393f85e805070529121a8cf7b6a6abb6f9b
+  src/harness/adapters/base.py: d4169ca15954999a6ca80e5009e1813c203277f48e4fbc16516d2bfc22a2b5e4
+  src/harness/adapters/fake.py: 42806e41d193a42a1359793153979d7758c56989699dc3d07e617ffd5cba215c
+  tests/unit/test_fake_adapter.py: 2981cf3e946a1d672222bb58e6518e2a8ff637654a4b7d709d1225f148e1654b
+  AGENTS.md: 958e4592d18d6855544a9169f7979dd40a162ee4bf4a72c33041f7899c90d7ad
+  README.md: dad2717f276d7e4cb204176cfea88a2292c13201b34b4d250cfa0ecedcb5a4af
+  docs/research/research-state.yaml: 5f7b0dc68a2307362e71edb1a47211cf1a38be9de79c132c50fcdd52e188a1bb
+
+preserved_state:
+  pre_existing_C401_state: unchanged_by_recorded_hash
+  protected_user_artifact_count: 5
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  staged_paths: 0
+  consequential_git_or_external_action: false
+
+known_limits:
+  - only installed Python 3.14.3 is verified; Python 3.12 and 3.13 remain unverified
+  - the interface is synchronous and single-agent; concurrency behavior is not implemented or tested
+  - FakeAdapter state is process-local and intentionally non-durable
+  - canonical Event conversion and lifecycle sequencing remain C-403
+  - stopped-run resume/reconciliation remains C-503; provider session resume does not change Run state
+  - the Codex App Server adapter and live protocol smoke evidence remain C-501/C-502
+
+next_action: >-
+  Preserve the combined C-401/C-402 diff locally and uncommitted. Begin C-403 only
+  under a new bounded authorization; do not infer staging, commit, remote, release,
+  deployment, or C-403-plus authority.
