@@ -4,6 +4,7 @@ import json
 import re
 import subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,48 @@ def test_capability_readiness_report_state_is_current() -> None:
         capture_output=True,
         text=True,
     )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_repository_identity_is_refresh_context_not_freshness_state(tmp_path: Path) -> None:
+    embedded = _payload()
+    changed = deepcopy(embedded)
+    changed["repository"] = {
+        "head": "0" * 40,
+        "branch": "codex/post-refresh-commit",
+    }
+    html = REPORT.read_text(encoding="utf-8")
+    replacement = (
+        '<script type="application/json" id="upe-task-state">\n'
+        f"{json.dumps(changed, ensure_ascii=False, indent=2)}\n"
+        "</script>"
+    )
+    changed_html, count = re.subn(
+        r'<script type="application/json" id="upe-task-state">.*?</script>',
+        replacement,
+        html,
+        count=1,
+        flags=re.DOTALL,
+    )
+    assert count == 1
+    temporary_report = tmp_path / REPORT.name
+    temporary_report.write_text(changed_html, encoding="utf-8")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(UPDATER),
+            "--check",
+            "--quiet",
+            "--report",
+            str(temporary_report),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
     assert completed.returncode == 0, completed.stderr
 
 
