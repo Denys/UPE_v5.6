@@ -1,0 +1,135 @@
+schema_version: '1.0'
+record_id: C-405-RESULT
+generated_at: '2026-07-21T20:06:53.0919491+02:00'
+status: TESTED_LOCALLY
+
+task:
+  id: C-405
+  title: Implement workspace/worktree isolation and path containment
+  verdict: PASS
+  gate: validation/C-405-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c405_worker'
+  branch: codex/c405-workspace-containment
+  base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  origin_main_at_preflight: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  head_at_result_write: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  upstream: origin/main
+  worktree_registered: true
+  worktree_locked: false
+  committed_at_result_write: false
+
+dependencies:
+  ADR-001:
+    status: PASS
+    evidence: gate-records/ADR-001-PASS.yaml
+  C-305:
+    status: PASS
+    evidence:
+      - agent/state/C-304-C-306-result.yaml
+      - validation/C-304-C-306-GATE.yaml
+  C-403:
+    status: PASS
+    evidence:
+      - agent/state/C-403-result.yaml
+      - validation/C-403-GATE.yaml
+
+authorization:
+  source: delegated active user request
+  granted:
+    - five owned C-405 paths
+    - deterministic local verification
+    - at most one bounded local commit
+  not_granted_or_excluded:
+    - push, pull request, merge, release, deployment, external message, or visibility change
+    - primary checkout, unrelated worktree, shared current-state/report, backlog, dependency, or generated HTML edits
+    - persistence, CLI/doctor, recovery orchestration, broad host cleanup, worktree mutation, or other real external effects
+
+files_created:
+  - src/harness/workspace.py
+  - tests/unit/test_workspace.py
+  - agent/state/C-405-pre-edit-context.yaml
+  - agent/state/C-405-result.yaml
+  - validation/C-405-GATE.yaml
+
+implemented:
+  path_policy:
+    - absolute drive-local Windows paths only; UNC and device namespaces refused
+    - traversal, sibling-prefix, root, nested, ADS, glob, environment-expansion, reserved-device, and trailing-dot/space targets refused
+    - exact canonical direct-child containment with case-insensitive Windows comparison
+    - every existing component inspected without following links; symlink/junction/reparse behavior refused
+  identity_policy:
+    - repository/worktree root filesystem identities captured and revalidated
+    - assigned workspace filesystem identity captured and revalidated
+    - deterministic owner token binds task, path, root/workspace identity, Git HEAD, and branch
+  git_and_dirty_state:
+    - read-only GitWorkspaceInspector port exposes only worktree inventory and status
+    - assignment requires one exact unlocked registered worktree
+    - staged, unstaged, and untracked paths retained without cleanup or data mutation
+  cleanup_boundary:
+    - prepare_cleanup returns an explicit immutable clean target and performs no effect
+    - verify_cleanup_target rechecks ownership, path, filesystem identity, Git identity, and dirty status immediately before a separate effect
+    - forged, unrelated, stale, late-dirty, locked, missing, or ambiguous targets fail closed
+
+verification:
+  result: PASS
+  summary:
+    clean_baseline: 142_passed
+    focused_workspace: 28_passed
+    full_pytest: 248_passed
+    uv_lock: PASS_33_PACKAGES
+    ruff: PASS
+    ruff_format: PASS_29_FILES
+    strict_mypy: PASS_22_SOURCE_FILES
+    reference_validation: PASS_41_LOCATION_237_SCHEMA
+    owned_path_inspection: PASS
+  commands:
+    - uv lock --check
+    - uv run python -c "import harness; print(harness.__version__)"
+    - uv run pytest -q tests/unit/test_config.py tests/unit/test_state.py tests/unit/test_validation.py
+    - uv run pytest -q tests/unit/test_workspace.py
+    - uv run pytest -q
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run mypy --strict src tests
+    - uv run python scripts/validate_references.py
+    - git diff --check
+
+scoped_review:
+  verdict: PASS_NO_BLOCKING_FINDING
+  evidence:
+    - production module imports no subprocess/network/database/provider layer and exposes no create/remove/delete/rename effect
+    - unrelated worktree records and sentinels remain unchanged in positive and refusal tests
+    - all five modified paths match the delegated ownership allowlist
+    - no package export, dependency, lock, shared report, mutable current-state, backlog, or generated HTML path changed
+  independent_reviewer_claimed: false
+
+corrected_milestones:
+  - Ruff initially requested mechanical formatting for tests/unit/test_workspace.py; formatting and all checks then passed.
+  - Actual symlink creation was denied by Windows with WinError 1314; deterministic symlink classification replaced that fixture while actual junction/reparse tests remained green.
+
+evidence_hashes_sha256:
+  agent/state/C-405-pre-edit-context.yaml: 832084c433a4e8e794610a7444c39cc359644d8a71191b49fa599bfa68cd7914
+  src/harness/workspace.py: 1c276e15977c7d53e9c2845119138793ae4245a024b294fca0725ded74712334
+  tests/unit/test_workspace.py: 38323fca41ded028a82322aaaf30716d6b27bfc1e746b18c333d6263e36797af
+  validation/C-405-GATE.yaml: f6f8014062bbf2e0d53fba0b80c742947510a42e0ecbca9ae66fd20066248186
+
+preserved_state:
+  primary_checkout: untouched
+  unrelated_worktrees: untouched
+  shared_report_and_current_state: untouched
+  staged_paths_at_result_write: 0
+  production_cleanup_effects: 0
+  consequential_external_actions: 0
+
+known_limits:
+  - Actual symbolic-link creation is unverified under the current Windows token because it lacks symlink privilege; the symlink classification path and real junction/reparse behavior are tested.
+  - Immediate identity revalidation cannot eliminate all time-of-check/time-of-use races without carrying OS directory handles into the separately authorized cleanup effect.
+  - The module validates and plans around already-created worktrees; it intentionally performs no worktree creation or removal.
+
+next_action: >-
+  Create the single authorized local C-405 commit after final staged diff/hash
+  verification, then hand the exact commit to the coordinator for independent
+  review and serialized shared-state/report reconciliation.

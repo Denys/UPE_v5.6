@@ -1,0 +1,92 @@
+schema_version: '1.0'
+record_id: C-405-PRE-EDIT-CONTEXT
+generated_at: '2026-07-21T19:42:09.3349065+02:00'
+task:
+  id: C-405
+  title: Implement workspace/worktree isolation and path containment
+  scope: >-
+    Exact task-to-workspace containment with fail-closed traversal, reparse,
+    filesystem-identity, dirty-state, ownership, and cleanup-target checks.
+
+repository:
+  identity: Denys/UPE_v5.6
+  remote: https://github.com/Denys/UPE_v5.6.git
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c405_worker'
+  branch: codex/c405-workspace-containment
+  upstream: origin/main
+  base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  head_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  origin_main: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  ahead: 0
+  behind: 0
+  registered: true
+  locked: false
+  clean: true
+
+authorization:
+  source: delegated active user request
+  granted:
+    - edit only the five assigned C-405 functional and evidence paths
+    - run deterministic local checks
+    - create at most one bounded local commit
+  forbidden:
+    - push, pull request, merge, release, deployment, or external effect
+    - primary-checkout or unrelated-worktree mutation
+    - shared report, mutable current-state, backlog, dependency, export, or generated HTML edits
+    - persistence, CLI or doctor, recovery orchestration, broad host cleanup, or real external effects
+
+owned_paths:
+  - src/harness/workspace.py
+  - tests/unit/test_workspace.py
+  - agent/state/C-405-pre-edit-context.yaml
+  - agent/state/C-405-result.yaml
+  - validation/C-405-GATE.yaml
+
+dependencies:
+  ADR-001: PASS
+  C-305: PASS
+  C-403: PASS
+  toolchain:
+    python: 3.14.3
+    uv: 0.11.25
+    resolved_packages: 33
+
+baseline:
+  command: uv run pytest -q tests/unit/test_config.py tests/unit/test_state.py tests/unit/test_validation.py
+  result: PASS
+  observed: 142 passed in 19.70s
+  lock_check:
+    command: uv lock --check
+    result: PASS
+  package_import:
+    command: uv run python -c "import harness; print(harness.__version__)"
+    result: PASS
+    observed: 0.1.0
+
+input_hashes_sha256:
+  chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml: f2a6944295c6a5f6c3d4b049d74f0f985f4930b4bd7f0474b89832ce631bb87c
+  docs/architecture/ADR-001-harness-boundary.md: ff66a393d45ee08be0c8cb48512f0cdd29d3a54447c7e64df1c8a7fcbb82d4d5
+  gate-records/ADR-001-PASS.yaml: a7fb5164ae9414541af5e00915c4f7ec216fe07da04502d20cf4ab5102a7ab52
+  agent/state/C-304-C-306-result.yaml: 6a447cdbf356ee42964163621a4e356c9a569475781cecc943866121082598c0
+  validation/C-304-C-306-GATE.yaml: 9f332116e30d700d09c5fa2b7b6996cf4e9ceb28ed98dc15a0c3d072d52bbd89
+  agent/state/C-403-result.yaml: eb3b10cf032e01dabd831bf7307a929b6848206f13aa74bf585641fea2beaf3d
+  validation/C-403-GATE.yaml: 0584ace92816a92bb1c15ad78f466639ebef47997dda4ccd7b9b6883f4aabf4f
+  docs/work/SECURITY_THREAT_BOUNDARY.md: c8598524a7eb94f44ca4303c8a08b50c9330f5e4f0871ecb4ba49a4efc1f999b
+  src/harness/config.py: 121856e1817b2d3723d84bfcf73ccd894ac84d8a3ae5bec9ecf23f53ecc59f95
+  src/harness/state.py: 0ffd374cea390fea7995346458af61c099f9eb501a066c2ee14cca61e3d96d8c
+  src/harness/validation.py: e7c503dfcdf9e259a20118121423536496f9d75766c29e5034693207257275ad
+
+implementation_boundary:
+  included:
+    - deterministic workspace records and exact task ownership mapping
+    - lexical path rejection plus existing-component reparse checks
+    - canonical root and workspace filesystem-identity verification
+    - Git worktree inventory and dirty-state inspection through an injected read-only port
+    - explicit cleanup-target resolution and immediate revalidation without deletion
+  excluded:
+    - Git worktree creation or removal effects
+    - filesystem deletion, command execution, persistence, CLI, recovery, or host-wide discovery
+
+pre_edit_assertion: >-
+  No source or test path was edited before this record. The worktree was clean,
+  unlocked, dependency-satisfied, and exactly aligned with origin/main.
