@@ -87,7 +87,7 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
 
     assert tasks["C-403"]["status"] == "complete"
     assert tasks["C-404"]["status"] == "complete"
-    assert tasks["C-405"]["status"] == "ready"
+    assert tasks["C-405"]["status"] == "complete"
     assert tasks["C-406"]["status"] == "complete"
     assert tasks["C-404"]["dependency_mode"] == "satisfied"
     assert tasks["C-407"]["status"] == "ready"
@@ -129,7 +129,6 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     expected_estimates = {
         "W-211": "3–5 hours",
         "W-212": "4–8 hours",
-        "C-405": "1.5–3 engineering days",
         "C-407": "2–4 engineering days",
         "C-408": "1–2 engineering days",
     }
@@ -142,6 +141,7 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     assert tasks["C-407"]["planning"]["parallelizable_now"] is True
     assert tasks["C-407"]["planning"]["blocked_by"] == []
     assert tasks["C-404"]["planning"]["estimate"] is None
+    assert tasks["C-405"]["planning"]["estimate"] is None
     assert tasks["C-406"]["planning"]["estimate"] is None
 
 
@@ -168,21 +168,20 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
     assert recommendation["classification"] == "parallel_runs"
     assert recommendation["classification_label"] == "Parallel runs"
     assert recommendation["bundle_allowed"] is False
-    assert recommendation["task_ids"] == ["C-407", "C-405", "C-408", "W-211", "W-212"]
+    assert recommendation["task_ids"] == ["C-407", "C-408", "W-211", "W-212"]
     assert [run["task_ids"] for run in recommendation["runs"]] == [
         ["C-407"],
-        ["C-405"],
         ["C-408"],
         ["W-211"],
         ["W-212"],
     ]
-    assert "C-409 waits on C-405, C-407" in recommendation["blockers"]
+    assert "C-409 waits on C-407" in recommendation["blockers"]
     assert "shared" in recommendation["scope_collision_warning"].lower()
     assert recommendation["elapsed_comparison"]["parallel"] == (
         "2–4 engineering days plus serial integration"
     )
     assert recommendation["elapsed_comparison"]["sequential"] == (
-        "about 5.4–10.6 engineering days plus integration"
+        "about 3.9–7.6 engineering days plus integration"
     )
     assert (ROOT / recommendation["handoff"]["path"]).is_file()
 

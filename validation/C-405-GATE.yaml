@@ -1,0 +1,119 @@
+schema_version: '1.0'
+gate_id: C-405-WORKSPACE-CONTAINMENT
+generated_at: '2026-07-21T20:04:19.4889566+02:00'
+status: PASS
+status_reason: >-
+  One task is bound to one exact existing registered worktree; unsafe Windows
+  path classes, reparse escapes, root/workspace identity drift, ambiguous or
+  locked Git inventory, forged cleanup targets, and dirty cleanup all fail
+  closed without any create, removal, deletion, or unrelated-worktree effect.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c405_worker'
+  branch: codex/c405-workspace-containment
+  base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  tested_head: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  origin_main_at_preflight: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  committed_at_gate_write: false
+
+criteria:
+  - id: C-405-EXACT-OWNERSHIP
+    verdict: PASS
+    evidence:
+      - A stable task ID binds to one canonical direct-child worktree and one worktree cannot bind to two tasks.
+      - Assignment requires exactly one unlocked matching Git inventory record.
+      - Deterministic owner tokens bind task, canonical path, root/workspace filesystem identity, Git HEAD, and branch.
+  - id: C-405-PATH-CONTAINMENT
+    verdict: PASS
+    evidence:
+      - Relative, traversal, sibling-prefix, nested, root, UNC, device-namespace, ADS, glob, environment-expansion, reserved-device, and trailing-dot/space paths fail closed.
+      - Every existing component is inspected without following links; a symlink or Windows reparse attribute is rejected.
+      - Existing root/workspace paths must resolve to their exact case-insensitive lexical location.
+  - id: C-405-FILESYSTEM-IDENTITY
+    verdict: PASS
+    evidence:
+      - Repository-root and worktree-root device/inode identities are captured and revalidated before assignment or cleanup planning.
+      - Assigned workspace identity is captured and revalidated before cleanup planning and again before a later cleanup effect.
+      - Deterministic directory-swap tests prove root/workspace replacement fails closed before Git status or cleanup.
+  - id: C-405-REPARSE
+    verdict: PASS
+    evidence:
+      - Actual Windows junctions at both workspace and configured worktree-root positions are refused.
+      - External junction targets remain untouched.
+      - Symlink classification is covered deterministically by the same fail-closed component inspection.
+  - id: C-405-DIRTY-STATE
+    verdict: PASS
+    evidence:
+      - Staged, unstaged, and untracked path categories are retained in an immutable GitStatus observation.
+      - Dirty workspaces may be inspected/assigned but cleanup preparation and revalidation refuse them.
+      - Dirty and unrelated sentinels remain byte-for-byte intact after refusal.
+  - id: C-405-CLEANUP-TARGET
+    verdict: PASS
+    evidence:
+      - Cleanup preparation returns one explicit immutable target and performs no cleanup effect.
+      - A separate verification call rechecks ownership, canonical path, root/workspace identity, unlocked Git registration, HEAD, branch, and clean status.
+      - Forged unrelated paths/tokens, late dirty state, and Git identity drift fail closed.
+  - id: C-405-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Production source has no subprocess, filesystem deletion/rename, Git mutation, persistence, CLI, recovery, network, or provider effect.
+      - The Git port exposes only list_worktrees and status.
+      - Functional ownership is confined to src/harness/workspace.py and tests/unit/test_workspace.py.
+  - id: C-405-REGRESSION
+    verdict: PASS
+    evidence:
+      - Focused workspace suite passes 28 tests.
+      - Full repository suite passes 248 tests.
+      - Repository-wide Ruff lint/format, strict mypy, lock, reference validation, and diff-path inspection pass.
+
+commands:
+  - uv lock --check
+  - uv run python -c "import harness; print(harness.__version__)"
+  - uv run pytest -q tests/unit/test_config.py tests/unit/test_state.py tests/unit/test_validation.py
+  - uv run pytest -q tests/unit/test_workspace.py
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  uv: 0.11.25
+  resolved_packages: 33
+  clean_baseline_tests: 142_passed_in_19_70_seconds
+  focused_workspace_tests: 28_passed_in_3_86_seconds
+  full_tests: 248_passed_in_141_54_seconds
+  ruff_lint: PASS
+  ruff_format: PASS_29_FILES
+  strict_mypy: PASS_22_SOURCE_FILES
+  reference_validation: PASS_41_LOCATION_237_SCHEMA
+  lock_check: PASS
+
+corrected_test_milestones:
+  - initial focused static format check identified one test file requiring formatting; corrected mechanically and all focused checks passed.
+  - actual directory-symlink fixture creation failed with WinError 1314 before exercising production code; replaced with deterministic symlink classification while retaining actual Windows junction/reparse tests.
+
+evidence_hashes_sha256:
+  agent/state/C-405-pre-edit-context.yaml: 832084c433a4e8e794610a7444c39cc359644d8a71191b49fa599bfa68cd7914
+  src/harness/workspace.py: 1c276e15977c7d53e9c2845119138793ae4245a024b294fca0725ded74712334
+  tests/unit/test_workspace.py: 38323fca41ded028a82322aaaf30716d6b27bfc1e746b18c333d6263e36797af
+
+preservation:
+  primary_checkout_untouched: true
+  unrelated_worktrees_untouched: true
+  shared_report_and_current_state_untouched: true
+  production_cleanup_effects: 0
+  staged_paths_at_gate_write: 0
+
+known_limits:
+  - Actual symbolic-link creation is unverified because this Windows token lacks symlink privilege; the fail-closed symlink classification branch and actual junction/reparse behavior are tested.
+  - Device/inode identity and immediate revalidation reduce but cannot eliminate a filesystem race without retaining OS directory handles across the separate cleanup-effect boundary.
+  - This task intentionally does not create or remove worktrees; a later authorized host effect must consume and immediately reverify CleanupTarget.
+
+next_action: >-
+  Coordinator should independently inspect this one-package commit, then serialize
+  shared current-state/report reconciliation on an integration branch without
+  widening C-405 functional ownership.

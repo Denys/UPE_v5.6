@@ -1318,33 +1318,33 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-21T20:15:02+02:00",
+  "refreshed_at": "2026-07-21T21:25:13+02:00",
   "repository": {
-    "head": "a6c2e63df7efde7a0011206c5018e15af5bbcb8e",
-    "branch": "codex/c406-sqlite-jsonl-state"
+    "head": "34fdb4850b4a7d89fca566174a1ae18119a06c87",
+    "branch": "codex/c405-workspace-containment"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 35,
-    "progress_percent": 61,
+    "completed_delivery": 36,
+    "progress_percent": 63,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 35,
-      "ready": 5,
+      "complete": 36,
+      "ready": 4,
       "blocked": 20,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
-      "High": 19,
+      "High": 18,
       "Max": 5,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 21
+      "Local required": 20
     }
   },
   "tasks": [
@@ -3403,12 +3403,12 @@
       "title": "Implement workspace/worktree isolation and path containment",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-305"
@@ -3451,15 +3451,12 @@
         "dirty state handled safely"
       ],
       "planning": {
-        "estimate": "1.5–3 engineering days",
-        "estimate_hours": {
-          "minimum": 12.0,
-          "maximum": 24.0
-        },
-        "confidence": "rough",
-        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -3680,7 +3677,6 @@
         "C-407"
       ],
       "incomplete_dependencies": [
-        "C-405",
         "C-407"
       ],
       "dependents": [
@@ -3725,9 +3721,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-405, C-407.",
+        "parallel_note": "Starts after C-407.",
         "blocked_by": [
-          "C-405",
           "C-407"
         ]
       }
@@ -3753,7 +3748,6 @@
         "C-409"
       ],
       "incomplete_dependencies": [
-        "C-405",
         "C-407",
         "C-409"
       ],
@@ -3796,9 +3790,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-405, C-407, C-409.",
+        "parallel_note": "Starts after C-407, C-409.",
         "blocked_by": [
-          "C-405",
           "C-407",
           "C-409"
         ]
@@ -4044,7 +4037,6 @@
         "C-503"
       ],
       "incomplete_dependencies": [
-        "C-405",
         "C-503"
       ],
       "dependents": [
@@ -4093,9 +4085,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-405, C-503.",
+        "parallel_note": "Starts after C-503.",
         "blocked_by": [
-          "C-405",
           "C-503"
         ]
       }
@@ -4119,7 +4110,6 @@
         "C-501"
       ],
       "incomplete_dependencies": [
-        "C-405",
         "C-501"
       ],
       "dependents": [
@@ -4172,9 +4162,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-405, C-501.",
+        "parallel_note": "Starts after C-501.",
         "blocked_by": [
-          "C-405",
           "C-501"
         ]
       }
@@ -5058,7 +5047,6 @@
     "bundle_allowed": false,
     "task_ids": [
       "C-407",
-      "C-405",
       "C-408",
       "W-211",
       "W-212"
@@ -5076,15 +5064,6 @@
       {
         "label": "Run 2",
         "task_ids": [
-          "C-405"
-        ],
-        "surface": "Local required",
-        "estimate": "1.5–3 engineering days",
-        "application": "Operational effect: Git worktree or scoped workspace manager without broad host access. Produces src/harness/workspace.py · tests/unit/test_workspace.py. Directly enables C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-504 (Implement checkpoint and partial-failure recovery), C-505 (Implement permissions, approval gates, command policy, and redaction)."
-      },
-      {
-        "label": "Run 3",
-        "task_ids": [
           "C-408"
         ],
         "surface": "Local required",
@@ -5092,7 +5071,7 @@
         "application": "Operational effect: Optional second layer only for irreducible judgment. Produces src/harness/evaluation.py · tests/unit/test_evaluation.py. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 4",
+        "label": "Run 3",
         "task_ids": [
           "W-211"
         ],
@@ -5101,7 +5080,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 5",
+        "label": "Run 4",
         "task_ids": [
           "W-212"
         ],
@@ -5110,19 +5089,17 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "5 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-407 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "4 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-407 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
-      "C-409 waits on C-405, C-407",
-      "C-410 waits on C-405, C-407, C-409",
-      "C-501 waits on C-407",
-      "C-504 waits on C-405, C-503",
-      "C-505 waits on C-405, C-501"
+      "C-409 waits on C-407",
+      "C-410 waits on C-407, C-409",
+      "C-501 waits on C-407"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
       "parallel": "2–4 engineering days plus serial integration",
-      "sequential": "about 5.4–10.6 engineering days plus integration"
+      "sequential": "about 3.9–7.6 engineering days plus integration"
     },
     "handoff": {
       "label": "Open the detailed five-run execution handoff",
