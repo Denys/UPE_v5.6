@@ -1,0 +1,110 @@
+schema_version: '1.0'
+record_id: C-406-PRE-EDIT-CONTEXT
+generated_at: '2026-07-21T19:39:37.8280683+02:00'
+status: READY_WITH_RECORDED_BASELINE_RUNNER_INTERRUPTION
+
+authorization:
+  source: active user request and carried-over bounded WP authority
+  granted:
+    - implement C-406 SQLite state persistence and append-only JSONL events
+    - create isolated branch/worktree, focused tests, unique C-406 evidence, and a bounded commit
+    - coordinate separate C-405, C-408, W-211, and W-212 execution lanes
+  excluded:
+    - release, deployment, visibility change, destructive cleanup, or unrelated external mutation
+    - C-405 workspace containment, C-407 retry/budgets, C-408 evaluator, CLI, recovery policy, or real provider work
+    - worker edits to shared research-state, report, updater, or frontier-test paths
+
+repository:
+  identity: Denys/UPE_v5.6
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6_c406_worker'
+  branch: codex/c406-sqlite-jsonl-state
+  baseline_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  main_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  origin_main_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  staged_paths: 0
+  tracked_or_untracked_changes_before_record: 0
+
+dependencies:
+  C-401:
+    verdict: PASS
+    result: agent/state/C-401-result.yaml
+    gate: validation/C-401-GATE.yaml
+    accepted_by_pr: https://github.com/Denys/UPE_v5.6/pull/6
+  C-403:
+    verdict: PASS
+    result: agent/state/C-403-result.yaml
+    gate: validation/C-403-GATE.yaml
+    accepted_by_pr: https://github.com/Denys/UPE_v5.6/pull/6
+
+owned_functional_paths:
+  - src/harness/state_store.py
+  - src/harness/events.py
+  - tests/unit/test_state_store.py
+  - tests/unit/test_events.py
+
+owned_evidence_paths:
+  - agent/state/C-406-pre-edit-context.yaml
+  - agent/state/C-406-result.yaml
+  - validation/C-406-GATE.yaml
+
+locked_paths:
+  - src/harness/state.py
+  - src/harness/config.py
+  - src/harness/lifecycle.py
+  - src/harness/orchestrator.py
+  - docs/research/research-state.yaml
+  - scripts/update_capability_readiness_report.py
+  - tests/test_capability_readiness_report.py
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+
+functional_scope:
+  - implement a LifecycleCommitter-compatible SQLite store for atomic Run/Event/outbox persistence
+  - validate stale base, monotonic per-run event sequence, exact duplicates, and conflicting replay
+  - keep SQLite plus outbox authoritative and return only after durable commit
+  - append complete canonical events to a durable JSONL mirror and mark delivered only after fsync
+  - deduplicate replay after a lost delivery acknowledgement using run_id and event_seq
+  - retain large values outside SQLite/JSONL payloads through bounded typed references
+  - preserve and replay explicit redaction status
+
+explicit_exclusions:
+  - Goal/Task/approval/action/checkpoint persistence not required by the C-406 Run/Event committer slice
+  - worktree allocation or path containment
+  - external-action journal and reconciliation policy
+  - retries, budgets, no-progress, CLI, doctor, evaluator, provider, network, or recovery orchestration
+  - changes to C-401/C-403 contracts or package dependencies
+
+baseline_verification:
+  uv_lock: PASS_33_PACKAGES
+  focused_fixture_retry: PASS_1
+  deterministic_non_fixture_suite: PASS_219
+  report_freshness: PASS
+  git_diff_check: PASS
+  first_full_attempt: FAIL_1_FIXTURE_219_PASS_AFTER_PRIOR_COMBINED_RUN_TIMEOUT
+  clean_full_retry: INSUFFICIENT_EVIDENCE_TOOL_TIMEOUT_AND_STDOUT_FLUSH_ERROR
+  note: >-
+    The owner marker was confirmed to be a regular non-reparse file after the
+    interrupted runner. Its focused adversarial test passed. No product source
+    drift was observed; final verification must rerun the complete suite.
+
+pre_edit_hashes_sha256:
+  src/harness/state.py: 0ffd374cea390fea7995346458af61c099f9eb501a066c2ee14cca61e3d96d8c
+  src/harness/config.py: 121856e1817b2d3723d84bfcf73ccd894ac84d8a3ae5bec9ecf23f53ecc59f95
+  src/harness/lifecycle.py: 136ed82016b9c54a9fe7f9f998b98ca5828308f36c09d0e344a485861d2e9bf2
+  src/harness/orchestrator.py: 1047c36f8190adacb3bb864e621bc9b966d702e6286f063f329e46b29d5b36d8
+  agent/state/C-401-result.yaml: 5fb308160520168d850eede8b46c37b533ddca266efe1767e0ab039371063e28
+  agent/state/C-403-result.yaml: eb3b10cf032e01dabd831bf7307a929b6848206f13aa74bf585641fea2beaf3d
+  validation/C-401-GATE.yaml: dc704eb60bd669f2adee6569d7f66ce0ddec79aea9b7e174add941282cf8945e
+  validation/C-403-GATE.yaml: 0584ace92816a92bb1c15ad78f466639ebef47997dda4ccd7b9b6883f4aabf4f
+
+stop_conditions:
+  - dependency or origin/main evidence materially diverges
+  - C-406 requires another active package's functional path
+  - atomic state/outbox semantics or JSONL replay cannot be deterministically tested
+  - protected checkout state or existing worktrees would be modified
+  - implementation requires destructive cleanup or broader external authority
+
+verification_plan:
+  - focused tests/unit/test_state_store.py and tests/unit/test_events.py
+  - integrated C-401/C-403/C-406 lifecycle persistence tests
+  - complete repository pytest suite with no concurrent killed runner
+  - lock, Ruff lint/format, strict mypy, references, report freshness, and diff checks

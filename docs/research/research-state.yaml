@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Preserve the merged C-404 deterministic-validation baseline and select the
-    next bounded work package without mixing C-405, C-406, or later-task scope.
+    Integrate the completed C-406 SQLite/outbox/JSONL slice first while the
+    disjoint C-405, C-408, W-211, and W-212 functional runs proceed separately.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: dc41f569b8f575e8f872e53fd5ed6adabdf3e12e
-    observed_main_commit_role: accepted_C404_capability_merge
+    observed_main_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+    observed_main_commit_role: accepted_PR_11_parallel_execution_handoff_merge
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -22,8 +22,8 @@ upe_state:
       state: MERGED
       head_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
       merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
-    local_implementation_branch: codex/c404-deterministic-validation
-    local_implementation_base: 63f142901a5f61164e686f8bb6b732e724274d18
+    local_implementation_branch: codex/c406-sqlite-jsonl-state
+    local_implementation_base: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
     implementation_pr_5:
       state: MERGED
       published_C-303_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
@@ -66,6 +66,20 @@ upe_state:
       state: MERGED
       head_commit: b5726d501897d1ed607c42c30e423952c3e7884c
       merge_commit: dc41f569b8f575e8f872e53fd5ed6adabdf3e12e
+    C_404_bookkeeping_pr_10:
+      state: MERGED
+      head_commit: f46c179
+      merge_commit: bf4556b
+    parallel_execution_handoff_pr_11:
+      state: MERGED
+      head_commit: 5f60c3321c106de2d77f4a9f0e3672a699496cb7
+      merge_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+    C_406_local_slice:
+      state: FUNCTIONAL_PASS_PENDING_PR
+      branch: codex/c406-sqlite-jsonl-state
+      base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+      result: agent/state/C-406-result.yaml
+      gate: validation/C-406-GATE.yaml
 
   must_status:
     research_matrix: PASS
@@ -97,7 +111,8 @@ upe_state:
     C-402: MERGED_PR_6_PASS
     C-403: MERGED_PR_6_PASS
     C-404: MERGED_PR_9_PASS
-    harness_implementation: DETERMINISTIC_VALIDATION_MERGED
+    C-406: PASS_PENDING_MERGE
+    harness_implementation: SQLITE_OUTBOX_JSONL_FUNCTIONAL_PASS_PENDING_MERGE
     local_implementation_authorization: GRANTED_BOUNDED_WORK_PACKAGE_GITHUB_DELIVERY
 
   authoritative_inputs:
@@ -178,11 +193,14 @@ upe_state:
     - Passed 31 focused C-403 tests, 179 combined C-401/C-402/C-403 tests, and the complete 198-test repository suite with locked dependencies, Ruff, formatting, strict mypy, references, and diff checks.
     - Integrated the capability-readiness report hook through PR #7 and repaired its tracked-report post-merge freshness self-reference through PR #8.
     - Implemented and merged C-404 deterministic validation and referenced evidence records through PR #9; 14 focused tests, 193 integrated C-401 through C-404 tests, and the 216-test merged repository suite pass.
+    - Reconciled the C-404 merged baseline through PR #10 and merged the detailed five-run/report redesign through PR #11 at a6c2e63df7efde7a0011206c5018e15af5bbcb8e.
+    - Implemented C-406 SQLite-authoritative Run/Event persistence, transactional outbox writes, durable JSONL delivery, lost-ack deduplication, bounded referenced payloads, and redaction-marker replay on its isolated branch.
+    - Passed 12 focused C-406 tests, 73 integrated lifecycle/persistence tests, 205 unit tests, and the complete 232-test repository suite with lock, Ruff, strict mypy, references, report freshness, and diff gates.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Implement and test the real provider adapter, state/outbox durability, worktrees, action reconciliation, recovery, path containment, redaction, executable budgets, evaluator, and CLI in their assigned later phases; C-405 and C-406 remain separate immediate packages.
+    - Merge the verified C-406 slice, then implement/integrate worktrees, action reconciliation, recovery, path containment, executable budgets, evaluator, CLI, and the real provider adapter only in their assigned packages.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -216,14 +234,15 @@ upe_state:
       - wheel-content inspection confirming harness.adapters packaging
       - C-403 deterministic transition/event sequencing, commit-before-dispatch timeline assertions, one-task execution, explicit reasoned stops, malformed stream handling, and evidence-only checkpoint/completion tests
       - C-404 exact command/workspace scope, shell-free subprocess execution, referenced output/result artifacts, normalized timeout/error/malformed/overflow cases, W-203 aggregation, and PASS-only finalization evidence
+      - C-406 atomic Run/Event/outbox writes, stale/conflicting replay refusal, persisted-hash checks, referenced large-output boundary, durable JSONL fsync ordering, lost-ack deduplication, partial-tail refusal, and redaction replay
     result: PASS
     scope_note: >-
-      PASS accepts the local C-401 typed model/schema contracts and the C-402
-      provider-neutral interface/deterministic fake plus bounded C-403 lifecycle
-      sequencing and fake-adapter orchestration while preserving the accepted
-      C-301 through C-306 evidence. Real provider calls, durable persistence,
-      validator execution, executable budget/retry behavior, resume/recovery,
-      broader Python compatibility, release, and deployment are not claimed.
+      PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
+      C-403 lifecycle/orchestration, C-404 deterministic validation, and the
+      bounded C-406 SQLite Run/Event/outbox plus JSONL mirror. Real provider
+      calls, broader authoritative entity/action state, executable budget/retry
+      behavior, resume/recovery, broader Python compatibility, release, and
+      deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -234,12 +253,13 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from the accepted C-404 main baseline at
-    dc41f569b8f575e8f872e53fd5ed6adabdf3e12e. Preserve the protected
-    primary-checkout artifacts, custom-harnesses tree, named recovery stash,
-    separate UPE_5.6_pr1_fix worktree, and historical C-401 through C-403
-    records. Re-run validation/C-404-GATE.yaml and the full repository gate.
+    Resume C-406 integration from origin/main
+    a6c2e63df7efde7a0011206c5018e15af5bbcb8e and branch
+    codex/c406-sqlite-jsonl-state. Preserve the protected primary-checkout
+    artifacts, handoff line-ending/stat drift, named recovery stash, and both
+    pre-existing worktrees. Re-run validation/C-406-GATE.yaml and the complete
+    repository/report gate before delivery.
 
   next_action: >-
-    Select C-405 or C-406 as a separate bounded package from the accepted C-404
-    baseline. Keep workspace containment and persistence as independent changes.
+    Publish and merge only C-406 with its serial shared-state/report refresh,
+    then integrate completed C-405 without adding newly-ready C-407 to this wave.

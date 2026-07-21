@@ -1,0 +1,68 @@
+schema_version: '1.0'
+gate_id: C-406-SQLITE-OUTBOX-JSONL
+generated_at: '2026-07-21T20:06:24.0357488+02:00'
+status: PASS
+status_reason: >-
+  Authoritative SQLite Run/Event persistence, transactional outbox insertion,
+  bounded referenced payload handling, durable append-only JSONL delivery,
+  redaction preservation, replay deduplication, and fail-closed corruption/stale
+  state behavior satisfy the bounded C-406 contract with 231 repository tests.
+
+criteria:
+  - id: C-406-TRANSACTIONAL-WRITES
+    verdict: PASS
+    evidence:
+      - Run state and its complete event outbox row share one BEGIN IMMEDIATE transaction.
+      - Duplicate transition failure rolls back both the successor state and outbox row.
+      - The store implements the accepted LifecycleCommitter protocol and is exercised through LifecycleCoordinator.
+  - id: C-406-AUTHORITATIVE-STATE
+    verdict: PASS
+    evidence:
+      - New histories must begin at event_seq 1 and successors must advance exactly once.
+      - Run identity, timestamp, task, lifecycle prior/next state and transition identity are cross-checked.
+      - Persisted canonical state/event hashes and indexed identities fail closed on mismatch.
+  - id: C-406-REFERENCED-LARGE-VALUES
+    verdict: PASS
+    evidence:
+      - Typed events persist output/evidence references rather than file contents.
+      - A 2 MiB external artifact remains outside SQLite and only its contained reference is stored.
+      - Oversized inline Event JSON is rejected before any authoritative write.
+  - id: C-406-REPLAYABLE-JSONL
+    verdict: PASS
+    evidence:
+      - Pending outbox events append as canonical UTF-8 JSONL in committed order.
+      - Each line is flushed and fsynced before the exact outbox row is acknowledged.
+      - A deterministic crash after fsync and before acknowledgement replays without duplication.
+      - Missing JSONL is repaired from SQLite; partial/conflicting JSONL fails closed and never invents state.
+  - id: C-406-REDACTION
+    verdict: PASS
+    evidence:
+      - REDACTED and NOT_REQUIRED markers round-trip through SQLite and JSONL.
+      - Large raw output is neither accepted nor embedded by the persistence API.
+  - id: C-406-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Functional code is confined to src/harness/state_store.py and src/harness/events.py.
+      - Tests are confined to tests/unit/test_state_store.py and tests/unit/test_events.py.
+      - C-401 state, C-403 lifecycle/orchestrator, dependencies, worktrees, evaluator, retries, CLI and provider behavior are unchanged.
+  - id: C-406-REGRESSION
+    verdict: PASS
+    evidence:
+      - Twelve focused C-406 tests, 73 integrated lifecycle/persistence tests, 205 unit tests and 232 complete repository tests pass.
+      - Lock, Ruff lint/format, strict mypy, W-200 specification, reference validation, report freshness and diff checks pass.
+      - Eight post-integration report tests pass and the generated frontier reports 35/57 critical-path tasks complete with five ready.
+      - Desktop 1440x1000 and Pixel 5 renders have zero document overflow, console errors or page errors; theme and task-detail interactions pass.
+  - id: C-406-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - Protected primary artifacts, handoff drift, named stash and both pre-existing worktrees remain untouched.
+      - No release, deployment, visibility change, destructive cleanup or unrelated external action occurred.
+
+known_limits:
+  - Cross-process exclusive run locking and partial-tail repair policy remain later recovery/security integration concerns.
+  - Broader Goal/Task/approval/action/checkpoint tables are not claimed by this bounded Run/Event committer slice.
+  - Python 3.12 and 3.13 remain unverified.
+
+next_action: >-
+  Coordinator must reconcile stale research state, refresh the required HTML
+  report, rerun integration gates, then publish and merge only C-406.
