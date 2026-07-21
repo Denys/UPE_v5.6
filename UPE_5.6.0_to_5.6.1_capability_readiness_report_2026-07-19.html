@@ -1318,33 +1318,33 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-21T22:21:59+02:00",
+  "refreshed_at": "2026-07-22T01:08:50+02:00",
   "repository": {
-    "head": "ffee449d2819408c6c7ed5e73ad9a8f0960587c6",
-    "branch": "codex/c408-readonly-evaluator"
+    "head": "4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e",
+    "branch": "codex/c407-budget-retry-policy"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 37,
-    "progress_percent": 65,
+    "completed_delivery": 38,
+    "progress_percent": 67,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 37,
-      "ready": 3,
-      "blocked": 20,
+      "complete": 38,
+      "ready": 4,
+      "blocked": 18,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
-      "High": 17,
+      "High": 16,
       "Max": 5,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 19
+      "Local required": 18
     }
   },
   "tasks": [
@@ -3534,12 +3534,12 @@
       "title": "Implement budgets, stop rules, retry/backoff, and no-progress detection",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-406"
@@ -3583,15 +3583,12 @@
         "non-idempotent retry blocked"
       ],
       "planning": {
-        "estimate": "2–4 engineering days",
-        "estimate_hours": {
-          "minimum": 16.0,
-          "maximum": 32.0
-        },
-        "confidence": "rough",
-        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -3660,12 +3657,12 @@
       "title": "Implement the CLI and harness doctor",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "blocked",
+      "status": "ready",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "sequential",
+      "dependency_mode": "independent_now",
       "dependencies": [
         "C-403",
         "C-404",
@@ -3673,9 +3670,7 @@
         "C-406",
         "C-407"
       ],
-      "incomplete_dependencies": [
-        "C-407"
-      ],
+      "incomplete_dependencies": [],
       "dependents": [
         "C-410",
         "C-502",
@@ -3717,11 +3712,9 @@
         },
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": false,
-        "parallel_note": "Starts after C-407.",
-        "blocked_by": [
-          "C-407"
-        ]
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
       }
     },
     {
@@ -3745,7 +3738,6 @@
         "C-409"
       ],
       "incomplete_dependencies": [
-        "C-407",
         "C-409"
       ],
       "dependents": [],
@@ -3787,9 +3779,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-407, C-409.",
+        "parallel_note": "Starts after C-409.",
         "blocked_by": [
-          "C-407",
           "C-409"
         ]
       }
@@ -3800,21 +3791,19 @@
       "title": "Implement the Codex App Server adapter",
       "phase": "6-app-server-recovery-security",
       "phase_label": "App Server + recovery",
-      "status": "blocked",
+      "status": "ready",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_max_or_highest_exposed",
       "model_label": "Max",
-      "dependency_mode": "sequential",
+      "dependency_mode": "independent_now",
       "dependencies": [
         "C-103",
         "C-402",
         "C-406",
         "C-407"
       ],
-      "incomplete_dependencies": [
-        "C-407"
-      ],
+      "incomplete_dependencies": [],
       "dependents": [
         "C-502",
         "C-503",
@@ -3859,11 +3848,9 @@
         },
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": false,
-        "parallel_note": "Starts after C-407.",
-        "blocked_by": [
-          "C-407"
-        ]
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
       }
     },
     {
@@ -5043,7 +5030,8 @@
     "classification_label": "Parallel runs",
     "bundle_allowed": false,
     "task_ids": [
-      "C-407",
+      "C-501",
+      "C-409",
       "W-211",
       "W-212"
     ],
@@ -5051,14 +5039,23 @@
       {
         "label": "Run 1",
         "task_ids": [
-          "C-407"
+          "C-501"
         ],
         "surface": "Local required",
-        "estimate": "2–4 engineering days",
-        "application": "Operational effect: Exact bounds owned by host code. Produces src/harness/budgets.py · src/harness/retry_policy.py · tests/unit/test_budgets.py · +1 more. Directly enables C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-501 (Implement the Codex App Server adapter)."
+        "estimate": "3–5 engineering days",
+        "application": "Operational effect: Keep raw protocol messages inside the adapter boundary. Produces src/harness/adapters/codex_app_server.py · tests/unit/test_codex_adapter.py. Directly enables C-502 (Run a controlled Codex App Server smoke task), C-503 (Implement crash/restart and process-state reconciliation), C-505 (Implement permissions, approval gates, command policy, and redaction), C-506 (Integrate state, workspace, validation, App Server, recovery, and security)."
       },
       {
         "label": "Run 2",
+        "task_ids": [
+          "C-409"
+        ],
+        "surface": "Local required",
+        "estimate": "1–2 engineering days",
+        "application": "Operational effect: Small explicit CLI. Missing credentials reported without values. Produces src/harness/cli.py · tests/unit/test_cli.py. Directly enables C-410 (Document threat model, state model, evaluation plan, and operations), C-502 (Run a controlled Codex App Server smoke task), C-506 (Integrate state, workspace, validation, App Server, recovery, and security)."
+      },
+      {
+        "label": "Run 3",
         "task_ids": [
           "W-211"
         ],
@@ -5067,7 +5064,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 3",
+        "label": "Run 4",
         "task_ids": [
           "W-212"
         ],
@@ -5076,17 +5073,19 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "3 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-407 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "4 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-501 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
-      "C-409 waits on C-407",
-      "C-410 waits on C-407, C-409",
-      "C-501 waits on C-407"
+      "C-410 waits on C-409",
+      "C-502 waits on C-501, C-409",
+      "C-503 waits on C-501, C-502",
+      "C-505 waits on C-501",
+      "C-506 waits on C-409, C-501, C-503, C-504, C-505"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
-      "parallel": "2–4 engineering days plus serial integration",
-      "sequential": "about 2.9–5.6 engineering days plus integration"
+      "parallel": "3–5 engineering days plus serial integration",
+      "sequential": "about 4.9–8.6 engineering days plus integration"
     },
     "handoff": {
       "label": "Open the detailed five-run execution handoff",

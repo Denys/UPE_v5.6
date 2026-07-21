@@ -1,0 +1,117 @@
+schema_version: '1.0'
+record_id: C-407-RESULT
+generated_at: '2026-07-22T01:02:07+02:00'
+status: TESTED_LOCALLY_READY_FOR_COORDINATOR
+
+task:
+  id: C-407
+  title: Implement budgets, stop rules, retry/backoff, and no-progress detection
+  verdict: PASS
+  gate: validation/C-407-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c407-cloud-review'
+  branch: codex/c407-budget-retry-policy
+  base_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+  head_commit_at_result_write: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+  committed_at_result_write: false
+
+cloud_source:
+  environment_id: 6a5fe778b1688191899734e67df660d7
+  task_id: task_e_6a5fec4856088328b2fbb30ba2b3db24
+  result_label: UNVERIFIED_LOCAL
+  initial_diff: 4_files_918_insertions
+  local_review_verdict: REPAIR_REQUIRED
+
+files_created:
+  - src/harness/budgets.py
+  - src/harness/retry_policy.py
+  - tests/unit/test_budgets.py
+  - tests/unit/test_retry_policy.py
+  - agent/state/C-407-result.yaml
+  - validation/C-407-GATE.yaml
+
+coordinator_files_modified:
+  - docs/research/research-state.yaml
+  - tests/test_capability_readiness_report.py
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+
+implemented:
+  budgets:
+    - immutable accounting for iterations, elapsed time, input/output/total tokens, and cost
+    - exact-limit exhaustion plus a separate prospective overrun refusal
+    - final exact-boundary dispatch is represented as allowed while subsequent dispatch is blocked
+    - input/output token components derive total consumption so total-token limits cannot be bypassed
+    - configured dimensions are host-enforced while absent dimensions remain unenforced
+  retries:
+    - transient-only retry classification with retries counted after the initial attempt
+    - capped exponential backoff with deterministic bounded jitter and overflow-safe cap selection
+    - deterministic validation requires repair; permanent/policy and approval classes stop explicitly
+    - already-exhausted budgets block retry before a delay is returned
+  progress:
+    - stable failure, validator, artifact/diff, criteria, dependency, and approval signals
+    - independent consecutive identical-failure and no-progress thresholds
+    - measurable progress resets only the no-progress counter
+    - no-progress attempts cannot replace the last stable checkpoint or evidence references
+  action_safety:
+    - successful actions are never retried
+    - ambiguous non-idempotent actions require matching action/target identities, evidence, and a reconciled FAILED or NOT_STARTED outcome
+    - unresolved or reconciled-success outcomes remain blocked
+  boundary:
+    - frozen runtime-validated public records and decisions
+    - pure synchronous policy with no filesystem, subprocess, network, provider, database, sleep, or external effect
+
+local_review_repairs:
+  - derived total-token usage when callers omit total_tokens
+  - blocked retries of already successful idempotent actions
+  - replaced overflow-prone exponentiation with cap-threshold logarithms
+  - added runtime validation for every public policy record and decision
+  - preserved stable checkpoint/evidence on no-progress attempts
+  - represented reconciliation outcome explicitly and blocked reconciled success
+
+verification:
+  result: PASS
+  targeted_C407: 43_passed
+  dependency_regression: 214_passed
+  complete_unit_tests: 293_passed
+  complete_repository_tests: 320_passed
+  uv_lock: PASS_33_PACKAGES
+  ruff_lint: PASS
+  ruff_format: PASS_39_FILES
+  strict_mypy: PASS_32_SOURCE_FILES
+  work_specification_validator: PASS
+  reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+  capability_report_frontier_tests: PASS_8_TESTS
+  capability_report_after_evidence: PASS_CURRENT
+  capability_report_render: BLOCKED_LOCAL_FILE_URL_BY_BROWSER_SECURITY_POLICY
+  package_import: PASS_VERSION_0_1_0
+  git_diff_check: PASS
+  changed_path_containment: PASS_FOUR_FUNCTIONAL_PATHS
+
+evidence_hashes_sha256:
+  src/harness/budgets.py: 7eb270480444736a300e1a4449fd90698467a067420be4efb57ed432bd743d26
+  src/harness/retry_policy.py: f06c5a53db2ff887cc24d20e60ab5bc14de5aab67d17ff54f9c5b356c2d51d7e
+  tests/unit/test_budgets.py: adbd814b550a5b579c235dae7b5dd6f4e8ce2917de4fc35df715a9480b80437e
+  tests/unit/test_retry_policy.py: 2f964c29e1959dc17d79389d7af77018ece965b3dee5a75e75dcb8a121308db0
+  docs/research/research-state.yaml: 7052cb0f0460eb116082e8d472acf43e9efef0816398bec83b6d04cb0a44960d
+  tests/test_capability_readiness_report.py: 5d253b5548ef28af5cb82d2022aa8cff0f52c15e5f47ba50cf4a53b0b7bd97b2
+  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dc0b08426aa065ba72b21ed857b586d0f0ad5b35ea5abdf6474ef4c45e95911e
+
+preserved_state:
+  primary_checkout_user_artifacts: preserved_unmodified
+  primary_checkout_named_report: synchronized_from_verified_generated_artifact
+  existing_primary_error_log: preserved_unmodified
+  cloud_cli_review_log: removed_from_isolated_worktree
+  commit_push_pr_merge: not_performed
+
+known_limits:
+  - Policy functions are not yet wired into the C-403 orchestrator or C-409 CLI.
+  - Durable action journal and restart reconciliation remain assigned to later recovery/security packages.
+  - Python 3.12 and 3.13 remain unverified; the observed Windows runtime is Python 3.14.3.
+  - Browser security policy blocked local-file rendered desktop/mobile inspection; structural, deterministic, and hash-identity checks pass, but visual acceptance is not claimed.
+
+next_action: >-
+  Review the complete publication diff and complete rendered report acceptance
+  in an allowed local browser surface before any separately authorized commit,
+  push, pull request, or merge.

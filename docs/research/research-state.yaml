@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Integrate the completed C-408 read-only evaluator slice after merged C-405
-    while the two Web specification runs remain separate.
+    Integrate the locally accepted C-407 budget/retry/no-progress slice after
+    merged C-408, refresh the mandatory report, and keep downstream work packages separate.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: c90b619e7529656d98be9268e81f839d79af460e
-    observed_main_commit_role: accepted_C405_merge_PR_13
+    observed_main_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+    observed_main_commit_role: accepted_C408_merge_PR_14
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -22,8 +22,8 @@ upe_state:
       state: MERGED
       head_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
       merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
-    local_implementation_branch: codex/c408-readonly-evaluator
-    local_implementation_base: c90b619e7529656d98be9268e81f839d79af460e
+    local_implementation_branch: codex/c407-budget-retry-policy
+    local_implementation_base: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
     implementation_pr_5:
       state: MERGED
       published_C-303_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
@@ -96,12 +96,22 @@ upe_state:
       head_commit: e0dd49fc6bd71ba71d1a4cbc2dd12362323af184
       merge_commit: c90b619e7529656d98be9268e81f839d79af460e
     C_408_local_slice:
-      state: INTEGRATION_PASS_PENDING_PR
+      state: MERGED_PR_14
       branch: codex/c408-readonly-evaluator
       original_base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
       integration_base_commit: c90b619e7529656d98be9268e81f839d79af460e
       result: agent/state/C-408-result.yaml
       gate: validation/C-408-GATE.yaml
+    C_408_integration_pr_14:
+      state: MERGED
+      merge_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+    C_407_cloud_local_slice:
+      state: LOCAL_ACCEPTANCE_PASS_PENDING_PR
+      branch: codex/c407-budget-retry-policy
+      integration_base_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+      cloud_task_id: task_e_6a5fec4856088328b2fbb30ba2b3db24
+      result: agent/state/C-407-result.yaml
+      gate: validation/C-407-GATE.yaml
 
   must_status:
     research_matrix: PASS
@@ -135,8 +145,9 @@ upe_state:
     C-404: MERGED_PR_9_PASS
     C-405: MERGED_PR_13_PASS
     C-406: MERGED_PR_12_PASS
-    C-408: PASS_PENDING_MERGE
-    harness_implementation: READ_ONLY_EVALUATOR_INTEGRATION_PASS_PENDING_MERGE
+    C-407: PASS_PENDING_MERGE
+    C-408: MERGED_PR_14_PASS
+    harness_implementation: BUDGET_RETRY_INTEGRATION_PASS_PENDING_MERGE
     local_implementation_authorization: GRANTED_BOUNDED_WORK_PACKAGE_GITHUB_DELIVERY
 
   authoritative_inputs:
@@ -227,11 +238,15 @@ upe_state:
     - Implemented C-408 deterministic-first optional read-only evaluation with frozen mandatory semantic criteria, bounded evidence/correction references, exact three-valued verdicts, and no provider or effect implementation.
     - Corrected coordinator review finding so non-mandatory semantic criteria fail closed before evaluator invocation; 17 focused and 102 combined cross-package tests pass.
     - Passed the complete 277-test post-C-408 repository suite plus lock, Ruff, strict mypy, work-specification, reference, report-freshness, diff, and rendered desktop/mobile interaction gates.
+    - Merged C-408 through PR #14 at 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e; post-merge report freshness and frontier tests pass.
+    - Implemented C-407 immutable host budgets, overflow-safe bounded retry/backoff, identical-failure/no-progress stops, and fail-closed action reconciliation through a bounded Codex Cloud task.
+    - Reproduced and repaired five Cloud-diff defects locally: total-token bypass, successful-action retry, backoff overflow, missing runtime validation, and unstable checkpoint replacement.
+    - Passed 43 focused C-407 tests, 214 dependency-regression tests, 293 unit tests, and the complete 320-test Windows repository suite with lock, Ruff, strict mypy, work-specification, reference, import, report-freshness, and diff gates.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Merge the verified C-408 slice, then materialize accepted W-211 and W-212 Web artifacts serially; action reconciliation, recovery, executable budgets, CLI, and the real provider adapter remain assigned later packages.
+    - Publish and merge the verified C-407 slice before starting dependency consumers C-409 or C-501; CLI wiring, the real provider adapter, recovery, approvals, and security remain later packages.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -268,16 +283,17 @@ upe_state:
       - C-406 atomic Run/Event/outbox writes, stale/conflicting replay refusal, persisted-hash checks, referenced large-output boundary, durable JSONL fsync ordering, lost-ack deduplication, partial-tail refusal, and redaction replay
       - C-405 exact worktree ownership, Windows lexical/reparse and filesystem-identity checks, dirty-state preservation, and two-step cleanup-target verification with no cleanup effect
       - C-408 deterministic-first invocation, mandatory frozen semantic criteria, exact criteria/evidence/correction bounds, three-valued verdict aggregation, actual-artifact inspection, and read-only effect boundary
+      - C-407 exact-limit and prospective budget accounting, total-token derivation, retry/backoff overflow and jitter boundaries, no-progress checkpoint preservation, and non-idempotent reconciliation refusal
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
       C-403 lifecycle/orchestration, C-404 deterministic validation, and the
       bounded C-406 SQLite Run/Event/outbox plus JSONL mirror, C-405 workspace
-      ownership/containment, and the C-408 optional evaluator interface. Real
-      model/provider calls, prompts, cleanup effects, evaluator persistence,
-      broader authoritative entity/action state, executable budget/retry
-      behavior, resume/recovery, broader Python compatibility, release, and
-      deployment are not claimed.
+      ownership/containment, the C-408 optional evaluator interface, and C-407
+      executable budget/retry/no-progress policy. Real model/provider calls,
+      prompts, cleanup effects, evaluator persistence, broader authoritative
+      entity/action state, CLI wiring, resume/recovery, broader Python
+      compatibility, release, and deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -288,13 +304,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume C-408 integration from origin/main
-    c90b619e7529656d98be9268e81f839d79af460e and branch
-    codex/c408-readonly-evaluator. Preserve the protected primary-checkout
-    artifacts, handoff line-ending/stat drift, named recovery stash, and both
-    pre-existing protected worktrees. Re-run validation/C-408-GATE.yaml and the complete
-    repository/report gate before delivery.
+    Resume C-407 integration from origin/main
+    4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e and branch
+    codex/c407-budget-retry-policy. Preserve the protected primary-checkout
+    artifacts and all pre-existing worktrees. Re-run validation/C-407-GATE.yaml,
+    the complete repository gate, and rendered report acceptance before delivery.
 
   next_action: >-
-    Publish and merge only C-408 with its serial shared-state/report refresh,
-    then wait for canonical W-211 and W-212 Web artifacts without adding C-407 to this wave.
+    Refresh and verify the C-407 capability report, review the complete branch
+    diff, then separately authorize publication and merge before starting C-409 or C-501.
