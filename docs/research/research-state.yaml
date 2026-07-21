@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Deliver the bounded C-404 deterministic validation and evidence-record slice
-    through a dedicated GitHub pull request while preserving the merged C-401
-    through C-403 contracts, protected user state, and later-task boundaries.
+    Preserve the merged C-404 deterministic-validation baseline and select the
+    next bounded work package without mixing C-405, C-406, or later-task scope.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+    observed_main_commit: dc41f569b8f575e8f872e53fd5ed6adabdf3e12e
+    observed_main_commit_role: accepted_C404_capability_merge
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -58,10 +58,14 @@ upe_state:
       head_commit: b6194761a4ef6ed184eb370adfba2ec35f2d414b
       merge_commit: 63f142901a5f61164e686f8bb6b732e724274d18
     C_404_local_slice:
-      state: TESTED_LOCALLY_READY_TO_PUBLISH
+      state: MERGED_PR_9
       branch: codex/c404-deterministic-validation
       base_commit: 63f142901a5f61164e686f8bb6b732e724274d18
       gate: validation/C-404-GATE.yaml
+    C_404_integration_pr_9:
+      state: MERGED
+      head_commit: b5726d501897d1ed607c42c30e423952c3e7884c
+      merge_commit: dc41f569b8f575e8f872e53fd5ed6adabdf3e12e
 
   must_status:
     research_matrix: PASS
@@ -92,8 +96,8 @@ upe_state:
     C-401: MERGED_PR_6_PASS
     C-402: MERGED_PR_6_PASS
     C-403: MERGED_PR_6_PASS
-    C-404: PASS_LOCAL_READY_TO_PUBLISH
-    harness_implementation: DETERMINISTIC_VALIDATION_TESTED_LOCALLY
+    C-404: MERGED_PR_9_PASS
+    harness_implementation: DETERMINISTIC_VALIDATION_MERGED
     local_implementation_authorization: GRANTED_BOUNDED_WORK_PACKAGE_GITHUB_DELIVERY
 
   authoritative_inputs:
@@ -173,7 +177,7 @@ upe_state:
     - Implemented deterministic lifecycle transition IDs, atomic Run/Event commit acknowledgements, provider-event canonicalization, initialization, one-task execution, reasoned terminal mapping, and evidence-only checkpoint/completion sequencing.
     - Passed 31 focused C-403 tests, 179 combined C-401/C-402/C-403 tests, and the complete 198-test repository suite with locked dependencies, Ruff, formatting, strict mypy, references, and diff checks.
     - Integrated the capability-readiness report hook through PR #7 and repaired its tracked-report post-merge freshness self-reference through PR #8.
-    - Implemented C-404 deterministic validation and referenced evidence records with 14 focused tests, 193 integrated C-401 through C-404 tests, and 216 full repository tests.
+    - Implemented and merged C-404 deterministic validation and referenced evidence records through PR #9; 14 focused tests, 193 integrated C-401 through C-404 tests, and the 216-test merged repository suite pass.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
@@ -230,13 +234,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from main at 63f142901a5f61164e686f8bb6b732e724274d18 or
-    the codex/c404-deterministic-validation worktree. Preserve the protected
+    Resume from the accepted C-404 main baseline at
+    dc41f569b8f575e8f872e53fd5ed6adabdf3e12e. Preserve the protected
     primary-checkout artifacts, custom-harnesses tree, named recovery stash,
     separate UPE_5.6_pr1_fix worktree, and historical C-401 through C-403
     records. Re-run validation/C-404-GATE.yaml and the full repository gate.
 
   next_action: >-
-    Refresh the capability report, complete the final C-404 gate, and publish and
-    merge the bounded C-404 pull request. Then select C-405 or C-406 as a separate
-    package; do not bundle either into C-404.
+    Select C-405 or C-406 as a separate bounded package from the accepted C-404
+    baseline. Keep workspace containment and persistence as independent changes.
