@@ -355,6 +355,18 @@ def _replace_payload(html: str, payload: Mapping[str, Any]) -> str:
     return updated
 
 
+def _freshness_state(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return state that can remain stable after the tracked report is committed.
+
+    Repository branch and HEAD identify the context in which the report was
+    refreshed.  They are intentionally excluded from freshness comparison:
+    committing or merging the tracked report necessarily changes that identity
+    without changing any capability or dependency evidence.
+    """
+
+    return {key: value for key, value in payload.items() if key != "repository"}
+
+
 def _parse_args(arguments: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="fail when embedded state is stale")
@@ -375,7 +387,7 @@ def main(arguments: list[str] | None = None) -> int:
     expected = build_payload(root, refreshed_at=refreshed_at)
 
     if options.check:
-        if existing != expected:
+        if _freshness_state(existing) != _freshness_state(expected):
             print(
                 "FAIL capability readiness report is stale; run "
                 "`uv run python scripts/update_capability_readiness_report.py`",
