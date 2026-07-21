@@ -88,11 +88,11 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-403"]["status"] == "complete"
     assert tasks["C-404"]["status"] == "complete"
     assert tasks["C-405"]["status"] == "ready"
-    assert tasks["C-406"]["status"] == "ready"
+    assert tasks["C-406"]["status"] == "complete"
     assert tasks["C-404"]["dependency_mode"] == "satisfied"
-    assert tasks["C-407"]["status"] == "blocked"
-    assert tasks["C-407"]["dependency_mode"] == "sequential"
-    assert tasks["C-407"]["incomplete_dependencies"] == ["C-406"]
+    assert tasks["C-407"]["status"] == "ready"
+    assert tasks["C-407"]["dependency_mode"] == "independent_now"
+    assert tasks["C-407"]["incomplete_dependencies"] == []
     assert tasks["C-408"]["status"] == "ready"
     assert tasks["C-408"]["dependency_mode"] == "independent_now"
     assert tasks["C-408"]["incomplete_dependencies"] == []
@@ -130,7 +130,7 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
         "W-211": "3–5 hours",
         "W-212": "4–8 hours",
         "C-405": "1.5–3 engineering days",
-        "C-406": "2–4 engineering days",
+        "C-407": "2–4 engineering days",
         "C-408": "1–2 engineering days",
     }
     for task_id, estimate in expected_estimates.items():
@@ -139,9 +139,10 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
         assert planning["parallelizable_now"] is True
         assert planning["confidence"] == "rough"
 
-    assert tasks["C-407"]["planning"]["parallelizable_now"] is False
-    assert tasks["C-407"]["planning"]["blocked_by"] == ["C-406"]
+    assert tasks["C-407"]["planning"]["parallelizable_now"] is True
+    assert tasks["C-407"]["planning"]["blocked_by"] == []
     assert tasks["C-404"]["planning"]["estimate"] is None
+    assert tasks["C-406"]["planning"]["estimate"] is None
 
 
 def test_capability_readiness_report_has_theme_and_click_details_ui() -> None:
@@ -167,15 +168,15 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
     assert recommendation["classification"] == "parallel_runs"
     assert recommendation["classification_label"] == "Parallel runs"
     assert recommendation["bundle_allowed"] is False
-    assert recommendation["task_ids"] == ["C-406", "C-405", "C-408", "W-211", "W-212"]
+    assert recommendation["task_ids"] == ["C-407", "C-405", "C-408", "W-211", "W-212"]
     assert [run["task_ids"] for run in recommendation["runs"]] == [
-        ["C-406"],
+        ["C-407"],
         ["C-405"],
         ["C-408"],
         ["W-211"],
         ["W-212"],
     ]
-    assert "C-407 waits on C-406" in recommendation["blockers"]
+    assert "C-409 waits on C-405, C-407" in recommendation["blockers"]
     assert "shared" in recommendation["scope_collision_warning"].lower()
     assert recommendation["elapsed_comparison"]["parallel"] == (
         "2–4 engineering days plus serial integration"

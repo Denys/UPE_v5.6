@@ -1,0 +1,119 @@
+schema_version: '1.0'
+work_package: C-406
+generated_at: '2026-07-21T20:06:24.0357488+02:00'
+status: PASS
+status_reason: >-
+  The bounded C-406 slice implements a LifecycleCommitter-compatible
+  SQLite-authoritative Run/Event store with one-transaction outbox writes,
+  monotonic stale-base enforcement, exact duplicate recovery, bounded inline
+  payloads, and an append-only canonical JSONL mirror that fsyncs before outbox
+  acknowledgement and deduplicates a lost acknowledgement on replay.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c406_worker'
+  branch: codex/c406-sqlite-jsonl-state
+  base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  head_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  committed: false
+
+dependency_evidence:
+  C-401:
+    result: agent/state/C-401-result.yaml
+    gate: validation/C-401-GATE.yaml
+    accepted: MERGED_PR_6_PASS
+  C-403:
+    result: agent/state/C-403-result.yaml
+    gate: validation/C-403-GATE.yaml
+    accepted: MERGED_PR_6_PASS
+
+behavior:
+  - complete typed Run/Event snapshots and a complete outbox event are committed in one SQLite transaction
+  - SQLite uses WAL, synchronous FULL, foreign keys, a busy timeout, and immediate write transactions
+  - new histories must begin at event_seq 1; successors must be monotonic and match authoritative lifecycle state
+  - exact Run/Event retries are idempotent; conflicting sequence or transition reuse fails closed
+  - state/event canonical JSON hashes are checked when loading or delivering persisted rows
+  - oversized inline payloads are rejected with an explicit referenced-file requirement
+  - JSONL events are canonical UTF-8, append-only, ordered by committed outbox identity, flushed and fsynced
+  - SQLite delivery acknowledgement occurs only after durable append
+  - interruption after append/before acknowledgement replays without a duplicate JSONL line
+  - partial, noncanonical, duplicate, or conflicting JSONL data fails closed and SQLite remains authoritative
+  - REDACTED and NOT_REQUIRED markers round-trip through SQLite and JSONL
+
+explicit_exclusions:
+  - C-405 workspace/worktree containment or cleanup
+  - C-407 retry, budgets, jitter, or no-progress behavior
+  - C-408 evaluator behavior
+  - Goal/Task/approval/action/checkpoint persistence beyond the C-406 Run/Event committer boundary
+  - action-journal target reconciliation, restart orchestration, CLI, doctor, or real provider behavior
+  - shared report/current-state edits during the functional worker phase
+
+commands:
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_state_store.py tests/unit/test_events.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_lifecycle.py tests/unit/test_state_store.py tests/unit/test_events.py
+  - uv run pytest -q tests/unit
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  resolved_packages: 33
+  focused_C406_tests: 12_passed
+  integrated_C401_C403_C406_tests: 73_passed
+  complete_unit_tests: 205_passed
+  complete_repository_tests: 232_passed
+  ruff_lint: PASS
+  ruff_format: PASS_31_FILES
+  strict_mypy: PASS_24_SOURCE_FILES
+  location_references: 41
+  schema_references: 237
+  report_freshness_before_integration: PASS
+  report_frontier_tests_after_integration: 8_passed
+  report_freshness_after_integration: PASS_35_OF_57_CRITICAL_5_READY
+  work_specification_gate: PASS
+  report_visual_gate: PASS_DESKTOP_1440_PIXEL_5_ZERO_ERRORS_ZERO_OVERFLOW
+  git_diff_check: PASS
+
+evidence_hashes_sha256:
+  agent/state/C-406-pre-edit-context.yaml: 69c9f1539192c741d0512e013e4d2705cd2cc69f7e9fb7360de45eead17e4674
+  src/harness/state_store.py: e2e7e739bbdef839f8a5aeb53b6f3abade506d3a94e2a566239915e58366e421
+  src/harness/events.py: 4c3b227eca95d9842d8a1436129b78d448c0047bb7a89695457376220ec6dd83
+  tests/unit/test_state_store.py: 60df1443975e509d81e199e1070bc1da8dc948513e4cb9f5ee96a1252232b4b8
+  tests/unit/test_events.py: 0caf7c937a4a22e1892eb1e81732aae4aea47023c5a263287049c12764132846
+  docs/research/research-state.yaml: 886c073eddccf34934b2c067559fef3f37e64601230997e2f581e8b9bac33a54
+  tests/test_capability_readiness_report.py: 85fd87e11680a6216fe44c8588e3249d47fb6061ed2b0fc91383413c464ebae6
+  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: a766899003672112c675f898198ab9ad19cfc38a48e09fbbe17f8aa644ee3739
+
+coordinator_integration:
+  - reconciled research state from the PR #9 snapshot through merged PRs #10 and #11
+  - recorded C-406 as functional PASS pending merge without marking C-405/C-408/Web work complete
+  - refreshed the generated report to complete C-406 and expose newly-ready C-407
+  - kept C-407 outside the active five-package wave despite its newly satisfied dependency
+  - updated only the live-frontier regression assertions owned by the coordinator
+  - rendered desktop and Pixel 5 screenshots with theme/dialog interaction checks and zero browser errors
+  - screenshot desktop sha256 5cec61037adc4eeae666feab605293785fe36e2d706b4110c19bc3edd8ae4fe7
+  - screenshot pixel-5 sha256 d747581e00ffb6dab07dc6ecbda42a48a8cab4c95f52306b54bd5fd2b9db55bf
+
+preserved_state:
+  primary_checkout_user_artifacts: preserved_untracked
+  handoff_line_ending_stat_drift: preserved_unmodified
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_dirty_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  clean_report_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c404'
+
+known_limits:
+  - JSONL delivery assumes the specification's exclusive run ownership; unexpected concurrent file mutation fails closed.
+  - A partial JSONL tail is detected and blocks; destructive truncation/repair policy belongs to later recovery work.
+  - The C-406 store persists the C-403 Run/Event committer boundary; later packages own broader authoritative entities and action reconciliation.
+  - Python 3.12 and 3.13 remain unverified; the observed runtime is Python 3.14.3.
+
+recommended_coordinator_action: >-
+  Add only C-406 result/gate plus the coordinator-owned research-state and
+  generated report refresh, rerun the warranted full gate, then publish and
+  merge C-406 before integrating any other completed package.
