@@ -85,13 +85,16 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     tasks = {task["id"]: task for task in tasks_value if isinstance(task, dict)}
 
     assert tasks["C-403"]["status"] == "complete"
-    assert tasks["C-404"]["status"] == "ready"
+    assert tasks["C-404"]["status"] == "complete"
     assert tasks["C-405"]["status"] == "ready"
     assert tasks["C-406"]["status"] == "ready"
-    assert tasks["C-404"]["dependency_mode"] == "independent_now"
+    assert tasks["C-404"]["dependency_mode"] == "satisfied"
     assert tasks["C-407"]["status"] == "blocked"
     assert tasks["C-407"]["dependency_mode"] == "sequential"
     assert tasks["C-407"]["incomplete_dependencies"] == ["C-406"]
+    assert tasks["C-408"]["status"] == "ready"
+    assert tasks["C-408"]["dependency_mode"] == "independent_now"
+    assert tasks["C-408"]["incomplete_dependencies"] == []
 
 
 def test_capability_readiness_report_labels_surface_and_model_requirements() -> None:

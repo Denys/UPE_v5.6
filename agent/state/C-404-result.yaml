@@ -1,0 +1,101 @@
+schema_version: '1.0'
+record_id: C-404-RESULT
+generated_at: '2026-07-21T12:15:31.3615938+02:00'
+status: TESTED_LOCALLY_READY_TO_PUBLISH
+
+task:
+  id: C-404
+  title: Implement deterministic validation and evidence records
+  verdict: PASS
+  gate: validation/C-404-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c404'
+  branch: codex/c404-deterministic-validation
+  base_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  head_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  committed: false
+
+authorization:
+  source: active user request authorizing C-404 and subsequent bounded work-package delivery
+  granted:
+    - implement and test C-404 in an isolated worktree
+    - update bounded C-404 evidence/current-state records and the readiness report
+    - stage, commit, push, open and merge the scoped C-404 pull request
+  excluded:
+    - release, deployment, repository visibility change, or unrelated mutation
+    - destructive cleanup or changes to protected user-owned state
+    - bundling C-405, C-406, evaluator, recovery, CLI, or real-provider behavior
+
+files_created:
+  - agent/state/C-404-pre-edit-context.yaml
+  - agent/state/C-404-result.yaml
+  - src/harness/validation.py
+  - tests/unit/test_validation.py
+  - validation/C-404-GATE.yaml
+files_updated:
+  - docs/research/research-state.yaml
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  - tests/test_capability_readiness_report.py
+
+implemented:
+  frozen_command_scope:
+    - immutable structured argv, validator identity, criterion identity, and runtime identity
+    - exact canonical command-list match against Task.validation_commands
+    - exact VALIDATING Run/Task and selected-workspace identity checks before process execution
+    - shell-free subprocess execution with explicit environment, timeout, and captured-output bounds
+  evidence_records:
+    - immutable per-command verdict, timestamp, runtime, command, workspace, and normalized failure metadata
+    - stdout and stderr stored as bounded binary artifacts and referenced from a structured JSON result
+    - PASS-only C-403 FinalizationEvidence bridge using structured result references
+  normalization:
+    - nonzero exit maps to FAIL/NONZERO_EXIT
+    - timeout, execution error, malformed result, and output overflow map to INSUFFICIENT_EVIDENCE
+    - aggregate FAIL precedence, then INSUFFICIENT_EVIDENCE, then all-PASS
+  boundaries:
+    - no workspace creation/cleanup or reparse containment; C-405 remains responsible
+    - no SQLite, JSONL, outbox, recovery, or durable event store; C-406 remains responsible
+    - no evaluator, budget, retry, no-progress, CLI, provider, network, or approval behavior
+    - no changes to C-401 state/configuration or C-403 lifecycle/orchestrator contracts
+
+verification:
+  result: PASS
+  summary:
+    focused_C404_pytest: 14_passed
+    integrated_C401_C404_pytest: 193_passed
+    full_pytest: 216_passed
+    uv_lock: PASS_33_PACKAGES
+    ruff: PASS
+    ruff_format: PASS_27_FILES
+    strict_mypy: PASS_20_SOURCE_FILES
+    reference_validator: PASS_41_LOCATION_237_SCHEMA
+    report_freshness_post_bookkeeping: PASS
+    capability_report_visual_gate: PASS_DESKTOP_PIXEL_5_ZERO_BROWSER_ERRORS
+    locked_contract_and_hook_source_hashes: PASS_9_OF_9
+    git_diff_check: PASS
+
+evidence_hashes_sha256:
+  agent/state/C-404-pre-edit-context.yaml: b81ea910d9deb78b6cf79a86fc17fecf1c69e3384e26e304a29b692e175a2f5a
+  src/harness/validation.py: 16f9f5c6d2e4b2ff3b16e02422ff693695a21ae8918d30d082b5486292e5c23c
+  tests/unit/test_validation.py: 6b4676127c4728ea4b67b38aaf8711dc09d12d7804749388d308b4d2b2d0fc70
+
+preserved_state:
+  locked_C401_C403_contracts: preserved_hash_identical
+  accepted_C305_C403_evidence: preserved_hash_identical
+  capability_report_updater: preserved_hash_identical
+  primary_checkout_user_artifacts: preserved_untracked
+  custom_harnesses: preserved_untracked_read_only
+  recovery_stash: pre-consolidation-2026-07-20-primary-local-state
+  separate_worktree: 'C:\Users\denko\CodexWork\UPE_5.6_pr1_fix'
+  staged_paths_at_result_time: 0
+
+known_limits:
+  - C-404 validates the exact selected workspace but does not assign it or prove broader worktree/path containment.
+  - File-backed evidence is produced, but authoritative SQLite/JSONL persistence and restart recovery are not claimed.
+  - Environment allowlisting/redaction policy remains a later trusted-host security integration concern.
+  - Python 3.12 and 3.13 remain unverified; the observed runtime is Python 3.14.3.
+
+next_action: >-
+  Publish and merge only the recorded C-404 paths through a dedicated pull
+  request, then reverify the merged main baseline.

@@ -1,0 +1,116 @@
+schema_version: '1.0'
+record_id: C-404-PRE-EDIT-CONTEXT
+generated_at: '2026-07-21T12:01:42.5487512+02:00'
+status: READY
+
+authorization:
+  source: active user request
+  granted:
+    - implement the bounded C-404 deterministic validation and evidence-record slice
+    - create focused tests and bounded C-404 evidence/current-state records
+    - create a branch/worktree, stage, commit, push, open and merge the C-404 pull request
+    - refresh the merged capability-readiness report hook after accepted C-404 bookkeeping
+  excluded:
+    - release, deployment, repository visibility change, or unrelated external mutation
+    - destructive cleanup or modification of protected user-owned state
+    - C-405 workspace management, C-406 SQLite/JSONL persistence, or C-407-plus behavior
+
+repository:
+  identity: Denys/UPE_v5.6
+  repository_root: 'C:\Users\denko\CodexWork\UPE_5.6_c404'
+  branch: codex/c404-deterministic-validation
+  baseline_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  main_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  origin_main_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  staged_paths: 0
+  tracked_or_untracked_changes: 0
+
+integrated_report_hook:
+  implementation_pr: https://github.com/Denys/UPE_v5.6/pull/7
+  implementation_merge: 92e829c47e84b01ffa51a4516852131ea0f55d35
+  post_merge_freshness_fix_pr: https://github.com/Denys/UPE_v5.6/pull/8
+  post_merge_freshness_fix_merge: 63f142901a5f61164e686f8bb6b732e724274d18
+  baseline_check: PASS
+
+dependencies:
+  C-305:
+    verdict: PASS
+    result: agent/state/C-304-C-306-result.yaml
+    gate: validation/C-304-C-306-GATE.yaml
+    accepted_by_pr: https://github.com/Denys/UPE_v5.6/pull/5
+  C-403:
+    verdict: PASS
+    result: agent/state/C-403-result.yaml
+    gate: validation/C-403-GATE.yaml
+    accepted_by_pr: https://github.com/Denys/UPE_v5.6/pull/6
+
+owned_functional_paths:
+  - src/harness/validation.py
+  - tests/unit/test_validation.py
+
+owned_bookkeeping_paths:
+  - agent/state/C-404-pre-edit-context.yaml
+  - agent/state/C-404-result.yaml
+  - validation/C-404-GATE.yaml
+  - docs/research/research-state.yaml
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+
+locked_contract_paths:
+  - src/harness/state.py
+  - src/harness/config.py
+  - src/harness/lifecycle.py
+  - src/harness/orchestrator.py
+  - agent/state/C-401-result.yaml
+  - agent/state/C-402-result.yaml
+  - agent/state/C-403-result.yaml
+
+functional_scope:
+  - execute only frozen task validator commands through structured argv with shell disabled
+  - bind execution to the task-selected workspace and explicit environment/limits
+  - store stdout, stderr, and structured result artifacts by contained relative reference
+  - aggregate deterministic PASS, FAIL, and INSUFFICIENT_EVIDENCE without model judgment
+  - normalize nonzero exit, timeout, execution error, malformed result, and output overflow
+  - expose a PASS-only bridge to the existing C-403 FinalizationEvidence contract
+
+explicit_exclusions:
+  - model evaluator or semantic criterion judgment
+  - workspace creation, cleanup, junction/symlink containment, or worktree management
+  - SQLite, JSONL, transactional outbox, or recovery persistence
+  - budgets, retries, no-progress, CLI, doctor, real provider, network, or approval behavior
+  - changes to C-401 state/configuration or C-403 lifecycle/orchestrator contracts
+
+baseline_verification:
+  environment_sync: PASS_33_PACKAGES
+  full_pytest: 202_passed
+  report_freshness: PASS
+  git_diff_check: PASS
+
+pre_edit_hashes_sha256:
+  src/harness/state.py: 0ffd374cea390fea7995346458af61c099f9eb501a066c2ee14cca61e3d96d8c
+  src/harness/config.py: 121856e1817b2d3723d84bfcf73ccd894ac84d8a3ae5bec9ecf23f53ecc59f95
+  src/harness/lifecycle.py: 136ed82016b9c54a9fe7f9f998b98ca5828308f36c09d0e344a485861d2e9bf2
+  src/harness/orchestrator.py: 1047c36f8190adacb3bb864e621bc9b966d702e6286f063f329e46b29d5b36d8
+  agent/state/C-304-C-306-result.yaml: 6a447cdbf356ee42964163621a4e356c9a569475781cecc943866121082598c0
+  agent/state/C-403-result.yaml: eb3b10cf032e01dabd831bf7307a929b6848206f13aa74bf585641fea2beaf3d
+  validation/C-304-C-306-GATE.yaml: 9f332116e30d700d09c5fa2b7b6996cf4e9ceb28ed98dc15a0c3d072d52bbd89
+  validation/C-403-GATE.yaml: 0584ace92816a92bb1c15ad78f466639ebef47997dda4ccd7b9b6883f4aabf4f
+  scripts/update_capability_readiness_report.py: a84763b5b6f405476edebd520d984ad82dea0ceb6ae88d011ba829a668c6ecb2
+  tests/test_capability_readiness_report.py: fe79741da6f2ba5af10baca1e0ab7527640c2a94457f1cc221ec2b58020bebb4
+
+stop_conditions:
+  - main/origin-main, dependency evidence, report hook, or protected state diverges materially
+  - C-404 requires modifying a locked contract or adding a runtime dependency
+  - validation cannot remain deterministic, shell-free, bounded, and evaluator-independent
+  - implementation requires C-405 containment or C-406 durable persistence to claim completion
+  - tests require release, deployment, visibility change, destructive cleanup, or unrelated mutation
+
+verification_plan:
+  - focused tests/unit/test_validation.py
+  - integrated C-401 through C-404 unit tests
+  - complete repository pytest suite
+  - uv lock check
+  - Ruff lint and format
+  - strict mypy
+  - reference validation
+  - capability report refresh and post-refresh check
+  - scoped status, hash, and git diff checks
