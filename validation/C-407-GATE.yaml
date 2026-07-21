@@ -1,0 +1,91 @@
+schema_version: '1.0'
+gate_id: C-407-BUDGET-RETRY-NO-PROGRESS
+generated_at: '2026-07-22T01:02:07+02:00'
+status: PASS
+status_reason: >-
+  Host-owned immutable policy enforces iteration, elapsed-time, token and cost
+  budgets; bounded transient retry/backoff; identical-failure/no-progress stops;
+  and fail-closed non-idempotent reconciliation with 320 passing Windows tests.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c407-cloud-review'
+  branch: codex/c407-budget-retry-policy
+  base_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+  committed_at_gate_write: false
+
+criteria:
+  - id: C-407-BUDGETS
+    verdict: PASS
+    evidence:
+      - Every configured iteration, elapsed-time, input/output/total-token and cost dimension is enforced.
+      - Exact exhaustion, prospective overrun, accumulation, unconfigured dimensions and immutable state are tested.
+      - Component token usage derives total consumption and cannot bypass a configured total-token limit.
+      - Negative, non-finite, boolean, inconsistent and type-confused usage is rejected.
+  - id: C-407-RETRY-BACKOFF
+    verdict: PASS
+    evidence:
+      - Only transient failures retry; deterministic validation requires repair and permanent/policy failures stop.
+      - max_transient_retries is proven as retries after the initial attempt at zero and exact-last boundaries.
+      - Capped exponential backoff has deterministic low/middle/high jitter and does not overflow at extreme attempts or multipliers.
+      - Existing budget exhaustion blocks retry before returning a delay.
+  - id: C-407-NO-PROGRESS
+    verdict: PASS
+    evidence:
+      - Stable machine-comparable signals drive identical-failure and no-progress counters.
+      - Threshold-minus-one, exact threshold, reset and mixed sequences are covered.
+      - A no-progress attempt cannot overwrite the last stable checkpoint or evidence references.
+  - id: C-407-ACTION-SAFETY
+    verdict: PASS
+    evidence:
+      - A successful action is never retried, regardless of idempotency.
+      - Ambiguous non-idempotent retries require the same action and target identities plus reconciliation evidence.
+      - Only reconciled FAILED or NOT_STARTED outcomes become eligible; unresolved, mismatched or successful outcomes remain blocked.
+  - id: C-407-STRICT-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Public signals, states, contexts and decisions are frozen and runtime validated.
+      - The modules contain no filesystem, subprocess, network, database, provider, sleep or external-action implementation.
+      - Functional code and tests remain confined to the four canonical C-407 paths.
+  - id: C-407-REGRESSION
+    verdict: PASS
+    evidence:
+      - Forty-three focused C-407, 214 dependency-regression, 293 unit and 320 complete repository tests pass on Windows.
+      - Lock, Ruff lint/format, strict mypy, work-specification, reference, import and diff checks pass.
+      - The original Cloud diff was independently reviewed; five reproduced semantic defects were repaired and regression tested locally.
+  - id: C-407-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - The primary checkout's pre-existing modified/untracked artifacts remain untouched; only the user-requested readiness report was synchronized byte-identically from the verified generated artifact.
+      - No commit, push, pull request, merge, release, deployment or visibility change occurred.
+  - id: C-407-REPORT-INTEGRATION
+    verdict: PASS_WITH_RENDER_LIMIT
+    evidence:
+      - Eight report frontier tests pass and the generator reports current state with C-407 complete and C-501/C-409 ready.
+      - The exact primary-checkout report is byte-identical to the isolated generated artifact at SHA-256 dc0b08426aa065ba72b21ed857b586d0f0ad5b35ea5abdf6474ef4c45e95911e.
+      - Browser security policy blocked the local file URL, so desktop/mobile rendered acceptance is not claimed.
+
+commands:
+  - uv sync --group dev --locked
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_budgets.py tests/unit/test_retry_policy.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_config.py tests/unit/test_lifecycle.py tests/unit/test_state_store.py tests/unit/test_events.py tests/unit/test_budgets.py tests/unit/test_retry_policy.py
+  - uv run pytest -q tests/unit
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_work_specifications.py
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+  - git diff --check
+
+known_limits:
+  - C-407 supplies pure policy and does not wire CLI, recovery, persistence or a real provider.
+  - The coordinator still owns current-state/report reconciliation and publication review.
+  - Python 3.12 and 3.13 remain unverified.
+  - Rendered desktop/mobile report acceptance remains unverified because the available browser rejected the local file URL by security policy.
+
+next_action: >-
+  Review the complete publication diff and complete rendered report acceptance
+  in an allowed local browser surface before publication.
