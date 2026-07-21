@@ -1,0 +1,122 @@
+schema_version: '1.0'
+record_id: C-408-RESULT
+generated_at: '2026-07-21T20:14:46.8710467+02:00'
+review_fixed_at: '2026-07-21T20:39:08.5723969+02:00'
+coordinator_review_fixed_at: '2026-07-21T21:55:51.8552986+02:00'
+mandatory_criteria_fixed_at: '2026-07-21T21:57:38.6727961+02:00'
+status: TESTED_LOCALLY_READY_FOR_COORDINATOR
+
+task:
+  id: C-408
+  title: Implement optional read-only model evaluator interface
+  verdict: PASS
+  gate: validation/C-408-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c408_worker'
+  branch: codex/c408-readonly-evaluator
+  base_commit: c90b619e7529656d98be9268e81f839d79af460e
+  head_commit_at_result_write: 83eaada4b2470cca8b680f0c2a9f752e5106c794
+  committed_at_result_write: true
+  review_fix_source_commit: 83eaada4b2470cca8b680f0c2a9f752e5106c794
+
+authorization:
+  granted:
+    - implement and test C-408 in the isolated assigned worktree
+    - create one bounded local commit after the required before-commit checkpoint
+  excluded:
+    - push, pull request creation or modification, merge, release, or deployment
+    - primary-checkout mutation, destructive cleanup, or worktree unlock/recreation
+    - shared report, mutable current-state, backlog, or coordination-checkpoint edits
+
+files_created:
+  - agent/state/C-408-pre-edit-context.yaml
+  - agent/state/C-408-result.yaml
+  - src/harness/evaluation.py
+  - tests/unit/test_evaluation.py
+  - validation/C-408-GATE.yaml
+
+implemented:
+  deterministic_first:
+    - aggregate deterministic FAIL is returned unchanged and suppresses the evaluator
+    - aggregate deterministic INSUFFICIENT_EVIDENCE is returned unchanged and suppresses the evaluator
+    - aggregate deterministic PASS without a semantic request suppresses the evaluator
+    - model invocation requires both deterministic PASS and an explicit frozen semantic request
+  read_only_boundary:
+    - immutable request, criterion, response, evaluator-identity, budget, correction, and outcome records
+    - evaluator port receives references and frozen strings only, with no filesystem, process, network, persistence, approval, or mutation handle
+    - evaluator identity requires independence, READ_ONLY access, and MODEL_EVALUATOR kind
+  criteria_and_scope:
+    - only mandatory unresolved semantic criteria may be assigned to the evaluator
+    - response goal, task, goal-contract, artifact set, criterion IDs, order, statements, and mandatory flags must exactly match the request
+    - criterion evidence references must be drawn only from supplied authoritative, artifact, deterministic-result, and goal-contract references
+    - correction targets are restricted to supplied candidate artifacts and cannot target the frozen contract
+    - any criterion at PASS or FAIL requires declared actual-artifact inspection, even when the aggregate is INSUFFICIENT_EVIDENCE
+  verdicts:
+    - criterion and aggregate outputs reject NOT_EVALUATED and preserve PASS, FAIL, or INSUFFICIENT_EVIDENCE
+    - aggregate precedence is FAIL, then INSUFFICIENT_EVIDENCE, then all-PASS
+    - W-207 evidence, correction, missing-evidence, and release-blocking invariants are enforced
+
+excluded_behavior:
+  - real model/provider adapters and prompts
+  - prompt or model routing
+  - result persistence, SQLite, JSONL, or artifact writes
+  - retries, budgets enforcement, no-progress logic, or recovery
+  - CLI or orchestrator behavior changes
+  - network, subprocess, filesystem, approval, messaging, or other external effects
+
+verification:
+  result: PASS
+  summary:
+    clean_baseline_validation_lifecycle: 45_passed
+    focused_C408_mandatory_fix: 17_passed
+    full_non_report_mandatory_fix: 269_passed
+    uv_lock: PASS_33_PACKAGES
+    ruff: PASS
+    ruff_format: PASS_35_FILES
+    strict_mypy: PASS_28_SOURCE_FILES
+    reference_validator: PASS_41_LOCATION_237_SCHEMA
+    work_specification_validator: PASS
+    capability_report_freshness: STALE_COORDINATOR_OWNED_AFTER_RESULT_GATE
+
+evidence_hashes_sha256:
+  agent/state/C-408-pre-edit-context.yaml: 09f4ff34ceb46dfebea5ddef834a8b7601705620b926a3c2fc48fd4fce11c424
+  src/harness/evaluation.py: e9c19e408f0148f1431c0ed2b94b64e710f6b6f974e7ffdaaff8a0e5ef1773a8
+  tests/unit/test_evaluation.py: ea2a5dc1d29898ecf58b68f66075c62469f2231d5fb216392283c4ceec6496ad
+
+coordinator_review:
+  finding: >-
+    W-203 limits model verification to mandatory criteria, but the original
+    request accepted a non-mandatory criterion when both flags were false.
+  resolution: >-
+    EvaluationRequest now rejects non-mandatory assigned criteria before any
+    evaluator call; one adversarial test covers the fail-closed boundary.
+  integration_base: c90b619e7529656d98be9268e81f839d79af460e
+  rebased_head_before_fix: 83eaada4b2470cca8b680f0c2a9f752e5106c794
+  focused_tests: 17_passed
+  cross_package_regression: 102_passed
+  full_repository: 277_passed
+  static_and_contract_gates: PASS
+  rendered_report_gate: PASS_DESKTOP_AND_MOBILE_ZERO_BROWSER_ERRORS
+
+preserved_hashes_sha256:
+  src/harness/validation.py: e7c503dfcdf9e259a20118121423536496f9d75766c29e5034693207257275ad
+  src/harness/state.py: 0ffd374cea390fea7995346458af61c099f9eb501a066c2ee14cca61e3d96d8c
+  src/harness/orchestrator.py: 1047c36f8190adacb3bb864e621bc9b966d702e6286f063f329e46b29d5b36d8
+  tests/unit/test_validation.py: 1e5a70a704efeff01cb1f775750a3de2417af48643f6f4fb9332ca51041e9c56
+  tests/unit/test_lifecycle.py: 996396890460b172e5207fdad0a7436cb04d62c82aed5763879897ef6726763a
+  docs/research/research-state.yaml: 03cdbac2b0b1e978612a45b04dfe9e7a2c8760e1d86946399e89dac095e8f6fa
+  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: 8bdd5abcf14d8863e3162c2f8ddc98333f904ee1fa71a32ab1210e7a89d409b0
+  scripts/update_capability_readiness_report.py: 254312cf10e36155fad2378b334bf35dd473eb8341a06abede2515b87fbe3328
+
+known_limits:
+  - The derived capability-readiness report became stale when this result/gate was materialized; the separate coordinator owns its required refresh.
+  - Read-only authority is represented and minimized at this interface; host isolation must enforce it for any future real evaluator implementation.
+  - C-408 does not serialize W-207 results or attach persisted evaluator-result references to C-403 finalization evidence.
+  - Python 3.12 and 3.13 remain unverified; the observed runtime is Python 3.14.3.
+
+next_action: >-
+  Coordinator should inspect and independently integrate this single-package commit,
+  then refresh and serialize the shared current-state and capability-report
+  bookkeeping without mixing functional ownership into C-408.

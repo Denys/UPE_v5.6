@@ -1,0 +1,92 @@
+schema_version: '1.0'
+record_id: C-408-PRE-EDIT-CONTEXT
+generated_at: '2026-07-21T19:48:28.1707692+02:00'
+status: PRE_EDIT_VERIFIED
+
+task:
+  id: C-408
+  title: Implement optional read-only model evaluator interface
+  canonical_status_treated_as_stale: true
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c408_worker'
+  branch: codex/c408-readonly-evaluator
+  base_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  head_commit: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  origin_main_at_preflight: a6c2e63df7efde7a0011206c5018e15af5bbcb8e
+  registered_worktree: true
+  locked: false
+  clean_before_record: true
+
+dependencies:
+  C-404:
+    status: PASS
+    adopted_commit: dc41f569b8f575e8f872e53fd5ed6adabdf3e12e
+    ancestor_of_base: true
+    result: agent/state/C-404-result.yaml
+    gate: validation/C-404-GATE.yaml
+  W-203:
+    status: ACCEPTED
+    source: docs/work/GENERATOR_VERIFIER_PROTOCOL.md
+    source_commit: b1a4e4b9a61cbef88504c380ce8bb509417da448
+  W-207:
+    status: ACCEPTED
+    source: schemas/verifier_result.schema.yaml
+    source_commit: b1a4e4b9a61cbef88504c380ce8bb509417da448
+
+frozen_contract:
+  - Deterministic validation is mandatory and precedes optional model evaluation.
+  - Sufficient deterministic evidence suppresses evaluator invocation.
+  - A deterministic FAIL cannot be overridden or waived by model output.
+  - Only assigned irreducible criteria may be evaluated; criteria remain exact and ordered.
+  - The evaluator has a read-only input/output interface and no mutation authority.
+  - Criterion and aggregate verdicts remain PASS, FAIL, or INSUFFICIENT_EVIDENCE.
+  - Real providers, prompt routing, persistence, retries, CLI behavior, and external effects are excluded.
+
+owned_paths:
+  - src/harness/evaluation.py
+  - tests/unit/test_evaluation.py
+  - agent/state/C-408-pre-edit-context.yaml
+  - agent/state/C-408-result.yaml
+  - validation/C-408-GATE.yaml
+
+protected_paths:
+  - src/harness/state.py
+  - src/harness/orchestrator.py
+  - src/harness/validation.py
+  - tests/unit/test_state.py
+  - tests/unit/test_lifecycle.py
+  - tests/unit/test_validation.py
+  - docs/research/research-state.yaml
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  - scripts/update_capability_readiness_report.py
+
+baseline_verification:
+  command: >-
+    uv --version; uv lock --check; uv run python -c "import harness;
+    print(harness.__version__)"; git merge-base --is-ancestor
+    dc41f569b8f575e8f872e53fd5ed6adabdf3e12e HEAD; git log -1
+    --format='%H %s' -- docs/work/GENERATOR_VERIFIER_PROTOCOL.md; git log -1
+    --format='%H %s' -- schemas/verifier_result.schema.yaml; uv run pytest -q
+    tests/unit/test_validation.py tests/unit/test_lifecycle.py
+  result: PASS
+  observed:
+    uv: 0.11.25
+    python: 3.14.3
+    harness: 0.1.0
+    resolved_packages: 33
+    tests: 45_passed_in_2.16s
+
+input_hashes_sha256:
+  docs/work/GENERATOR_VERIFIER_PROTOCOL.md: 0583501daa258c844ab2e98076f8163841032f0cd32fbf3baec6c0bd7aa2edf2
+  schemas/verifier_result.schema.yaml: 9a0c9ff31b6b98f37d02e16e69486110f6e282ebff22dcb1c70498c4183286bf
+  agent/state/C-404-result.yaml: 85c20338fa6b752503548a91ad7f620ba49a4f79050109f005b62463e8602532
+  validation/C-404-GATE.yaml: 0030f0668dc717ff328ea9e3e6e3158bdcb8e4798a9ab40ff652f9a4ec4272f8
+  src/harness/validation.py: e7c503dfcdf9e259a20118121423536496f9d75766c29e5034693207257275ad
+  src/harness/state.py: 0ffd374cea390fea7995346458af61c099f9eb501a066c2ee14cca61e3d96d8c
+  src/harness/orchestrator.py: 1047c36f8190adacb3bb864e621bc9b966d702e6286f063f329e46b29d5b36d8
+  tests/unit/test_validation.py: 1e5a70a704efeff01cb1f775750a3de2417af48643f6f4fb9332ca51041e9c56
+  tests/unit/test_lifecycle.py: 996396890460b172e5207fdad0a7436cb04d62c82aed5763879897ef6726763a
+
+next_action: Implement and test only the bounded C-408 read-only evaluator interface.
