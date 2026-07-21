@@ -33,19 +33,11 @@ evidence, not authority for an external or destructive action.
 - `C-303` through `C-306` are adopted on `main` by PR `#5` at
   `a8c611b09297fb226f046d54fdfa0f64e84d9396`. Their deterministic result is `PASS` in
   `validation/C-304-C-306-GATE.yaml`.
-- `C-401` typed Goal, Task, Run, Event, lifecycle, and configuration contracts are
-  tested locally on `codex/c401-typed-models`; the bounded result is recorded in
-  `validation/C-401-GATE.yaml`.
-- `C-402` adds the provider-neutral synchronous interface and deterministic fake
-  adapter on the same uncommitted dependency chain; its local gate is
-  `validation/C-402-GATE.yaml`.
-- `C-403` adds lifecycle sequencing, canonical provider-event conversion, and
-  one-task fake-adapter orchestration; its local gate is
-  `validation/C-403-GATE.yaml`.
-- The 2026-07-20 integration authorization covers only staging, committing,
-  pushing, PR creation, and merge of the verified C-401 through C-403
-  task-owned paths into `Denys/UPE_v5.6` `main`. It excludes protected or
-  unrelated artifacts, release, deployment, and C-404-plus implementation.
+- `C-401` through `C-403` are adopted on `main` by PR `#6` at
+  `317e0f81000c0456245b1ccea3674c5a8edb4b71`. Their accepted local gates remain
+  `validation/C-401-GATE.yaml` through `validation/C-403-GATE.yaml`.
+- The capability-readiness report is user-owned but explicitly in scope for
+  evidence-driven refresh through `scripts/update_capability_readiness_report.py`.
 - Do not begin `C-404` or later work without a new bounded task authorization
   and satisfied dependencies.
 
@@ -80,11 +72,22 @@ uv run ruff check .
 uv run ruff format --check .
 uv run mypy --strict src tests
 uv run python scripts/validate_work_specifications.py
+uv run python scripts/update_capability_readiness_report.py --check
 ```
 
 Use the C-305 fixture and C-306 validator commands documented in `README.md`
 only after their scripts exist in the current checkout. A missing command or
 dependency is evidence; do not report it as passing.
+
+## End-of-run readiness hook
+
+After updating owned task result, gate, backlog, or mutable current-state records,
+run `uv run python scripts/update_capability_readiness_report.py` before the final
+verification pass. This is the repository-local end-of-run hook: it derives the
+HTML delivery map from canonical evidence and current Git identity. Web-only work
+cannot mutate the local report; refresh it when that work's accepted handoff is
+materialized locally. `--check` is non-mutating and fails when the embedded state
+is stale.
 
 ## Invariants
 
@@ -112,8 +115,9 @@ dependency is evidence; do not report it as passing.
 A task is done only when every mandatory backlog criterion has recorded evidence,
 the smallest relevant deterministic checks and warranted regressions were run,
 the diff and internal references were inspected, unrelated state was preserved,
-owned state/handoff records were updated, remaining risks and unknowns are
-explicit, and the repository remains runnable. Report `planned`, `implemented`,
+owned state/handoff records and the capability-readiness report were updated,
+remaining risks and unknowns are explicit, and the repository remains runnable.
+Report `planned`, `implemented`,
 `tested locally`, `blocked`, and `unverified` precisely; an agent final message is
 not completion evidence.
 
