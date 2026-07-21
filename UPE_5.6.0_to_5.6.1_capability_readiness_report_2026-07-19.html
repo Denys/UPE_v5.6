@@ -3,8 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <title>UPE 5.6.0 → planned 5.6.1 · Capability and Harness Readiness</title>
+  <script>
+    (() => {
+      let savedTheme = null;
+      try { savedTheme = localStorage.getItem("upe-report-theme"); } catch (error) { void error; }
+      const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = savedTheme === "light" || savedTheme === "dark"
+        ? savedTheme
+        : systemDark ? "dark" : "light";
+    })();
+  </script>
   <style>
     :root {
       --ink: #172033;
@@ -62,9 +72,27 @@
       align-items: center;
     }
     .brand { font-size: 12px; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
+    .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
     nav { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
     nav a { color: var(--muted); font-size: 12px; font-weight: 700; text-decoration: none; }
     nav a:hover { color: var(--ink); }
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: var(--paper-2);
+      font: 800 10px/1 Inter, ui-sans-serif, sans-serif;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--blue); outline: none; }
+    .theme-toggle-icon { font-size: 14px; line-height: 1; }
 
     .hero {
       margin-top: 28px;
@@ -334,7 +362,7 @@
       background: rgba(255,255,255,.92);
       box-shadow: 0 5px 14px rgba(23,32,51,.055);
       text-align: left;
-      cursor: help;
+      cursor: pointer;
       transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease, border-color .16s ease;
     }
     .task-brick:nth-child(4n+2), .task-brick:nth-child(4n+4) { transform: translateY(7px); }
@@ -375,6 +403,7 @@
     .brick-chip.surface-local { color: #fff; border-color: var(--ink); background: var(--ink); }
     .brick-chip.dep-ready { color: var(--green); background: var(--green-soft); }
     .brick-chip.dep-sequential { color: var(--amber); background: var(--amber-soft); }
+    .brick-chip.estimate { color: #7b2e78; background: #f8eaf7; border-color: rgba(123,46,120,.24); }
     .version-bridge {
       position: relative;
       display: grid;
@@ -443,12 +472,122 @@
     .tooltip-grid { display: grid; grid-template-columns: 90px 1fr; gap: 7px 10px; margin-top: 13px; font-size: 10px; line-height: 1.45; }
     .tooltip-grid dt { color: #9ea7b7; font-weight: 850; text-transform: uppercase; }
     .tooltip-grid dd { margin: 0; color: #fff; overflow-wrap: anywhere; }
+    .task-tooltip .tooltip-hint { margin-top: 13px; color: #a9c2ff; font-weight: 850; }
 
-    .recommendations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .task-detail-dialog {
+      width: min(760px, calc(100vw - 24px));
+      max-width: none;
+      height: calc(100vh - 24px);
+      max-height: 920px;
+      margin: 12px 12px 12px auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0;
+      color: var(--ink);
+      background: var(--paper-2);
+      box-shadow: 0 28px 80px rgba(9,16,31,.35);
+      overflow: hidden;
+    }
+    .task-detail-dialog::backdrop { background: rgba(9,16,31,.56); backdrop-filter: blur(4px); }
+    .task-detail-shell { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+    .task-detail-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      padding: 22px 24px 18px;
+      background: color-mix(in srgb, var(--paper-2) 92%, transparent);
+    }
+    .task-detail-kicker { color: var(--blue); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .task-detail-head h3 { margin: 7px 0 0; max-width: 620px; font-size: clamp(24px, 4vw, 38px); line-height: 1.02; letter-spacing: -.035em; }
+    .task-detail-close {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      background: var(--paper);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .task-detail-close:hover, .task-detail-close:focus-visible { border-color: var(--blue); outline: none; }
+    .task-detail-body { overflow: auto; padding: 22px 24px 30px; }
+    .task-detail-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .task-detail-section { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+    .task-detail-section:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .task-detail-section h4 { margin: 0 0 8px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .task-detail-section p { margin: 0; color: var(--ink); font-size: 13px; line-height: 1.62; }
+    .task-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .task-detail-list { margin: 0; padding-left: 18px; color: var(--ink); font-size: 12px; line-height: 1.6; }
+    .task-detail-list li + li { margin-top: 6px; }
+    .task-detail-list a { font-weight: 750; }
+    .task-detail-list small { display: block; color: var(--muted); }
+    .task-detail-meta { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; margin: 0; font-size: 12px; line-height: 1.5; }
+    .task-detail-meta dt { color: var(--muted); font-weight: 850; text-transform: uppercase; }
+    .task-detail-meta dd { margin: 0; overflow-wrap: anywhere; }
+
+    .recommendations { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 12px; }
     .recommendation { border: 1px solid var(--line); background: rgba(255,255,255,.8); border-radius: 7px; padding: 18px; }
     .recommendation .n { color: var(--blue); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
     .recommendation h3 { margin: 12px 0 7px; font-size: 18px; }
     .recommendation p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+    .next-run-card {
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--blue) 45%, var(--line));
+      border-left: 6px solid var(--blue);
+      border-radius: 8px;
+      background: rgba(255,255,255,.82);
+      box-shadow: var(--shadow);
+    }
+    .next-run-head {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 24px 20px;
+      background: linear-gradient(110deg, var(--blue-soft), rgba(255,255,255,.42) 58%);
+    }
+    .next-run-classification {
+      display: inline-flex;
+      border: 1px solid color-mix(in srgb, var(--blue) 38%, var(--line));
+      border-radius: 999px;
+      padding: 5px 8px;
+      color: var(--blue);
+      background: var(--paper-2);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .next-run-head h3 { margin: 12px 0 8px; font-size: clamp(24px, 3vw, 36px); letter-spacing: -.035em; }
+    .next-run-head p { margin: 0; max-width: 900px; color: var(--muted); font-size: 13px; line-height: 1.58; }
+    .next-run-handoff { display: inline-block; margin-top: 12px; font-size: 11px; font-weight: 850; }
+    .next-run-layout { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1px; background: var(--line); }
+    .next-run-layout > section { min-width: 0; padding: 20px 24px 24px; background: var(--paper-2); }
+    .next-run-layout h4 { margin: 0 0 14px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .next-run-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; counter-reset: runs; }
+    .next-run-list li {
+      counter-increment: runs;
+      display: grid;
+      grid-template-columns: 27px minmax(0,1fr) auto;
+      gap: 10px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 11px 12px;
+      background: var(--paper);
+    }
+    .next-run-list li::before {
+      content: counter(runs, decimal-leading-zero);
+      color: var(--blue);
+      font: 900 10px/1.5 "SFMono-Regular", Consolas, monospace;
+    }
+    .next-run-list strong { display: block; font-size: 12px; line-height: 1.35; }
+    .next-run-list small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .next-run-estimate { color: var(--blue); font-size: 9px; font-weight: 900; white-space: nowrap; }
+    .next-run-meta { display: grid; grid-template-columns: 118px 1fr; gap: 9px 12px; margin: 0; font-size: 11px; line-height: 1.5; }
+    .next-run-meta dt { color: var(--muted); font-weight: 900; text-transform: uppercase; }
+    .next-run-meta dd { margin: 0; overflow-wrap: anywhere; }
 
     details { border: 1px solid var(--line); background: rgba(255,255,255,.72); border-radius: 7px; padding: 16px 18px; }
     details + details { margin-top: 10px; }
@@ -457,6 +596,70 @@
     .source-group { margin-top: 10px; }
 
     footer { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+    html[data-theme="dark"] {
+      --ink: #edf2fc;
+      --muted: #a7b1c2;
+      --paper: #0d1420;
+      --paper-2: #151e2c;
+      --white: #182334;
+      --line: #334157;
+      --blue: #82aaff;
+      --blue-soft: #1b3159;
+      --green: #63c9a8;
+      --green-soft: #15372f;
+      --amber: #e8ad5a;
+      --amber-soft: #3b2a16;
+      --red: #f18b82;
+      --red-soft: #3e211f;
+      --slate-soft: #273244;
+      --shadow: 0 1px 0 rgba(0,0,0,.2), 0 18px 48px rgba(0,0,0,.24);
+      color-scheme: dark;
+    }
+    html[data-theme="dark"] body {
+      background:
+        linear-gradient(rgba(130,170,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(130,170,255,.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+    }
+    html[data-theme="dark"] a:hover { color: #b7ccff; }
+    html[data-theme="dark"] .topbar { border-color: var(--line); background: rgba(13,20,32,.94); }
+    html[data-theme="dark"] .hero,
+    html[data-theme="dark"] .kpi,
+    html[data-theme="dark"] .panel,
+    html[data-theme="dark"] .card,
+    html[data-theme="dark"] .adapt,
+    html[data-theme="dark"] .recommendation,
+    html[data-theme="dark"] details { background: rgba(21,30,44,.88); }
+    html[data-theme="dark"] .next-run-card { background: #151e2c; }
+    html[data-theme="dark"] .next-run-head { background: linear-gradient(110deg, #1b3159, rgba(21,30,44,.7) 58%); }
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] .brick-chip { background: rgba(39,50,68,.85); border-color: var(--line); }
+    html[data-theme="dark"] .verdict { background: #211d18; }
+    html[data-theme="dark"] .alert { border-color: #72532c; }
+    html[data-theme="dark"] .positioning { background: #101824; }
+    html[data-theme="dark"] .bubble { box-shadow: 0 9px 22px rgba(0,0,0,.3); }
+    html[data-theme="dark"] .b1 { background: #263753; color: #fff; }
+    html[data-theme="dark"] th { background: #151e2c; }
+    html[data-theme="dark"] td { background: rgba(21,30,44,.72); }
+    html[data-theme="dark"] tbody tr:hover td { background: #1d293b; }
+    html[data-theme="dark"] .migration-shell {
+      background:
+        linear-gradient(120deg, rgba(99,201,168,.08), transparent 38%),
+        linear-gradient(240deg, rgba(232,173,90,.08), transparent 42%),
+        rgba(21,30,44,.9);
+    }
+    html[data-theme="dark"] .migration-progress,
+    html[data-theme="dark"] .migration-stat { background: #151e2c; }
+    html[data-theme="dark"] .task-brick { background: #182334; box-shadow: 0 5px 16px rgba(0,0,0,.22); }
+    html[data-theme="dark"] .task-brick[data-status="complete"] { background: linear-gradient(135deg, #15251f, var(--green-soft)); }
+    html[data-theme="dark"] .task-brick[data-status="ready"] { background: linear-gradient(135deg, #251f16, var(--amber-soft)); }
+    html[data-theme="dark"] .brick-chip.surface-local { color: #fff; background: #080d15; border-color: #53627a; }
+    html[data-theme="dark"] .brick-chip.estimate,
+    html[data-theme="dark"] .brick-chip.model-pro { color: #e7a8df; background: #38203a; border-color: #67436a; }
+    html[data-theme="dark"] .bridge-mark { background: #151e2c; }
+    html[data-theme="dark"] .task-tooltip { background: rgba(8,13,23,.98); border-color: #43516a; }
 
     @media (max-width: 980px) {
       .hero-grid, .section-head, .split { grid-template-columns: 1fr; }
@@ -472,11 +675,14 @@
       .version-bridge::before { inset: 50% 10px auto; border-top: 1px dashed var(--line); border-left: 0; }
       .bridge-mark { position: relative; top: auto; width: min(100%, 310px); min-height: 62px; grid-auto-flow: column; writing-mode: horizontal-tb; }
       .migration-note { width: 100%; max-width: none; margin-left: 0; text-align: left; }
+      .task-detail-grid { grid-template-columns: 1fr; gap: 0; }
+      .next-run-layout { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 620px) {
       .shell { padding: 0 14px 42px; }
       .topbar-inner { padding: 10px 14px; align-items: flex-start; }
+      .topbar-actions { margin-left: auto; }
       nav { display: none; }
       .hero { padding: 22px; }
       .kpis { grid-template-columns: 1fr; }
@@ -498,6 +704,10 @@
       .brick-grid { grid-template-columns: 1fr; }
       .task-brick:nth-child(n) { transform: none; }
       .task-tooltip { left: 14px !important; right: 14px; bottom: 14px; top: auto !important; width: auto; }
+      .task-detail-dialog { width: 100vw; height: 100vh; max-height: none; margin: 0; border-width: 0; border-radius: 0; }
+      .task-detail-head { padding: 18px 16px 15px; }
+      .task-detail-body { padding: 18px 16px 26px; }
+      .task-detail-meta { grid-template-columns: 92px 1fr; }
     }
 
     @media print {
@@ -505,7 +715,7 @@
       .topbar { display: none; }
       .shell { max-width: none; padding: 0; }
       .hero, .panel, .card, .kpi, .adapt, .recommendation, details, .task-brick { box-shadow: none; break-inside: avoid; }
-      .task-tooltip { display: none !important; }
+      .task-tooltip, .task-detail-dialog, .theme-toggle { display: none !important; }
       a { color: var(--ink); text-decoration: none; }
       .table-wrap { overflow: visible; }
       table { min-width: 0; font-size: 9px; }
@@ -517,14 +727,20 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="brand">UPE capability dossier · live delivery state</div>
-      <nav aria-label="Report sections">
-        <a href="#verdict">Verdict</a>
-        <a href="#layers">Layers</a>
-        <a href="#capabilities">Capabilities</a>
-        <a href="#article-parity">Article parity</a>
-        <a href="#roadmap">Roadmap</a>
-        <a href="#sources">Sources</a>
-      </nav>
+      <div class="topbar-actions">
+        <nav aria-label="Report sections">
+          <a href="#verdict">Verdict</a>
+          <a href="#layers">Layers</a>
+          <a href="#capabilities">Capabilities</a>
+          <a href="#article-parity">Article parity</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="#sources">Sources</a>
+        </nav>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+          <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+          <span id="theme-toggle-label">Dark</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -538,16 +754,16 @@
       </div>
       <div class="hero-grid">
         <div>
-          <p class="kicker">The execution spine now exists. Durability and recovery are the next proof line.</p>
+          <p class="kicker">Deterministic evidence is in. Durability and containment are the next proof line.</p>
           <h1>From control language to trusted host.</h1>
-          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral adapter, deterministic fake and one-task orchestrator. SQLite authority, validation execution, workspace isolation, recovery, executable policy and the real App Server path remain ahead.</p>
+          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral adapter, deterministic fake, one-task orchestrator and referenced deterministic validation evidence. SQLite authority, workspace isolation, recovery, executable policy and the real App Server path remain ahead.</p>
         </div>
         <aside class="verdict">
           <h2>Executive verdict</h2>
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑403 are implemented and tested; the dependency frontier is C‑404/C‑405/C‑406.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑404 are implemented and tested; W‑211, W‑212, C‑405, C‑406 and C‑408 can now start independently.</li>
           </ol>
         </aside>
       </div>
@@ -957,37 +1173,93 @@
           <span class="legend-item"><span class="legend-swatch ready-now"></span>Independent now</span>
           <span class="legend-item"><span class="legend-swatch web"></span>Web allowed</span>
           <span class="legend-item"><span class="legend-swatch local"></span>Local required</span>
-          <span class="legend-item">Hover or focus a brick to inspect scope, dependencies, outputs and evidence.</span>
+          <span class="legend-item">Hover/focus for a quick view; click a brick for origin, application, planning and full evidence.</span>
           <span class="migration-note" id="migration-refresh-note">Current-state hook has not loaded.</span>
         </div>
       </div>
       <div class="task-tooltip" id="task-tooltip" role="tooltip" hidden></div>
+      <dialog class="task-detail-dialog" id="task-detail-dialog" aria-labelledby="task-detail-title">
+        <form class="task-detail-shell" method="dialog">
+          <header class="task-detail-head">
+            <div>
+              <div class="task-detail-kicker" id="task-detail-kicker">Work package</div>
+              <h3 id="task-detail-title">Task details</h3>
+            </div>
+            <button class="task-detail-close" value="close" aria-label="Close task details">×</button>
+          </header>
+          <div class="task-detail-body">
+            <div class="task-detail-chips" id="task-detail-chips"></div>
+            <section class="task-detail-section">
+              <h4>Purpose</h4>
+              <p id="task-detail-purpose"></p>
+            </section>
+            <section class="task-detail-section">
+              <h4>Application · what this enables</h4>
+              <p id="task-detail-application"></p>
+            </section>
+            <div class="task-detail-grid">
+              <section class="task-detail-section">
+                <h4>Origin documents</h4>
+                <ul class="task-detail-list" id="task-detail-origin"></ul>
+              </section>
+              <section class="task-detail-section">
+                <h4>Planning estimate</h4>
+                <dl class="task-detail-meta" id="task-detail-planning"></dl>
+              </section>
+            </div>
+            <section class="task-detail-section">
+              <h4>Dependency route</h4>
+              <dl class="task-detail-meta" id="task-detail-dependencies"></dl>
+            </section>
+            <div class="task-detail-grid">
+              <section class="task-detail-section">
+                <h4>Outputs</h4>
+                <ul class="task-detail-list" id="task-detail-outputs"></ul>
+              </section>
+              <section class="task-detail-section">
+                <h4>Done when</h4>
+                <ul class="task-detail-list" id="task-detail-evidence"></ul>
+              </section>
+            </div>
+          </div>
+        </form>
+      </dialog>
     </section>
 
-    <section class="section" aria-labelledby="rec-title">
+    <section class="section" id="next-run" aria-labelledby="rec-title">
       <div class="section-head">
         <div>
-          <div class="section-label">Recommendation</div>
-          <h2 id="rec-title">Next moves that reduce uncertainty</h2>
+          <div class="section-label">Live dependency recommendation</div>
+          <h2 id="rec-title">Next suggested implementation run</h2>
         </div>
-        <p>Do not add more architecture until the first executable increment reveals a concrete missing contract. The current bottleneck is evidence generation, not specification breadth.</p>
+        <p>This card is generated from accepted task evidence, current dependencies, declared outputs and planning ranges. It never converts independent work-package ownership into one bundled code change.</p>
       </div>
-      <div class="recommendations">
-        <article class="recommendation">
-          <div class="n">01 · NEXT LOCAL SLICE</div>
-          <h3>C‑404 · deterministic evidence</h3>
-          <p>Execute scoped validators, normalize timeout/error results and return immutable evidence references that C‑403 can require before checkpoint or completion.</p>
-        </article>
-        <article class="recommendation">
-          <div class="n">02 · INDEPENDENT LOCAL SLICE</div>
-          <h3>C‑405 · contain the workspace</h3>
-          <p>Bind one task to one contained workspace, reject traversal/reparse escapes and prove unrelated dirty worktrees cannot be removed.</p>
-        </article>
-        <article class="recommendation">
-          <div class="n">03 · INDEPENDENT LOCAL SLICE</div>
-          <h3>C‑406 · make state durable</h3>
-          <p>Add transactional SQLite writes and the append-only JSONL mirror. This unlocks budgets/retries and is a prerequisite for the real App Server path.</p>
-        </article>
+      <div class="next-run-card" id="next-run-card">
+        <header class="next-run-head">
+          <span class="next-run-classification" id="next-run-classification">Calculating run shape…</span>
+          <h3 id="next-run-title">Loading live recommendation</h3>
+          <p id="next-run-rationale">The task-state hook has not loaded.</p>
+          <a class="next-run-handoff" id="next-run-handoff" href="handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md">Open detailed execution handoff →</a>
+        </header>
+        <div class="next-run-layout">
+          <section>
+            <h4>Proposed runs · priority order</h4>
+            <ol class="next-run-list" id="next-run-runs"></ol>
+          </section>
+          <section>
+            <h4>Integration constraints</h4>
+            <dl class="next-run-meta">
+              <dt>Blockers</dt>
+              <dd id="next-run-blockers">Loading…</dd>
+              <dt>Scope warning</dt>
+              <dd id="next-run-scope-warning">Loading…</dd>
+              <dt>Parallel elapsed</dt>
+              <dd id="next-run-parallel-time">Loading…</dd>
+              <dt>Sequential elapsed</dt>
+              <dd id="next-run-sequential-time">Loading…</dd>
+            </dl>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -1005,8 +1277,17 @@
           <li><a href="https://github.com/Denys/UPE_v5.6/blob/main/UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md">UPE v5.6.0 Full Reference</a> — control framework, adapters, acceptance, state and deployment.</li>
           <li><a href="https://github.com/Denys/UPE_v5.6/blob/main/UPE_v5.6.0_RELEASE/04_GPT_5.6_RUNTIME_PROFILE.md">GPT‑5.6 Runtime Profile</a> — dated model/effort/orchestration distinctions.</li>
           <li><a href="https://github.com/Denys/UPE_v5.6/blob/main/UPE_v5.6.0_RELEASE/05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md">Capability Opportunity Scan</a> and <a href="https://github.com/Denys/UPE_v5.6/blob/main/UPE_v5.6.0_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml">Registry Template</a>.</li>
-          <li><a href="https://github.com/Denys/UPE_v5.6/pull/3">PR #3</a> adopts the W‑201…W‑210 specification; <a href="https://github.com/Denys/UPE_v5.6/pull/6">PR #6</a> adopts C‑401…C‑403 at <code>317e0f81…</code>.</li>
+          <li><a href="https://github.com/Denys/UPE_v5.6/pull/3">PR #3</a> adopts the W‑201…W‑210 specification; <a href="https://github.com/Denys/UPE_v5.6/pull/6">PR #6</a> adopts C‑401…C‑403; <a href="https://github.com/Denys/UPE_v5.6/pull/9">PR #9</a> adopts C‑404 deterministic validation.</li>
           <li><a href="https://github.com/Denys/UPE_v5.6/blob/main/validation/W-200-SPECIFICATION-ACCEPTANCE.yaml">W‑200 Specification Acceptance</a>, <a href="https://github.com/Denys/UPE_v5.6/blob/main/docs/work/GENERATOR_VERIFIER_PROTOCOL.md">Generator/Verifier Protocol</a>, <a href="https://github.com/Denys/UPE_v5.6/blob/main/docs/work/RECOVERY_EVALUATION_OPERATIONS.md">Recovery/Evaluation/Operations</a> and <a href="https://github.com/Denys/UPE_v5.6/blob/main/handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md">Local Implementation Brief</a>.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Task origin, application and estimate method</summary>
+        <ul class="sources">
+          <li><strong>Origin:</strong> every work-package title, dependency and completion criterion comes from the canonical implementation backlog. The task drawer also links the accepted specification or evidence document that supplies its design basis.</li>
+          <li><strong>Application:</strong> operational effect is derived from canonical scope, declared outputs and direct downstream dependents; it is explanatory, not a new acceptance contract.</li>
+          <li><strong>Estimate:</strong> incomplete-task ranges are rough engineering planning bands derived from surface, model route, output count and escalation risk. They exclude review, CI queue and merge latency.</li>
+          <li><strong>Parallelism:</strong> “parallel now” means all declared dependencies are accepted. Functional branches may run independently, but shared report/current-state bookkeeping is integrated serially.</li>
         </ul>
       </details>
       <details>
@@ -1025,8 +1306,8 @@
         <ul class="sources">
           <li><strong>Operational:</strong> usable now at the claimed layer. UPE v5.6.0 is operational as instructions, not as a persistent process.</li>
           <li><strong>Specified:</strong> accepted normative artifact exists and passed its stated specification checks.</li>
-          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑403 now cover the package foundation, typed state, fake adapter and one-task orchestrator.</li>
-          <li><strong>Tested:</strong> an executed check with evidence exists. The merged C‑401…C‑403 baseline passed 198 tests; later runtime layers remain unimplemented.</li>
+          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑404 now cover the package foundation, typed state, fake adapter, one-task orchestrator and referenced deterministic validation.</li>
+          <li><strong>Tested:</strong> an executed check with evidence exists. The merged C‑401…C‑404 baseline passed 216 tests; later runtime layers remain unimplemented.</li>
           <li><strong>Naming assumption:</strong> the repository currently says “harness v0,” not “UPE v5.6.1.” The report maps v0 to the planned v5.6.1 successor because that is the requested project framing; release naming remains to be ratified.</li>
           <li><strong>Freshness:</strong> official publications were inspected on 2026‑07‑19; repository task state was refreshed <span data-refresh-date>from local evidence</span>. Product/model availability remains volatile.</li>
         </ul>
@@ -1037,10 +1318,10 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-21T12:18:46+02:00",
+  "refreshed_at": "2026-07-21T15:53:04+02:00",
   "repository": {
-    "head": "63f142901a5f61164e686f8bb6b732e724274d18",
-    "branch": "codex/c404-deterministic-validation"
+    "head": "bf4556b8dc288668a64cf2e5ec34fb652dfdaece",
+    "branch": "codex/report-wp-details-dark-mode"
   },
   "summary": {
     "visible_tasks": 60,
@@ -1089,6 +1370,19 @@
       ],
       "critical_path": true,
       "description": "Current-source research and evidence classification.",
+      "application": "Operational effect: Current-source research and evidence classification. Produces docs/research/source-matrix.md. Directly enables R-002 (Complete the ten mandatory architecture comparisons), R-003 (Assess ChatGPT Work applicability and limits), R-004 (Validate and package the research phase), R-005 (Merge implementation TODOs, surface split, and model routing).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/source-matrix.md"
       ],
@@ -1096,7 +1390,16 @@
         "30 primary source IDs",
         "required fields present",
         "exact repository refs recorded"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "R-002",
@@ -1121,13 +1424,35 @@
       ],
       "critical_path": true,
       "description": "Compare App Server/custom loop, state, evaluators, isolation, tools, and hosting.",
+      "application": "Operational effect: Compare App Server/custom loop, state, evaluators, isolation, tools, and hosting. Produces docs/research/pattern-comparison.md. Directly enables R-003 (Assess ChatGPT Work applicability and limits), R-004 (Validate and package the research phase), R-005 (Merge implementation TODOs, surface split, and model routing).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/pattern-comparison.md"
       ],
       "completion_evidence": [
         "comparisons 1-10 present",
         "recommended v0 boundary documented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "R-003",
@@ -1152,13 +1477,35 @@
       ],
       "critical_path": true,
       "description": "Separate Work-native knowledge work from host/Codex enforcement.",
+      "application": "Operational effect: Separate Work-native knowledge work from host/Codex enforcement. Produces docs/research/chatgpt-work-applicability.md. Directly enables R-004 (Validate and package the research phase), R-005 (Merge implementation TODOs, surface split, and model routing).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/chatgpt-work-applicability.md"
       ],
       "completion_evidence": [
         "Work/native/adapted/host boundary recorded",
         "known unknowns recorded"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "R-004",
@@ -1183,6 +1530,19 @@
       ],
       "critical_path": true,
       "description": "Package research without claiming runtime implementation.",
+      "application": "Operational effect: Package research without claiming runtime implementation. Produces validation-report.json · MANIFEST.sha256 · chatgpt_work_harness_research_2026-07-18.zip. Directly enables R-005 (Merge implementation TODOs, surface split, and model routing).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "validation-report.json",
         "MANIFEST.sha256",
@@ -1191,7 +1551,16 @@
       "completion_evidence": [
         "structural validation PASS",
         "archive integrity PASS"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "R-005",
@@ -1218,6 +1587,19 @@
       ],
       "critical_path": true,
       "description": "Create one authoritative backlog and derived surface queues; do not duplicate tasks.",
+      "application": "Operational effect: Create one authoritative backlog and derived surface queues; do not duplicate tasks. Produces HARNESS_IMPLEMENTATION_MASTER_PLAN.md · harness_implementation_backlog.yaml · CURRENT_PRODUCT_DELTA_2026-07-18.md · +1 more. Directly enables C-101 (Inspect the target repository and preserve unrelated local state), C-102 (Inventory the WSL2/Codex runtime and development dependencies).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "HARNESS_IMPLEMENTATION_MASTER_PLAN.md",
         "harness_implementation_backlog.yaml",
@@ -1229,7 +1611,16 @@
         "valid dependency graph",
         "acceptance criteria mapped",
         "ZIP integrity PASS"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-101",
@@ -1253,6 +1644,19 @@
       ],
       "critical_path": true,
       "description": "Read-only repository orientation. Do not edit implementation files yet.",
+      "application": "Operational effect: Read-only repository orientation. Do not edit implementation files yet. Produces docs/research/local-target-context.md. Directly enables C-104 (Materialize the web research package in the target repository), C-105 (Produce the Codex-to-Work environment handoff packet).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/local-target-context.md"
       ],
@@ -1261,7 +1665,16 @@
         "git status recorded",
         "README/AGENTS/manifests inspected",
         "unrelated changes preserved"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-102",
@@ -1285,6 +1698,19 @@
       ],
       "critical_path": true,
       "description": "Run bounded version/help/doctor checks. No broad implementation.",
+      "application": "Operational effect: Run bounded version/help/doctor checks. No broad implementation. Produces docs/research/codex-runtime-observations.md. Directly enables C-103 (Capture the installed App Server protocol surface), C-105 (Produce the Codex-to-Work environment handoff packet).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/codex-runtime-observations.md"
       ],
@@ -1293,7 +1719,16 @@
         "Codex desktop/CLI version recorded",
         "App Server availability recorded",
         "missing dependencies identified without exposing secrets"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-103",
@@ -1317,6 +1752,19 @@
       ],
       "critical_path": true,
       "description": "Generate installed-version TypeScript/JSON schemas or record the exact blocker.",
+      "application": "Operational effect: Generate installed-version TypeScript/JSON schemas or record the exact blocker. Produces docs/research/app-server-protocol-observations.md · docs/research/generated-app-server-schema/. Directly enables C-105 (Produce the Codex-to-Work environment handoff packet), C-501 (Implement the Codex App Server adapter).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/app-server-protocol-observations.md",
         "docs/research/generated-app-server-schema/"
@@ -1326,7 +1774,16 @@
         "exact Codex version tied to generated schema",
         "experimental fields labeled",
         "no raw protocol assumptions leaked into architecture"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-104",
@@ -1349,6 +1806,19 @@
       ],
       "critical_path": true,
       "description": "Copy accepted research artifacts into the repository. Do not start broad implementation.",
+      "application": "Operational effect: Copy accepted research artifacts into the repository. Do not start broad implementation. Produces docs/research/source-matrix.md · docs/research/pattern-comparison.md · docs/research/chatgpt-work-applicability.md · +1 more. Directly enables C-105 (Produce the Codex-to-Work environment handoff packet).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/source-matrix.md",
         "docs/research/pattern-comparison.md",
@@ -1359,7 +1829,16 @@
         "files copied without evidence-label rewrites",
         "checksums compared",
         "repository diff inspected"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-105",
@@ -1385,6 +1864,19 @@
       ],
       "critical_path": true,
       "description": "Return only evidence required for web merge and ADR.",
+      "application": "Operational effect: Return only evidence required for web merge and ADR. Produces handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml · handoffs/CODEX_ENVIRONMENT_EVIDENCE.md. Directly enables W-101 (Merge Codex target-environment evidence into the research package).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Authoritative build brief",
+          "path": "Pasted markdown.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "handoffs/CODEX_ENVIRONMENT_HANDOFF.yaml",
         "handoffs/CODEX_ENVIRONMENT_EVIDENCE.md"
@@ -1394,7 +1886,16 @@
         "repo/ref/version recorded",
         "conflicts and unknowns explicit",
         "no unsupported completion claim"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-101",
@@ -1417,6 +1918,19 @@
       ],
       "critical_path": true,
       "description": "Reconcile current official documentation with installed target behavior.",
+      "application": "Operational effect: Reconcile current official documentation with installed target behavior. Produces docs/research/source-matrix.md (updated) · docs/research/pattern-comparison.md (updated) · docs/research/research-state.yaml (updated) · +1 more. Directly enables W-102 (Prepare the architecture decision evidence packet).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/research/source-matrix.md (updated)",
         "docs/research/pattern-comparison.md (updated)",
@@ -1427,7 +1941,16 @@
         "documented vs observed claims separated",
         "stale claims corrected",
         "critical UNKNOWNs resolved or retained"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-102",
@@ -1450,13 +1973,35 @@
       ],
       "critical_path": true,
       "description": "Prepare concise decision inputs; do not pre-ordain the conclusion.",
+      "application": "Operational effect: Prepare concise decision inputs; do not pre-ordain the conclusion. Produces docs/architecture/ADR-001-evidence-packet.md. Directly enables P-101 (Freeze the v0 harness boundary in ADR-001).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/architecture/ADR-001-evidence-packet.md"
       ],
       "completion_evidence": [
         "alternatives, tradeoffs, security implications and change triggers mapped",
         "all active brief constraints represented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "P-101",
@@ -1479,6 +2024,19 @@
       ],
       "critical_path": true,
       "description": "Highest-value indivisible judgment: decide Work/host/Codex/state/evaluator/security boundary.",
+      "application": "Operational effect: Highest-value indivisible judgment: decide Work/host/Codex/state/evaluator/security boundary. Produces docs/architecture/ADR-001-harness-boundary.md. Directly enables G-ADR (Architecture gate: block broad implementation until ADR-001 passes).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/architecture/ADR-001-harness-boundary.md"
       ],
@@ -1489,7 +2047,16 @@
         "security implications explicit",
         "evidence that would justify a change recorded",
         "no critical unresolved contradiction"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "G-ADR",
@@ -1520,6 +2087,19 @@
       ],
       "critical_path": true,
       "description": "This gate is a hard dependency for every broad implementation task.",
+      "application": "Operational effect: This gate is a hard dependency for every broad implementation task. Produces gate-records/ADR-001-PASS.yaml. Directly enables W-201 (Write the ChatGPT Work loop adapter), W-202 (Finalize the web/local Work/local Codex routing matrix), W-203 (Define the generator/verifier protocol), W-204 (Define the Work-to-Codex and Codex-to-Work handoff protocol), W-205 (Design the Work goal contract schema) and 4 more.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "gate-records/ADR-001-PASS.yaml"
       ],
@@ -1528,7 +2108,16 @@
         "all required ADR sections present",
         "critical constraints mapped",
         "critical FAIL/UNKNOWN repaired or explicitly blocking"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-201",
@@ -1553,12 +2142,34 @@
       ],
       "critical_path": true,
       "description": "Work-native operator/research/deliverable layer, not host runtime state.",
+      "application": "Operational effect: Work-native operator/research/deliverable layer, not host runtime state. Produces docs/work/CHATGPT_WORK_LOOP_ADAPTER.md. Directly enables W-209 (Create the human-readable Work acceptance cases), W-211 (Define web scheduled-task patterns for research and monitoring), W-212 (Prepare UPE runtime-layer migration notes without changing the stable core).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work loop adapter specification",
+          "path": "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md"
       ],
       "completion_evidence": [
         "goal, repair, eval, checkpoint, no-progress and escalation rules documented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-202",
@@ -1582,6 +2193,19 @@
       ],
       "critical_path": true,
       "description": "Choose surface before model. Web first unless local evidence/execution is required.",
+      "application": "Operational effect: Choose surface before model. Web first unless local evidence/execution is required. Produces docs/work/WEB_VS_LOCAL_ROUTING.md. Directly enables W-209 (Create the human-readable Work acceptance cases), W-212 (Prepare UPE runtime-layer migration notes without changing the stable core).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Web/local execution routing",
+          "path": "docs/work/WEB_VS_LOCAL_ROUTING.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/WEB_VS_LOCAL_ROUTING.md"
       ],
@@ -1589,7 +2213,16 @@
         "every task class has one primary owner",
         "fallback does not duplicate completed work",
         "local Work remains narrow and non-repository"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-203",
@@ -1614,6 +2247,19 @@
       ],
       "critical_path": true,
       "description": "Use separate evaluator only where deterministic checks cannot settle completion.",
+      "application": "Operational effect: Use separate evaluator only where deterministic checks cannot settle completion. Produces docs/work/GENERATOR_VERIFIER_PROTOCOL.md. Directly enables W-207 (Design the verifier-result schema), W-209 (Create the human-readable Work acceptance cases), C-408 (Implement optional read-only model evaluator interface).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/GENERATOR_VERIFIER_PROTOCOL.md"
       ],
@@ -1622,7 +2268,16 @@
         "read-only independent evaluator contract",
         "PASS/FAIL/INSUFFICIENT_EVIDENCE schema",
         "scope expansion forbidden"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-204",
@@ -1646,6 +2301,24 @@
       ],
       "critical_path": true,
       "description": "Make cross-surface state explicit and versionable.",
+      "application": "Operational effect: Make cross-surface state explicit and versionable. Produces docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md · schemas/handoff.schema.yaml. Directly enables W-209 (Create the human-readable Work acceptance cases), C-301 (Re-inspect repository state immediately before edits).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work/Codex handoff protocol",
+          "path": "docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Handoff schema",
+          "path": "schemas/handoff.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md",
         "schemas/handoff.schema.yaml"
@@ -1653,7 +2326,16 @@
       "completion_evidence": [
         "authoritative inputs, scope, MUST IDs, outputs, evidence and approval fields required",
         "no hidden conversation memory required for resume"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-205",
@@ -1676,12 +2358,34 @@
       ],
       "critical_path": true,
       "description": "Design schema; local Codex later validates and materializes code models.",
+      "application": "Operational effect: Design schema; local Codex later validates and materializes code models. Produces schemas/goal_contract.schema.yaml. Directly enables C-301 (Re-inspect repository state immediately before edits).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Goal contract schema",
+          "path": "schemas/goal_contract.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "schemas/goal_contract.schema.yaml"
       ],
       "completion_evidence": [
         "objective, done conditions, constraints, tools, approvals, budget and outputs represented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-206",
@@ -1704,12 +2408,34 @@
       ],
       "critical_path": true,
       "description": "Compact project-level handoff state, not the host SQLite schema.",
+      "application": "Operational effect: Compact project-level handoff state, not the host SQLite schema. Produces schemas/work_loop_state.schema.yaml. Directly enables C-301 (Re-inspect repository state immediately before edits).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work loop-state schema",
+          "path": "schemas/work_loop_state.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "schemas/work_loop_state.schema.yaml"
       ],
       "completion_evidence": [
         "status, iteration, evidence, failed checks, remaining, approvals and stop reason represented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-207",
@@ -1733,6 +2459,19 @@
       ],
       "critical_path": true,
       "description": "Structured read-only evaluation result.",
+      "application": "Operational effect: Structured read-only evaluation result. Produces schemas/verifier_result.schema.yaml. Directly enables C-301 (Re-inspect repository state immediately before edits), C-408 (Implement optional read-only model evaluator interface).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Verifier result schema",
+          "path": "schemas/verifier_result.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "schemas/verifier_result.schema.yaml"
       ],
@@ -1742,7 +2481,16 @@
         "smallest correction",
         "release-blocking flag",
         "insufficient-evidence state"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-208",
@@ -1765,12 +2513,34 @@
       ],
       "critical_path": true,
       "description": "Record actual exposure and action boundaries without inventing capabilities.",
+      "application": "Operational effect: Record actual exposure and action boundaries without inventing capabilities. Produces schemas/capability_execution_record.schema.yaml. Directly enables C-301 (Re-inspect repository state immediately before edits).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Capability execution record schema",
+          "path": "schemas/capability_execution_record.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "schemas/capability_execution_record.schema.yaml"
       ],
       "completion_evidence": [
         "surface, capability, permission, validation, fallback and residual limits represented"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-209",
@@ -1796,12 +2566,34 @@
       ],
       "critical_path": true,
       "description": "Acceptance cases for the Work-facing layer.",
+      "application": "Operational effect: Acceptance cases for the Work-facing layer. Produces evals/work_loop_acceptance_cases.yaml. Directly enables C-303 (Materialize accepted research, ADR, schemas, templates, and prompts).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "evals/work_loop_acceptance_cases.yaml"
       ],
       "completion_evidence": [
         "success, failed verification, no-progress, read-only verifier, scheduled monitor, mobile/web/local fallback, concurrent-write prevention and local-folder assumption cases"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-210",
@@ -1825,6 +2617,19 @@
       ],
       "critical_path": true,
       "description": "Separate model tier, effort, Pro, and orchestration controls.",
+      "application": "Operational effect: Separate model tier, effort, Pro, and orchestration controls. Produces docs/work/MODEL_EFFORT_ROUTING.md. Directly enables W-212 (Prepare UPE runtime-layer migration notes without changing the stable core), C-303 (Materialize accepted research, ADR, schemas, templates, and prompts).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Model and effort routing",
+          "path": "docs/work/MODEL_EFFORT_ROUTING.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/MODEL_EFFORT_ROUTING.md"
       ],
@@ -1834,7 +2639,16 @@
         "Pro-specific tasks",
         "surface-dependent naming caveat",
         "Ultra deferred for v0 runtime"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-211",
@@ -1855,6 +2669,24 @@
       "dependents": [],
       "critical_path": false,
       "description": "Optional operational support. Not the v0 harness scheduler.",
+      "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work loop adapter specification",
+          "path": "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Web/local execution routing",
+          "path": "docs/work/WEB_VS_LOCAL_ROUTING.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/SCHEDULED_TASK_PATTERNS.md"
       ],
@@ -1863,7 +2695,19 @@
         "manual-run prerequisite",
         "narrow permissions and stop/report rules",
         "no local repo claim"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 hours",
+        "estimate_hours": {
+          "minimum": 3.0,
+          "maximum": 5.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
+      }
     },
     {
       "id": "W-212",
@@ -1886,13 +2730,53 @@
       "dependents": [],
       "critical_path": false,
       "description": "Supporting UPE deployment note; not a harness v0 blocker.",
+      "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Work loop adapter specification",
+          "path": "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Web/local execution routing",
+          "path": "docs/work/WEB_VS_LOCAL_ROUTING.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Model and effort routing",
+          "path": "docs/work/MODEL_EFFORT_ROUTING.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE v5.6.0 full reference",
+          "path": "UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/work/UPE_V5_6_1_MIGRATION_NOTES.md"
       ],
       "completion_evidence": [
         "new volatile behavior placed in dated adapter/skill/evals",
         "stable core unchanged unless ADR supplies explicit evidence"
-      ]
+      ],
+      "planning": {
+        "estimate": "4–8 hours",
+        "estimate_hours": {
+          "minimum": 4.0,
+          "maximum": 8.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-301",
@@ -1920,6 +2804,24 @@
       ],
       "critical_path": true,
       "description": "Mandatory pre-edit check. Do not assume C-101 is still current.",
+      "application": "Operational effect: Mandatory pre-edit check. Do not assume C-101 is still current. Produces agent/state/pre-edit-context.yaml. Directly enables C-302 (Create the minimal Python/uv repository scaffold).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "agent/state/pre-edit-context.yaml"
       ],
@@ -1928,7 +2830,16 @@
         "unrelated changes preserved",
         "smallest slice selected",
         "tests and rollback path stated"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-302",
@@ -1953,6 +2864,24 @@
       ],
       "critical_path": true,
       "description": "Python 3.12+, uv, pytest, ruff, and mypy/pyright. WSL2 first.",
+      "application": "Operational effect: Python 3.12+, uv, pytest, ruff, and mypy/pyright. WSL2 first. Produces pyproject.toml · src/harness/ · tests/ · +3 more. Directly enables C-303 (Materialize accepted research, ADR, schemas, templates, and prompts), C-304 (Create a short AGENTS.md map and repository operating README), C-305 (Create the fixture repository and deterministic baseline commands).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "pyproject.toml",
         "src/harness/",
@@ -1965,7 +2894,16 @@
         "uv environment resolves",
         "package imports",
         "tree contains no empty speculative abstractions"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-303",
@@ -1991,6 +2929,24 @@
       ],
       "critical_path": true,
       "description": "Bring accepted web-owned artifacts into the versioned repository.",
+      "application": "Operational effect: Bring accepted web-owned artifacts into the versioned repository. Produces docs/ · schemas/ · templates/ · +1 more. Directly enables C-304 (Create a short AGENTS.md map and repository operating README), C-306 (Create schema and package validators).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/",
         "schemas/",
@@ -2000,7 +2956,16 @@
       "completion_evidence": [
         "content identity or intentional transformation recorded",
         "internal references resolve"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-304",
@@ -2024,6 +2989,24 @@
       ],
       "critical_path": true,
       "description": "Do not turn AGENTS.md into a duplicate encyclopedia.",
+      "application": "Operational effect: Do not turn AGENTS.md into a duplicate encyclopedia. Produces AGENTS.md · README.md. Directly enables C-401 (Implement typed Goal, Task, Run, Event, configuration, and lifecycle models).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "AGENTS.md",
         "README.md"
@@ -2032,7 +3015,16 @@
         "AGENTS.md points to docs/scripts/tests",
         "commands and invariants are concise",
         "definition of done and prohibited actions explicit"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-305",
@@ -2058,6 +3050,24 @@
       ],
       "critical_path": true,
       "description": "Ground later lifecycle and recovery tests in an inspectable environment.",
+      "application": "Operational effect: Ground later lifecycle and recovery tests in an inspectable environment. Produces examples/fixture-repository/ · scripts/bootstrap.sh · scripts/verify-fast.sh · +1 more. Directly enables C-401 (Implement typed Goal, Task, Run, Event, configuration, and lifecycle models), C-404 (Implement deterministic validation and evidence records), C-405 (Implement workspace/worktree isolation and path containment), C-502 (Run a controlled Codex App Server smoke task).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "examples/fixture-repository/",
         "scripts/bootstrap.sh",
@@ -2067,7 +3077,16 @@
       "completion_evidence": [
         "fixture initializes reproducibly",
         "fast/full checks have known pass/fail behavior"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-306",
@@ -2090,6 +3109,24 @@
       ],
       "critical_path": true,
       "description": "Mechanical validation belongs to code, not model confidence.",
+      "application": "Operational effect: Mechanical validation belongs to code, not model confidence. Produces scripts/validate_schema.py · scripts/validate_release.py · scripts/validate_references.py. Directly enables C-401 (Implement typed Goal, Task, Run, Event, configuration, and lifecycle models).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "scripts/validate_schema.py",
         "scripts/validate_release.py",
@@ -2098,7 +3135,16 @@
       "completion_evidence": [
         "valid examples pass",
         "invalid examples fail with actionable messages"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-401",
@@ -2125,6 +3171,24 @@
       ],
       "critical_path": true,
       "description": "State model first. No provider calls.",
+      "application": "Operational effect: State model first. No provider calls. Produces src/harness/state.py · src/harness/config.py · schemas/*.schema.json · +2 more. Directly enables C-402 (Implement the provider adapter interface and fake adapter), C-406 (Implement SQLite state persistence and append-only JSONL events), C-410 (Document threat model, state model, evaluation plan, and operations).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/state.py",
         "src/harness/config.py",
@@ -2137,7 +3201,16 @@
         "invalid transitions fail",
         "schemas round-trip",
         "terminal states and reasons explicit"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-402",
@@ -2161,6 +3234,24 @@
       ],
       "critical_path": true,
       "description": "Test orchestration without model calls. Implement no second real provider.",
+      "application": "Operational effect: Test orchestration without model calls. Implement no second real provider. Produces src/harness/adapters/base.py · src/harness/adapters/fake.py · tests/unit/test_fake_adapter.py. Directly enables C-403 (Implement the lifecycle/orchestrator against the fake adapter), C-501 (Implement the Codex App Server adapter).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/adapters/base.py",
         "src/harness/adapters/fake.py",
@@ -2168,7 +3259,16 @@
       ],
       "completion_evidence": [
         "scripted success, failure, interruption and approval events reproducible"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-403",
@@ -2196,6 +3296,24 @@
       ],
       "critical_path": true,
       "description": "Drive CREATED through CHECKPOINTING/READY and explicit terminal states.",
+      "application": "Operational effect: Drive CREATED through CHECKPOINTING/READY and explicit terminal states. Produces src/harness/orchestrator.py · src/harness/lifecycle.py · tests/unit/test_lifecycle.py. Directly enables C-404 (Implement deterministic validation and evidence records), C-405 (Implement workspace/worktree isolation and path containment), C-406 (Implement SQLite state persistence and append-only JSONL events), C-407 (Implement budgets, stop rules, retry/backoff, and no-progress detection), C-409 (Implement the CLI and harness doctor) and 1 more.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/orchestrator.py",
         "src/harness/lifecycle.py",
@@ -2206,7 +3324,16 @@
         "transition persisted before external action",
         "reasoned stop states emitted",
         "worker message alone cannot complete a task"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-404",
@@ -2232,6 +3359,24 @@
       ],
       "critical_path": true,
       "description": "Deterministic layer is primary and precedes model evaluation.",
+      "application": "Operational effect: Deterministic layer is primary and precedes model evaluation. Produces src/harness/validation.py · tests/unit/test_validation.py. Directly enables C-408 (Implement optional read-only model evaluator interface), C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/validation.py",
         "tests/unit/test_validation.py"
@@ -2241,7 +3386,16 @@
         "outputs stored by reference",
         "task completion requires passing evidence",
         "timeouts/errors normalized"
-      ]
+      ],
+      "planning": {
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-405",
@@ -2268,6 +3422,24 @@
       ],
       "critical_path": true,
       "description": "Git worktree or scoped workspace manager without broad host access.",
+      "application": "Operational effect: Git worktree or scoped workspace manager without broad host access. Produces src/harness/workspace.py · tests/unit/test_workspace.py. Directly enables C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-504 (Implement checkpoint and partial-failure recovery), C-505 (Implement permissions, approval gates, command policy, and redaction).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/workspace.py",
         "tests/unit/test_workspace.py"
@@ -2277,7 +3449,19 @@
         "path traversal rejected",
         "unrelated worktrees cannot be removed",
         "dirty state handled safely"
-      ]
+      ],
+      "planning": {
+        "estimate": "1.5–3 engineering days",
+        "estimate_hours": {
+          "minimum": 12.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-406",
@@ -2307,6 +3491,24 @@
       ],
       "critical_path": true,
       "description": "Conversation history is not canonical state.",
+      "application": "Operational effect: Conversation history is not canonical state. Produces src/harness/state_store.py · src/harness/events.py · tests/unit/test_state_store.py · +1 more. Directly enables C-407 (Implement budgets, stop rules, retry/backoff, and no-progress detection), C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-501 (Implement the Codex App Server adapter), C-503 (Implement crash/restart and process-state reconciliation) and 2 more.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/state_store.py",
         "src/harness/events.py",
@@ -2318,7 +3520,19 @@
         "large outputs referenced not embedded",
         "events replayable enough for recovery",
         "redaction marker supported"
-      ]
+      ],
+      "planning": {
+        "estimate": "2–4 engineering days",
+        "estimate_hours": {
+          "minimum": 16.0,
+          "maximum": 32.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-407",
@@ -2346,6 +3560,24 @@
       ],
       "critical_path": true,
       "description": "Exact bounds owned by host code.",
+      "application": "Operational effect: Exact bounds owned by host code. Produces src/harness/budgets.py · src/harness/retry_policy.py · tests/unit/test_budgets.py · +1 more. Directly enables C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-501 (Implement the Codex App Server adapter).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work loop adapter specification",
+          "path": "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/budgets.py",
         "src/harness/retry_policy.py",
@@ -2357,7 +3589,21 @@
         "jittered bounded backoff",
         "identical-failure and no-progress stops",
         "non-idempotent retry blocked"
-      ]
+      ],
+      "planning": {
+        "estimate": "2–4 engineering days",
+        "estimate_hours": {
+          "minimum": 16.0,
+          "maximum": 32.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-406.",
+        "blocked_by": [
+          "C-406"
+        ]
+      }
     },
     {
       "id": "C-408",
@@ -2380,6 +3626,24 @@
       "dependents": [],
       "critical_path": true,
       "description": "Optional second layer only for irreducible judgment.",
+      "application": "Operational effect: Optional second layer only for irreducible judgment. Produces src/harness/evaluation.py · tests/unit/test_evaluation.py. No direct downstream package is recorded in the visible v0 route.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Verifier result schema",
+          "path": "schemas/verifier_result.schema.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/evaluation.py",
         "tests/unit/test_evaluation.py"
@@ -2389,7 +3653,19 @@
         "no write access",
         "PASS/FAIL/INSUFFICIENT_EVIDENCE preserved",
         "criteria cannot be rewritten"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
+      }
     },
     {
       "id": "C-409",
@@ -2422,6 +3698,24 @@
       ],
       "critical_path": true,
       "description": "Small explicit CLI. Missing credentials reported without values.",
+      "application": "Operational effect: Small explicit CLI. Missing credentials reported without values. Produces src/harness/cli.py · tests/unit/test_cli.py. Directly enables C-410 (Document threat model, state model, evaluation plan, and operations), C-502 (Run a controlled Codex App Server smoke task), C-506 (Integrate state, workspace, validation, App Server, recovery, and security).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/cli.py",
         "tests/unit/test_cli.py"
@@ -2429,7 +3723,23 @@
       "completion_evidence": [
         "init/research/doctor/run/status/events/resume/pause/cancel/evaluate/cleanup commands exist",
         "doctor checks runtime/Codex/Git/worktrees/validators/SQLite/permissions safely"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-405, C-406, C-407.",
+        "blocked_by": [
+          "C-405",
+          "C-406",
+          "C-407"
+        ]
+      }
     },
     {
       "id": "C-410",
@@ -2460,6 +3770,24 @@
       "dependents": [],
       "critical_path": true,
       "description": "Documentation follows working code and exact tests, not imagined capabilities.",
+      "application": "Operational effect: Documentation follows working code and exact tests, not imagined capabilities. Produces docs/threat-model.md · docs/state-model.md · docs/evaluation-plan.md · +1 more. No direct downstream package is recorded in the visible v0 route.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted local implementation brief",
+          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "docs/threat-model.md",
         "docs/state-model.md",
@@ -2468,7 +3796,24 @@
       ],
       "completion_evidence": [
         "setup, operation, recovery, approvals and limitations match implementation"
-      ]
+      ],
+      "planning": {
+        "estimate": "2–4 engineering days",
+        "estimate_hours": {
+          "minimum": 16.0,
+          "maximum": 32.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-405, C-406, C-407, C-409.",
+        "blocked_by": [
+          "C-405",
+          "C-406",
+          "C-407",
+          "C-409"
+        ]
+      }
     },
     {
       "id": "C-501",
@@ -2500,6 +3845,19 @@
       ],
       "critical_path": true,
       "description": "Keep raw protocol messages inside the adapter boundary.",
+      "application": "Operational effect: Keep raw protocol messages inside the adapter boundary. Produces src/harness/adapters/codex_app_server.py · tests/unit/test_codex_adapter.py. Directly enables C-502 (Run a controlled Codex App Server smoke task), C-503 (Implement crash/restart and process-state reconciliation), C-505 (Implement permissions, approval gates, command policy, and redaction), C-506 (Integrate state, workspace, validation, App Server, recovery, and security).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/adapters/codex_app_server.py",
         "tests/unit/test_codex_adapter.py"
@@ -2514,7 +3872,22 @@
         "terminal detection",
         "error normalization",
         "protocol version compatibility"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 engineering days",
+        "estimate_hours": {
+          "minimum": 24.0,
+          "maximum": 40.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-406, C-407.",
+        "blocked_by": [
+          "C-406",
+          "C-407"
+        ]
+      }
     },
     {
       "id": "C-502",
@@ -2543,6 +3916,29 @@
       ],
       "critical_path": true,
       "description": "One narrow happy-path smoke run; do not call the harness production-ready.",
+      "application": "Operational effect: One narrow happy-path smoke run; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "evals/results/app-server-smoke/",
         "docs/research/app-server-smoke-observation.md"
@@ -2552,7 +3948,22 @@
         "events recorded",
         "validator evidence recorded",
         "no external mutation"
-      ]
+      ],
+      "planning": {
+        "estimate": "2–4 engineering days",
+        "estimate_hours": {
+          "minimum": 16.0,
+          "maximum": 32.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-501, C-409.",
+        "blocked_by": [
+          "C-501",
+          "C-409"
+        ]
+      }
     },
     {
       "id": "C-503",
@@ -2582,6 +3993,29 @@
       ],
       "critical_path": true,
       "description": "Crash-safe resume is a core Max task.",
+      "application": "Operational effect: Crash-safe resume is a core Max task. Produces src/harness/recovery.py · tests/integration/test_restart_recovery.py. Directly enables C-504 (Implement checkpoint and partial-failure recovery), C-506 (Integrate state, workspace, validation, App Server, recovery, and security).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/recovery.py",
         "tests/integration/test_restart_recovery.py"
@@ -2589,7 +4023,23 @@
       "completion_evidence": [
         "persisted state, process state, worktree, Git, last event and validation reconciled",
         "ambiguous executing state eliminated"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 engineering days",
+        "estimate_hours": {
+          "minimum": 24.0,
+          "maximum": 40.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-406, C-501, C-502.",
+        "blocked_by": [
+          "C-406",
+          "C-501",
+          "C-502"
+        ]
+      }
     },
     {
       "id": "C-504",
@@ -2618,6 +4068,29 @@
       ],
       "critical_path": true,
       "description": "Use patch/archive/checkpoint metadata by default. Local Git commits remain approval-gated.",
+      "application": "Operational effect: Use patch/archive/checkpoint metadata by default. Local Git commits remain approval-gated. Produces src/harness/checkpoint.py · tests/integration/test_checkpoint_recovery.py. Directly enables C-506 (Integrate state, workspace, validation, App Server, recovery, and security).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/checkpoint.py",
         "tests/integration/test_checkpoint_recovery.py"
@@ -2626,7 +4099,23 @@
         "previous stable checkpoint preserved",
         "interrupted checkpoint cannot corrupt state",
         "rollback path proven without unauthorized commit"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 engineering days",
+        "estimate_hours": {
+          "minimum": 24.0,
+          "maximum": 40.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-405, C-406, C-503.",
+        "blocked_by": [
+          "C-405",
+          "C-406",
+          "C-503"
+        ]
+      }
     },
     {
       "id": "C-505",
@@ -2657,6 +4146,29 @@
       ],
       "critical_path": true,
       "description": "Security boundary is host-owned and adjacent to action.",
+      "application": "Operational effect: Security boundary is host-owned and adjacent to action. Produces src/harness/approvals.py · src/harness/permissions.py · tests/unit/test_approvals.py · +1 more. Directly enables C-506 (Integrate state, workspace, validation, App Server, recovery, and security), C-606 (Run security, secret, malicious-instruction, and no-external-mutation checks).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "src/harness/approvals.py",
         "src/harness/permissions.py",
@@ -2668,7 +4180,23 @@
         "workspace credentials remain narrow",
         "paths/commands/network checked",
         "secrets and personal data redacted from logs"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 engineering days",
+        "estimate_hours": {
+          "minimum": 24.0,
+          "maximum": 40.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-405, C-406, C-501.",
+        "blocked_by": [
+          "C-405",
+          "C-406",
+          "C-501"
+        ]
+      }
     },
     {
       "id": "C-506",
@@ -2703,6 +4231,29 @@
       ],
       "critical_path": true,
       "description": "Final multi-component integration. This is where Max earns its keep.",
+      "application": "Operational effect: Final multi-component integration. This is where Max earns its keep. Produces integrated v0 harness candidate. Directly enables C-601 (Complete unit-test coverage for all required behaviors), C-602 (Complete the ten required integration tests), C-603 (Create the six representative evaluation fixtures).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Observed App Server protocol",
+          "path": "docs/research/app-server-protocol-observations.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Security and containment boundary",
+          "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "integrated v0 harness candidate"
       ],
@@ -2711,7 +4262,25 @@
         "no duplicate controller state",
         "failure states remain explicit",
         "full fixture path runnable"
-      ]
+      ],
+      "planning": {
+        "estimate": "3–5 engineering days",
+        "estimate_hours": {
+          "minimum": 24.0,
+          "maximum": 40.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-409, C-501, C-503, C-504, C-505.",
+        "blocked_by": [
+          "C-409",
+          "C-501",
+          "C-503",
+          "C-504",
+          "C-505"
+        ]
+      }
     },
     {
       "id": "C-601",
@@ -2736,12 +4305,44 @@
       ],
       "critical_path": true,
       "description": "Tests should accompany each slice; this task closes gaps.",
+      "application": "Operational effect: Tests should accompany each slice; this task closes gaps. Produces tests/unit/. Directly enables C-605 (Run the complete deterministic quality suite).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "tests/unit/"
       ],
       "completion_evidence": [
         "state transitions, schemas, budgets, retry, no-progress, approvals, redaction, task selection, path containment and adapter errors covered"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-506.",
+        "blocked_by": [
+          "C-506"
+        ]
+      }
     },
     {
       "id": "C-602",
@@ -2767,12 +4368,44 @@
       ],
       "critical_path": true,
       "description": "Prove init, workspace, fake edits, validation, resume, checkpoint recovery, budgets, approvals, evaluator, cleanup.",
+      "application": "Operational effect: Prove init, workspace, fake edits, validation, resume, checkpoint recovery, budgets, approvals, evaluator, cleanup. Produces tests/integration/. Directly enables C-605 (Run the complete deterministic quality suite), C-606 (Run security, secret, malicious-instruction, and no-external-mutation checks).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "tests/integration/"
       ],
       "completion_evidence": [
         "all ten brief-specified integration scenarios pass"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-506.",
+        "blocked_by": [
+          "C-506"
+        ]
+      }
     },
     {
       "id": "C-603",
@@ -2799,13 +4432,45 @@
       ],
       "critical_path": true,
       "description": "Representative model-dependent trials, not decorative demos.",
+      "application": "Operational effect: Representative model-dependent trials, not decorative demos. Produces tests/evals/ · evals/cases/. Directly enables C-604 (Run repeated model-dependent trials and record metrics), C-605 (Run the complete deterministic quality suite), C-606 (Run security, secret, malicious-instruction, and no-external-mutation checks).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "tests/evals/",
         "evals/cases/"
       ],
       "completion_evidence": [
         "passing change, test repair, ambiguous requirement, non-progress, malicious repository instruction and forbidden external action represented"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-506.",
+        "blocked_by": [
+          "C-506"
+        ]
+      }
     },
     {
       "id": "C-604",
@@ -2832,13 +4497,46 @@
       ],
       "critical_path": true,
       "description": "Use enough trials to expose failure modes; keep costs bounded.",
+      "application": "Operational effect: Use enough trials to expose failure modes; keep costs bounded. Produces evals/results/trial-summary.json · evals/results/trial-details.jsonl. Directly enables W-701 (Synthesize the implementation evidence and draft the final report).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "evals/results/trial-summary.json",
         "evals/results/trial-details.jsonl"
       ],
       "completion_evidence": [
         "pass rate, iterations, elapsed time, tool calls and reviewer corrections recorded"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-603, C-502.",
+        "blocked_by": [
+          "C-603",
+          "C-502"
+        ]
+      }
     },
     {
       "id": "C-605",
@@ -2867,6 +4565,24 @@
       ],
       "critical_path": true,
       "description": "Tool output, not prose, determines these results.",
+      "application": "Operational effect: Tool output, not prose, determines these results. Produces validation/full-suite-report.json. Directly enables W-701 (Synthesize the implementation evidence and draft the final report).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "validation/full-suite-report.json"
       ],
@@ -2876,7 +4592,23 @@
         "mypy or pyright PASS",
         "schema checks PASS",
         "package/reference checks PASS"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-601, C-602, C-603.",
+        "blocked_by": [
+          "C-601",
+          "C-602",
+          "C-603"
+        ]
+      }
     },
     {
       "id": "C-606",
@@ -2905,6 +4637,24 @@
       ],
       "critical_path": true,
       "description": "Release-blocking security evidence.",
+      "application": "Operational effect: Release-blocking security evidence. Produces validation/security-report.json. Directly enables W-701 (Synthesize the implementation evidence and draft the final report).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "Generator/verifier protocol",
+          "path": "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Work-loop acceptance cases",
+          "path": "evals/work_loop_acceptance_cases.yaml",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "validation/security-report.json"
       ],
@@ -2913,7 +4663,23 @@
         "malicious repo instruction treated as data",
         "forbidden action blocked",
         "no push/PR/deploy/external mutation observed"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–3 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 24.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-505, C-602, C-603.",
+        "blocked_by": [
+          "C-505",
+          "C-602",
+          "C-603"
+        ]
+      }
     },
     {
       "id": "W-701",
@@ -2942,13 +4708,47 @@
       ],
       "critical_path": true,
       "description": "Answer-first evidence synthesis. Preserve planned/implemented/tested/blocked/unverified labels.",
+      "application": "Operational effect: Answer-first evidence synthesis. Preserve planned/implemented/tested/blocked/unverified labels. Produces FINAL_IMPLEMENTATION_REPORT.md · release-evidence-index.yaml. Directly enables P-701 (Perform a fresh-context read-only release review).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "FINAL_IMPLEMENTATION_REPORT.md",
         "release-evidence-index.yaml"
       ],
       "completion_evidence": [
         "architecture, sources, exact versions, files, commands, tests, smoke behavior, security, assumptions, deferred features and failure modes covered"
-      ]
+      ],
+      "planning": {
+        "estimate": "4–8 hours",
+        "estimate_hours": {
+          "minimum": 4.0,
+          "maximum": 8.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-604, C-605, C-606.",
+        "blocked_by": [
+          "C-604",
+          "C-605",
+          "C-606"
+        ]
+      }
     },
     {
       "id": "P-701",
@@ -2973,6 +4773,24 @@
       ],
       "critical_path": true,
       "description": "Second and final primary Pro use: adversarial whole-system judgment.",
+      "application": "Operational effect: Second and final primary Pro use: adversarial whole-system judgment. Produces PRO_RELEASE_REVIEW.yaml. Directly enables C-701 (Apply only accepted release-review corrections).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "PRO_RELEASE_REVIEW.yaml"
       ],
@@ -2980,7 +4798,21 @@
         "every acceptance criterion graded PASS/FAIL/INSUFFICIENT_EVIDENCE",
         "smallest correction specified",
         "release blockers explicit"
-      ]
+      ],
+      "planning": {
+        "estimate": "4–8 hours",
+        "estimate_hours": {
+          "minimum": 4.0,
+          "maximum": 8.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after W-701.",
+        "blocked_by": [
+          "W-701"
+        ]
+      }
     },
     {
       "id": "C-701",
@@ -3005,6 +4837,24 @@
       ],
       "critical_path": true,
       "description": "Use Max only for a correction involving state/recovery/security/protocol invariants.",
+      "application": "Operational effect: Use Max only for a correction involving state/recovery/security/protocol invariants. Produces corrected release candidate · correction-log.yaml. Directly enables C-702 (Rerun all deterministic tests after corrections).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "corrected release candidate",
         "correction-log.yaml"
@@ -3012,7 +4862,21 @@
       "completion_evidence": [
         "each change maps to an accepted finding",
         "unrelated structure preserved"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after P-701.",
+        "blocked_by": [
+          "P-701"
+        ]
+      }
     },
     {
       "id": "C-702",
@@ -3037,13 +4901,45 @@
       ],
       "critical_path": true,
       "description": "No release on stale pre-correction evidence.",
+      "application": "Operational effect: No release on stale pre-correction evidence. Produces validation/final-validation-report.json. Directly enables C-703 (Package the v0 artifacts, documentation, manifest, and archive).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "validation/final-validation-report.json"
       ],
       "completion_evidence": [
         "all critical deterministic gates PASS",
         "remaining UNKNOWNs explicit"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-701.",
+        "blocked_by": [
+          "C-701"
+        ]
+      }
     },
     {
       "id": "C-703",
@@ -3068,6 +4964,24 @@
       ],
       "critical_path": true,
       "description": "Packaging is mechanical and does not deserve Pro.",
+      "application": "Operational effect: Packaging is mechanical and does not deserve Pro. Produces release/ · MANIFEST.sha256 · agent-harness-v0.zip. Directly enables C-704 (Create a local Git commit for the accepted release candidate).",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "release/",
         "MANIFEST.sha256",
@@ -3077,7 +4991,21 @@
         "archive extracts",
         "checksums match",
         "known limitations present"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-702.",
+        "blocked_by": [
+          "C-702"
+        ]
+      }
     },
     {
       "id": "C-704",
@@ -3100,6 +5028,24 @@
       "dependents": [],
       "critical_path": false,
       "description": "Do not commit until explicitly authorized. Never push or open a PR under this plan.",
+      "application": "Operational effect: Do not commit until explicitly authorized. Never push or open a PR under this plan. Produces local commit hash. No direct downstream package is recorded in the visible v0 route.",
+      "origin_documents": [
+        {
+          "label": "Canonical implementation backlog",
+          "path": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
+          "role": "Canonical task definition"
+        },
+        {
+          "label": "UPE changelog and migration",
+          "path": "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "UPE evaluation suite",
+          "path": "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+          "role": "Accepted design basis"
+        }
+      ],
       "outputs": [
         "local commit hash"
       ],
@@ -3107,9 +5053,102 @@
         "explicit user authorization recorded",
         "diff reviewed",
         "commit local only"
-      ]
+      ],
+      "planning": {
+        "estimate": "1–2 engineering days",
+        "estimate_hours": {
+          "minimum": 8.0,
+          "maximum": 16.0
+        },
+        "confidence": "rough",
+        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
+        "parallelizable_now": false,
+        "parallel_note": "Starts after C-703.",
+        "blocked_by": [
+          "C-703"
+        ]
+      }
     }
   ],
+  "next_suggested_run": {
+    "title": "Next suggested implementation run",
+    "classification": "parallel_runs",
+    "classification_label": "Parallel runs",
+    "bundle_allowed": false,
+    "task_ids": [
+      "C-406",
+      "C-405",
+      "C-408",
+      "W-211",
+      "W-212"
+    ],
+    "runs": [
+      {
+        "label": "Run 1",
+        "task_ids": [
+          "C-406"
+        ],
+        "surface": "Local required",
+        "estimate": "2–4 engineering days",
+        "application": "Operational effect: Conversation history is not canonical state. Produces src/harness/state_store.py · src/harness/events.py · tests/unit/test_state_store.py · +1 more. Directly enables C-407 (Implement budgets, stop rules, retry/backoff, and no-progress detection), C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-501 (Implement the Codex App Server adapter), C-503 (Implement crash/restart and process-state reconciliation) and 2 more."
+      },
+      {
+        "label": "Run 2",
+        "task_ids": [
+          "C-405"
+        ],
+        "surface": "Local required",
+        "estimate": "1.5–3 engineering days",
+        "application": "Operational effect: Git worktree or scoped workspace manager without broad host access. Produces src/harness/workspace.py · tests/unit/test_workspace.py. Directly enables C-409 (Implement the CLI and harness doctor), C-410 (Document threat model, state model, evaluation plan, and operations), C-504 (Implement checkpoint and partial-failure recovery), C-505 (Implement permissions, approval gates, command policy, and redaction)."
+      },
+      {
+        "label": "Run 3",
+        "task_ids": [
+          "C-408"
+        ],
+        "surface": "Local required",
+        "estimate": "1–2 engineering days",
+        "application": "Operational effect: Optional second layer only for irreducible judgment. Produces src/harness/evaluation.py · tests/unit/test_evaluation.py. No direct downstream package is recorded in the visible v0 route."
+      },
+      {
+        "label": "Run 4",
+        "task_ids": [
+          "W-211"
+        ],
+        "surface": "Web allowed",
+        "estimate": "3–5 hours",
+        "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
+      },
+      {
+        "label": "Run 5",
+        "task_ids": [
+          "W-212"
+        ],
+        "surface": "Web allowed",
+        "estimate": "4–8 hours",
+        "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
+      }
+    ],
+    "rationale": "5 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-406 because it has the widest transitive downstream unlock in the live graph.",
+    "blockers": [
+      "C-407 waits on C-406",
+      "C-409 waits on C-405, C-406, C-407",
+      "C-410 waits on C-405, C-406, C-407, C-409",
+      "C-501 waits on C-406, C-407",
+      "C-503 waits on C-406, C-501, C-502",
+      "C-504 waits on C-405, C-406, C-503"
+    ],
+    "scope_collisions": {},
+    "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
+    "elapsed_comparison": {
+      "parallel": "2–4 engineering days plus serial integration",
+      "sequential": "about 5.4–10.6 engineering days plus integration"
+    },
+    "handoff": {
+      "label": "Open the detailed five-run execution handoff",
+      "path": "handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md"
+    }
+  },
   "sources": {
     "backlog": "chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml",
     "state": "docs/research/research-state.yaml",
@@ -3192,11 +5231,29 @@
 
     <script>
       (() => {
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeToggleLabel = document.getElementById("theme-toggle-label");
+        const updateThemeControl = () => {
+          const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+          if (themeToggleLabel) themeToggleLabel.textContent = current === "dark" ? "Light" : "Dark";
+          if (themeToggle) themeToggle.setAttribute("aria-label", `Switch to ${current === "dark" ? "light" : "dark"} mode`);
+        };
+        if (themeToggle) {
+          updateThemeControl();
+          themeToggle.addEventListener("click", () => {
+            const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+            document.documentElement.dataset.theme = next;
+            try { localStorage.setItem("upe-report-theme", next); } catch (error) { void error; }
+            updateThemeControl();
+          });
+        }
+
         const stateNode = document.getElementById("upe-task-state");
         const completedRoot = document.getElementById("completed-bricks");
         const todoRoot = document.getElementById("todo-bricks");
         const tooltip = document.getElementById("task-tooltip");
-        if (!stateNode || !completedRoot || !todoRoot || !tooltip) return;
+        const detailDialog = document.getElementById("task-detail-dialog");
+        if (!stateNode || !completedRoot || !todoRoot || !tooltip || !detailDialog) return;
 
         let payload;
         try {
@@ -3237,7 +5294,7 @@
           brick.dataset.taskId = task.id;
           brick.dataset.status = task.status;
           brick.dataset.surface = task.surface;
-          brick.setAttribute("aria-label", `${task.id}: ${task.title}. ${statusLabel[task.status] || task.status}.`);
+          brick.setAttribute("aria-label", `${task.id}: ${task.title}. ${statusLabel[task.status] || task.status}. Click for full details.`);
 
           const top = document.createElement("span");
           top.className = "brick-top";
@@ -3258,6 +5315,7 @@
           addChip(properties, task.surface_label, task.surface === "local_codex" ? "surface-local" : "surface-web");
           addChip(properties, task.model_label, modelClass(task.model_label));
           addChip(properties, dependencyLabel[task.dependency_mode] || task.dependency_mode, depClass(task.dependency_mode));
+          if (task.planning && task.planning.estimate) addChip(properties, task.planning.estimate, "estimate");
           brick.append(top, title, properties);
           return brick;
         };
@@ -3309,15 +5367,15 @@
           const list = document.createElement("dl");
           list.className = "tooltip-grid";
           tooltipRow(list, "State", statusLabel[task.status] || task.status);
-          tooltipRow(list, "Surface", task.surface_label);
-          tooltipRow(list, "Model", task.model_label);
           tooltipRow(list, "Dependency", dependencyLabel[task.dependency_mode] || task.dependency_mode);
           tooltipRow(list, "Depends on", task.dependencies.length ? task.dependencies.join(", ") : "None");
           if (task.incomplete_dependencies.length) tooltipRow(list, "Waiting on", task.incomplete_dependencies.join(", "));
           if (task.dependents.length) tooltipRow(list, "Unlocks", task.dependents.join(", "));
-          tooltipRow(list, "Outputs", task.outputs.length ? task.outputs.join(" · ") : "No file output");
-          tooltipRow(list, "Done when", task.completion_evidence.length ? task.completion_evidence.join(" · ") : "No criterion recorded");
-          tooltip.append(kicker, heading, description, list);
+          if (task.planning && task.planning.estimate) tooltipRow(list, "Estimate", task.planning.estimate);
+          const hint = document.createElement("p");
+          hint.className = "tooltip-hint";
+          hint.textContent = "Click for full details · origin · application · outputs · evidence";
+          tooltip.append(kicker, heading, description, list, hint);
         };
         const positionTooltip = (x, y) => {
           const margin = 14;
@@ -3339,6 +5397,84 @@
           resetRelations();
         };
 
+        const setText = (id, value) => {
+          const node = document.getElementById(id);
+          if (node) node.textContent = value;
+        };
+        const fillSimpleList = (id, values, emptyLabel) => {
+          const root = document.getElementById(id);
+          if (!root) return;
+          root.replaceChildren();
+          const items = values.length ? values : [emptyLabel];
+          items.forEach(value => {
+            const item = document.createElement("li");
+            item.textContent = value;
+            root.appendChild(item);
+          });
+        };
+        const fillTaskDetails = task => {
+          setText("task-detail-kicker", `${task.id} · ${task.phase_label}`);
+          setText("task-detail-title", task.title);
+          setText("task-detail-purpose", task.description);
+          setText("task-detail-application", task.application);
+
+          const chips = document.getElementById("task-detail-chips");
+          if (chips) {
+            chips.replaceChildren();
+            addChip(chips, statusLabel[task.status] || task.status, depClass(task.dependency_mode));
+            addChip(chips, task.surface_label, task.surface === "local_codex" ? "surface-local" : "surface-web");
+            addChip(chips, task.model_label, modelClass(task.model_label));
+            if (task.planning && task.planning.estimate) addChip(chips, task.planning.estimate, "estimate");
+          }
+
+          const origins = document.getElementById("task-detail-origin");
+          if (origins) {
+            origins.replaceChildren();
+            task.origin_documents.forEach(origin => {
+              const item = document.createElement("li");
+              const link = document.createElement("a");
+              link.href = origin.path;
+              link.textContent = origin.label;
+              link.target = "_blank";
+              link.rel = "noopener";
+              const note = document.createElement("small");
+              note.textContent = `${origin.role} · ${origin.path}`;
+              item.append(link, note);
+              origins.appendChild(item);
+            });
+          }
+
+          const planning = document.getElementById("task-detail-planning");
+          if (planning) {
+            planning.replaceChildren();
+            tooltipRow(planning, "Estimate", task.planning.estimate || "Completed · no retrospective estimate");
+            tooltipRow(planning, "Confidence", task.planning.confidence);
+            tooltipRow(planning, "Parallel now", task.planning.parallelizable_now ? "Yes · isolated run" : "No");
+            tooltipRow(planning, "Basis", task.planning.basis);
+            tooltipRow(planning, "Run note", task.planning.parallel_note);
+          }
+
+          const dependencies = document.getElementById("task-detail-dependencies");
+          if (dependencies) {
+            dependencies.replaceChildren();
+            tooltipRow(dependencies, "State", statusLabel[task.status] || task.status);
+            tooltipRow(dependencies, "Mode", dependencyLabel[task.dependency_mode] || task.dependency_mode);
+            tooltipRow(dependencies, "Depends on", task.dependencies.length ? task.dependencies.join(", ") : "None");
+            tooltipRow(dependencies, "Waiting on", task.incomplete_dependencies.length ? task.incomplete_dependencies.join(", ") : "Nothing");
+            tooltipRow(dependencies, "Unlocks", task.dependents.length ? task.dependents.join(", ") : "No visible direct dependent");
+          }
+          fillSimpleList("task-detail-outputs", task.outputs, "No file output recorded.");
+          fillSimpleList("task-detail-evidence", task.completion_evidence, "No completion criterion recorded.");
+        };
+        const openTaskDetails = task => {
+          hideTooltip();
+          highlightRelations(task);
+          fillTaskDetails(task);
+          if (detailDialog.open) detailDialog.close();
+          detailDialog.showModal();
+        };
+        detailDialog.addEventListener("close", resetRelations);
+
         allBricks.forEach(brick => {
           const task = tasksById.get(brick.dataset.taskId);
           if (!task) return;
@@ -3352,8 +5488,7 @@
           brick.addEventListener("blur", hideTooltip);
           brick.addEventListener("click", event => {
             event.preventDefault();
-            const rect = brick.getBoundingClientRect();
-            showTooltip(task, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            openTaskDetails(task);
           });
         });
         document.addEventListener("keydown", event => { if (event.key === "Escape") hideTooltip(); });
@@ -3370,6 +5505,43 @@
         document.getElementById("todo-lane-count").textContent = `${todo.length} tasks`;
         document.querySelectorAll("[data-progress-fraction]").forEach(node => { node.textContent = `${summary.completed_delivery} / ${summary.delivery_tasks}`; });
         document.querySelectorAll("[data-progress-bar]").forEach(node => { node.style.width = `${progress}%`; });
+
+        const nextRun = payload.next_suggested_run;
+        if (nextRun && Array.isArray(nextRun.runs)) {
+          setText("next-run-classification", nextRun.classification_label);
+          setText("next-run-title", `${nextRun.classification_label} · ${nextRun.task_ids.join(" ∥ ")}`);
+          setText("next-run-rationale", nextRun.rationale);
+          setText("next-run-blockers", nextRun.blockers.length ? nextRun.blockers.join(" · ") : "None for the proposed runs.");
+          setText("next-run-scope-warning", nextRun.scope_collision_warning);
+          setText("next-run-parallel-time", nextRun.elapsed_comparison.parallel);
+          setText("next-run-sequential-time", nextRun.elapsed_comparison.sequential);
+          const handoffLink = document.getElementById("next-run-handoff");
+          if (handoffLink && nextRun.handoff) {
+            handoffLink.href = nextRun.handoff.path;
+            handoffLink.textContent = `${nextRun.handoff.label} →`;
+          }
+          const runList = document.getElementById("next-run-runs");
+          if (runList) {
+            runList.replaceChildren();
+            nextRun.runs.forEach(run => {
+              const item = document.createElement("li");
+              const copy = document.createElement("div");
+              const heading = document.createElement("strong");
+              heading.textContent = run.task_ids.map(taskId => {
+                const task = tasksById.get(taskId);
+                return task ? `${taskId} · ${task.title}` : taskId;
+              }).join(" + ");
+              const note = document.createElement("small");
+              note.textContent = `${run.surface} · isolated ownership lane`;
+              copy.append(heading, note);
+              const estimate = document.createElement("span");
+              estimate.className = "next-run-estimate";
+              estimate.textContent = run.estimate || "complete";
+              item.append(copy, estimate);
+              runList.appendChild(item);
+            });
+          }
+        }
 
         const refreshed = new Date(payload.refreshed_at);
         const refreshLabel = Number.isNaN(refreshed.getTime()) ? payload.refreshed_at : refreshed.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });

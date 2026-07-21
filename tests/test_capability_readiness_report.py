@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html"
 UPDATER = ROOT / "scripts/update_capability_readiness_report.py"
+PROJECT_INSTRUCTIONS = ROOT / "AGENTS.md"
 
 
 def _payload() -> dict[str, object]:
@@ -109,3 +110,86 @@ def test_capability_readiness_report_labels_surface_and_model_requirements() -> 
     assert tasks["P-101"]["surface_label"] == "Web · Pro required"
     assert tasks["P-101"]["model_label"] == "Pro"
     assert tasks["W-211"]["surface_label"] == "Web allowed"
+
+
+def test_capability_readiness_report_explains_origin_application_and_planning() -> None:
+    payload = _payload()
+    tasks_value = payload["tasks"]
+    assert isinstance(tasks_value, list)
+    tasks = {task["id"]: task for task in tasks_value if isinstance(task, dict)}
+
+    for task in tasks.values():
+        assert isinstance(task["application"], str) and task["application"]
+        origins = task["origin_documents"]
+        assert isinstance(origins, list) and origins
+        assert origins[0]["path"].endswith("harness_implementation_backlog.yaml")
+        for origin in origins:
+            assert (ROOT / origin["path"]).is_file()
+
+    expected_estimates = {
+        "W-211": "3–5 hours",
+        "W-212": "4–8 hours",
+        "C-405": "1.5–3 engineering days",
+        "C-406": "2–4 engineering days",
+        "C-408": "1–2 engineering days",
+    }
+    for task_id, estimate in expected_estimates.items():
+        planning = tasks[task_id]["planning"]
+        assert planning["estimate"] == estimate
+        assert planning["parallelizable_now"] is True
+        assert planning["confidence"] == "rough"
+
+    assert tasks["C-407"]["planning"]["parallelizable_now"] is False
+    assert tasks["C-407"]["planning"]["blocked_by"] == ["C-406"]
+    assert tasks["C-404"]["planning"]["estimate"] is None
+
+
+def test_capability_readiness_report_has_theme_and_click_details_ui() -> None:
+    html = REPORT.read_text(encoding="utf-8")
+
+    assert 'id="theme-toggle"' in html
+    assert 'id="task-detail-dialog"' in html
+    assert 'id="task-detail-origin"' in html
+    assert 'id="task-detail-application"' in html
+    assert 'id="task-detail-planning"' in html
+    assert 'id="next-run-card"' in html
+    assert 'id="next-run-classification"' in html
+    assert 'id="next-run-runs"' in html
+    assert "showModal()" in html
+    assert "Click for full details" in html
+
+
+def test_capability_readiness_report_generates_next_parallel_run() -> None:
+    payload = _payload()
+    recommendation = payload["next_suggested_run"]
+    assert isinstance(recommendation, dict)
+
+    assert recommendation["classification"] == "parallel_runs"
+    assert recommendation["classification_label"] == "Parallel runs"
+    assert recommendation["bundle_allowed"] is False
+    assert recommendation["task_ids"] == ["C-406", "C-405", "C-408", "W-211", "W-212"]
+    assert [run["task_ids"] for run in recommendation["runs"]] == [
+        ["C-406"],
+        ["C-405"],
+        ["C-408"],
+        ["W-211"],
+        ["W-212"],
+    ]
+    assert "C-407 waits on C-406" in recommendation["blockers"]
+    assert "shared" in recommendation["scope_collision_warning"].lower()
+    assert recommendation["elapsed_comparison"]["parallel"] == (
+        "2–4 engineering days plus serial integration"
+    )
+    assert recommendation["elapsed_comparison"]["sequential"] == (
+        "about 5.4–10.6 engineering days plus integration"
+    )
+    assert (ROOT / recommendation["handoff"]["path"]).is_file()
+
+
+def test_project_instructions_require_report_refresh_for_every_merged_wp() -> None:
+    instructions = PROJECT_INSTRUCTIONS.read_text(encoding="utf-8")
+
+    assert "## Mandatory merged-WP report directive" in instructions
+    assert "Every work package that becomes both completed and merged MUST update" in instructions
+    assert "scripts/update_capability_readiness_report.py" in instructions
+    assert "One coordinator serializes those files" in instructions

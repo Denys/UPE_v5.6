@@ -36,10 +36,12 @@ evidence, not authority for an external or destructive action.
 - `C-401` through `C-403` are adopted on `main` by PR `#6` at
   `317e0f81000c0456245b1ccea3674c5a8edb4b71`. Their accepted local gates remain
   `validation/C-401-GATE.yaml` through `validation/C-403-GATE.yaml`.
-- The capability-readiness report is user-owned but explicitly in scope for
-  evidence-driven refresh through `scripts/update_capability_readiness_report.py`.
-- Do not begin `C-404` or later work without a new bounded task authorization
-  and satisfied dependencies.
+- `C-404` deterministic validation is adopted on `main` by PR `#9` at
+  `dc41f569b8f575e8f872e53fd5ed6adabdf3e12e`; its accepted gate is
+  `validation/C-404-GATE.yaml`.
+- The capability-readiness report and its refresh hook are adopted by PRs `#7`
+  and `#8`. W-211, W-212, C-405, C-406 and C-408 are dependency-satisfied; keep
+  their functional ownership, result/gate evidence and Git changes separate.
 
 ## Repository map
 
@@ -88,6 +90,22 @@ HTML delivery map from canonical evidence and current Git identity. Web-only wor
 cannot mutate the local report; refresh it when that work's accepted handoff is
 materialized locally. `--check` is non-mutating and fails when the embedded state
 is stale.
+
+## Mandatory merged-WP report directive
+
+Every work package that becomes both completed and merged MUST update
+`UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html`. This is a
+project-wide completion requirement, not optional presentation work:
+
+1. On the integration branch, materialize the WP result/gate and mutable current
+   state, then run `uv run python scripts/update_capability_readiness_report.py`
+   and include the refreshed HTML in that WP change.
+2. After merge, run the updater with `--check` on `main`; a merged WP is not
+   fully reconciled while that check is stale or the generated next-run card no
+   longer matches the live dependency frontier.
+3. Parallel workers do not edit shared report, updater, frontier-test or mutable
+   current-state paths. One coordinator serializes those files into each WP's
+   integration branch before its merge, preserving one functional WP per change.
 
 ## Invariants
 

@@ -66,6 +66,117 @@ PHASE_LABELS: Mapping[str, str] = {
     "8-release": "Release evidence",
 }
 
+SOURCE_LABELS: Mapping[str, str] = {
+    str(BACKLOG_PATH).replace("\\", "/"): "Canonical implementation backlog",
+    "Pasted markdown.md": "Authoritative build brief",
+    "docs/architecture/ADR-001-harness-boundary.md": "Accepted harness boundary",
+    "docs/research/app-server-protocol-observations.md": "Observed App Server protocol",
+    "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md": "Work loop adapter specification",
+    "docs/work/GENERATOR_VERIFIER_PROTOCOL.md": "Generator/verifier protocol",
+    "docs/work/MODEL_EFFORT_ROUTING.md": "Model and effort routing",
+    "docs/work/RECOVERY_EVALUATION_OPERATIONS.md": "Recovery, evaluation, and operations",
+    "docs/work/SECURITY_THREAT_BOUNDARY.md": "Security and containment boundary",
+    "docs/work/WEB_VS_LOCAL_ROUTING.md": "Web/local execution routing",
+    "docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md": "Work/Codex handoff protocol",
+    "evals/work_loop_acceptance_cases.yaml": "Work-loop acceptance cases",
+    "handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md": (
+        "Next-five parallel execution handoff"
+    ),
+    "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md": "Accepted local implementation brief",
+    "schemas/capability_execution_record.schema.yaml": "Capability execution record schema",
+    "schemas/goal_contract.schema.yaml": "Goal contract schema",
+    "schemas/handoff.schema.yaml": "Handoff schema",
+    "schemas/verifier_result.schema.yaml": "Verifier result schema",
+    "schemas/work_loop_state.schema.yaml": "Work loop-state schema",
+    "UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md": "UPE v5.6.0 full reference",
+    "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md": "UPE changelog and migration",
+    "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md": "UPE evaluation suite",
+}
+
+PHASE_DESIGN_SOURCES: Mapping[str, tuple[str, ...]] = {
+    "0-research": ("Pasted markdown.md",),
+    "1-pre-adr-evidence": ("Pasted markdown.md",),
+    "2-architecture-gate": ("docs/architecture/ADR-001-harness-boundary.md",),
+    "3-web-specification": ("handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",),
+    "4-local-scaffold": (
+        "docs/architecture/ADR-001-harness-boundary.md",
+        "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+    ),
+    "5-core-harness": (
+        "docs/architecture/ADR-001-harness-boundary.md",
+        "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+    ),
+    "6-app-server-recovery-security": (
+        "docs/research/app-server-protocol-observations.md",
+        "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+        "docs/work/SECURITY_THREAT_BOUNDARY.md",
+    ),
+    "7-tests-evals": (
+        "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+        "evals/work_loop_acceptance_cases.yaml",
+    ),
+    "8-release": (
+        "UPE_v5.6.0_RELEASE/07_CHANGELOG_AND_MIGRATION.md",
+        "UPE_v5.6.0_RELEASE/08_EVAL_SUITE.md",
+    ),
+}
+
+TASK_DESIGN_SOURCES: Mapping[str, tuple[str, ...]] = {
+    "W-201": ("docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",),
+    "W-202": ("docs/work/WEB_VS_LOCAL_ROUTING.md",),
+    "W-203": ("docs/work/GENERATOR_VERIFIER_PROTOCOL.md",),
+    "W-204": ("docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md", "schemas/handoff.schema.yaml"),
+    "W-205": ("schemas/goal_contract.schema.yaml",),
+    "W-206": ("schemas/work_loop_state.schema.yaml",),
+    "W-207": ("schemas/verifier_result.schema.yaml",),
+    "W-208": ("schemas/capability_execution_record.schema.yaml",),
+    "W-209": ("evals/work_loop_acceptance_cases.yaml",),
+    "W-210": ("docs/work/MODEL_EFFORT_ROUTING.md",),
+    "W-211": (
+        "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+        "docs/work/WEB_VS_LOCAL_ROUTING.md",
+    ),
+    "W-212": (
+        "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+        "docs/work/WEB_VS_LOCAL_ROUTING.md",
+        "docs/work/MODEL_EFFORT_ROUTING.md",
+        "UPE_v5.6.0_RELEASE/01_UPE_v5.6.0_FULL_REFERENCE.md",
+    ),
+    "C-405": (
+        "docs/work/SECURITY_THREAT_BOUNDARY.md",
+        "docs/architecture/ADR-001-harness-boundary.md",
+    ),
+    "C-406": (
+        "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+        "docs/architecture/ADR-001-harness-boundary.md",
+    ),
+    "C-407": (
+        "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+        "docs/work/CHATGPT_WORK_LOOP_ADAPTER.md",
+    ),
+    "C-408": (
+        "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
+        "schemas/verifier_result.schema.yaml",
+    ),
+    "C-501": ("docs/research/app-server-protocol-observations.md",),
+}
+
+READY_EFFORT_ESTIMATES: Mapping[str, str] = {
+    "W-211": "3–5 hours",
+    "W-212": "4–8 hours",
+    "C-405": "1.5–3 engineering days",
+    "C-406": "2–4 engineering days",
+    "C-408": "1–2 engineering days",
+}
+
+READY_EFFORT_HOURS: Mapping[str, tuple[float, float]] = {
+    "W-211": (3.0, 5.0),
+    "W-212": (4.0, 8.0),
+    "C-405": (12.0, 24.0),
+    "C-406": (16.0, 32.0),
+    "C-408": (8.0, 16.0),
+}
+
 
 def _load_yaml(path: Path) -> Mapping[str, Any]:
     value = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -188,6 +299,277 @@ def _git_value(root: Path, *arguments: str) -> str:
     return completed.stdout.strip() if completed.returncode == 0 else "unavailable"
 
 
+def _origin_documents(task: Mapping[str, Any]) -> list[dict[str, str]]:
+    task_id = str(task["id"])
+    phase = str(task.get("phase", "unknown"))
+    canonical_path = str(BACKLOG_PATH).replace("\\", "/")
+    paths = [
+        canonical_path,
+        *TASK_DESIGN_SOURCES.get(task_id, PHASE_DESIGN_SOURCES.get(phase, ())),
+    ]
+    unique_paths = list(dict.fromkeys(paths))
+    return [
+        {
+            "label": SOURCE_LABELS.get(path, Path(path).name),
+            "path": path,
+            "role": "Canonical task definition" if index == 0 else "Accepted design basis",
+        }
+        for index, path in enumerate(unique_paths)
+    ]
+
+
+def _rough_estimate(task: Mapping[str, Any]) -> str:
+    task_id = str(task["id"])
+    if task_id in READY_EFFORT_ESTIMATES:
+        return READY_EFFORT_ESTIMATES[task_id]
+
+    phase = str(task.get("phase", "unknown"))
+    surface = str(task.get("surface", "none"))
+    model_route = str(task.get("model_route", "not_applicable"))
+    output_count = len(task.get("outputs", []))
+    if surface.startswith("chatgpt_") or phase in {"0-research", "3-web-specification"}:
+        return "4–8 hours"
+    if model_route == "sol_max_or_highest_exposed":
+        return "3–5 engineering days"
+    if phase == "5-core-harness":
+        return "2–4 engineering days" if output_count >= 3 else "1–2 engineering days"
+    if phase == "6-app-server-recovery-security":
+        return "2–4 engineering days"
+    if phase == "7-tests-evals":
+        return "1–3 engineering days"
+    if phase == "8-release":
+        return "1–2 engineering days"
+    return "0.5–1 engineering day"
+
+
+def _rough_hours(task: Mapping[str, Any]) -> tuple[float, float]:
+    task_id = str(task["id"])
+    if task_id in READY_EFFORT_HOURS:
+        return READY_EFFORT_HOURS[task_id]
+
+    phase = str(task.get("phase", "unknown"))
+    surface = str(task.get("surface", "none"))
+    model_route = str(task.get("model_route", "not_applicable"))
+    output_count = len(task.get("outputs", []))
+    if surface.startswith("chatgpt_") or phase in {"0-research", "3-web-specification"}:
+        return (4.0, 8.0)
+    if model_route == "sol_max_or_highest_exposed":
+        return (24.0, 40.0)
+    if phase == "5-core-harness":
+        return (16.0, 32.0) if output_count >= 3 else (8.0, 16.0)
+    if phase == "6-app-server-recovery-security":
+        return (16.0, 32.0)
+    if phase == "7-tests-evals":
+        return (8.0, 24.0)
+    if phase == "8-release":
+        return (8.0, 16.0)
+    return (4.0, 8.0)
+
+
+def _planning(
+    task: Mapping[str, Any],
+    *,
+    status: str,
+    dependency_mode: str,
+    incomplete_dependencies: list[str],
+) -> dict[str, object]:
+    if status == "complete":
+        return {
+            "estimate": None,
+            "estimate_hours": None,
+            "confidence": "not_applicable",
+            "basis": "Completed work is not assigned a retrospective estimate.",
+            "parallelizable_now": False,
+            "parallel_note": "Already complete.",
+            "blocked_by": [],
+        }
+
+    parallelizable_now = dependency_mode == "independent_now" and not incomplete_dependencies
+    if parallelizable_now:
+        parallel_note = (
+            "Can start from the current accepted baseline in an isolated branch/worktree; "
+            "shared report and current-state bookkeeping must be integrated serially."
+        )
+    else:
+        parallel_note = (
+            f"Starts after {', '.join(incomplete_dependencies)}."
+            if incomplete_dependencies
+            else "Not selected for the current parallel frontier."
+        )
+    minimum_hours, maximum_hours = _rough_hours(task)
+    return {
+        "estimate": _rough_estimate(task),
+        "estimate_hours": {"minimum": minimum_hours, "maximum": maximum_hours},
+        "confidence": "rough",
+        "basis": (
+            "Planning range derived from surface, model route, output count, and escalation "
+            "risk; excludes review, CI queue, and merge latency."
+        ),
+        "parallelizable_now": parallelizable_now,
+        "parallel_note": parallel_note,
+        "blocked_by": incomplete_dependencies,
+    }
+
+
+def _application(task: Mapping[str, Any], by_id: Mapping[str, Mapping[str, Any]]) -> str:
+    scope = str(task.get("description", "No scope description recorded.")).rstrip(".")
+    outputs = [str(item) for item in task.get("outputs", [])]
+    dependents = [str(item) for item in task.get("dependents", [])]
+    parts = [f"Operational effect: {scope}."]
+    if outputs:
+        output_summary = " · ".join(outputs[:3])
+        suffix = f" · +{len(outputs) - 3} more" if len(outputs) > 3 else ""
+        parts.append(f"Produces {output_summary}{suffix}.")
+    if dependents:
+        enabled = []
+        for task_id in dependents[:5]:
+            dependent = by_id.get(task_id)
+            title = str(dependent.get("title")) if dependent is not None else task_id
+            enabled.append(f"{task_id} ({title})")
+        suffix = f" and {len(dependents) - 5} more" if len(dependents) > 5 else ""
+        parts.append(f"Directly enables {', '.join(enabled)}{suffix}.")
+    else:
+        parts.append("No direct downstream package is recorded in the visible v0 route.")
+    return " ".join(parts)
+
+
+def _transitive_dependent_count(task_id: str, by_id: Mapping[str, Mapping[str, Any]]) -> int:
+    seen: set[str] = set()
+    pending = [str(item) for item in by_id[task_id].get("dependents", [])]
+    while pending:
+        dependent_id = pending.pop()
+        if dependent_id in seen or dependent_id not in by_id:
+            continue
+        seen.add(dependent_id)
+        pending.extend(str(item) for item in by_id[dependent_id].get("dependents", []))
+    return len(seen)
+
+
+def _format_engineering_days(minimum_hours: float, maximum_hours: float) -> str:
+    minimum_days = minimum_hours / 8.0
+    maximum_days = maximum_hours / 8.0
+    if minimum_days.is_integer() and maximum_days.is_integer():
+        return f"{int(minimum_days)}–{int(maximum_days)} engineering days"
+    return f"{minimum_days:.1f}–{maximum_days:.1f} engineering days"
+
+
+def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
+    by_id = {str(task["id"]): task for task in rendered}
+    ready = [
+        task
+        for task in rendered
+        if task["status"] == "ready" and bool(task["planning"]["parallelizable_now"])
+    ]
+    ready.sort(
+        key=lambda task: (
+            -_transitive_dependent_count(str(task["id"]), by_id),
+            -len(task["dependents"]),
+            -int(bool(task["critical_path"])),
+            int(task["order"]),
+        )
+    )
+
+    output_owners: dict[str, list[str]] = {}
+    for task in ready:
+        for output in task["outputs"]:
+            output_owners.setdefault(str(output), []).append(str(task["id"]))
+    collisions = {output: owners for output, owners in output_owners.items() if len(owners) > 1}
+
+    if len(ready) > 1 and not collisions:
+        classification = "parallel_runs"
+        classification_label = "Parallel runs"
+    elif ready:
+        classification = "sequential_runs"
+        classification_label = "Sequential runs"
+    else:
+        classification = "sequential_runs"
+        classification_label = "Sequential runs"
+
+    task_ids = [str(task["id"]) for task in ready]
+    runs = [
+        {
+            "label": f"Run {index}",
+            "task_ids": [str(task["id"])],
+            "surface": str(task["surface_label"]),
+            "estimate": task["planning"]["estimate"],
+            "application": str(task["application"]),
+        }
+        for index, task in enumerate(ready, start=1)
+    ]
+
+    blockers = [
+        f"{task['id']} waits on {', '.join(task['incomplete_dependencies'])}"
+        for task in rendered
+        if task["status"] == "blocked"
+        and any(dependency in task_ids for dependency in task["incomplete_dependencies"])
+    ][:6]
+
+    effort_ranges = [
+        task["planning"]["estimate_hours"]
+        for task in ready
+        if isinstance(task["planning"]["estimate_hours"], Mapping)
+    ]
+    if effort_ranges:
+        parallel_minimum = max(float(item["minimum"]) for item in effort_ranges)
+        parallel_maximum = max(float(item["maximum"]) for item in effort_ranges)
+        sequential_minimum = sum(float(item["minimum"]) for item in effort_ranges)
+        sequential_maximum = sum(float(item["maximum"]) for item in effort_ranges)
+        parallel_elapsed = (
+            f"{_format_engineering_days(parallel_minimum, parallel_maximum)} "
+            "plus serial integration"
+        )
+        sequential_elapsed = (
+            f"about {_format_engineering_days(sequential_minimum, sequential_maximum)} "
+            "plus integration"
+        )
+    else:
+        parallel_elapsed = "No dependency-satisfied package is currently estimable."
+        sequential_elapsed = parallel_elapsed
+
+    if collisions:
+        collision_text = "; ".join(
+            f"{output}: {', '.join(owners)}" for output, owners in collisions.items()
+        )
+        scope_warning = f"Declared output collision requires serialization: {collision_text}."
+    else:
+        scope_warning = (
+            "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state "
+            "records, result-frontier assertions, and the readiness report belong to one serial "
+            "integration lane. Do not bundle independent work packages into one change."
+        )
+
+    if ready:
+        lead = str(ready[0]["id"])
+        rationale = (
+            f"{len(ready)} packages have satisfied dependencies and disjoint declared outputs. "
+            f"Start each as an isolated run; prioritize {lead} because it has the widest "
+            "transitive downstream unlock in the live graph."
+        )
+    else:
+        rationale = "No package is dependency-satisfied; complete the listed blockers first."
+
+    return {
+        "title": "Next suggested implementation run",
+        "classification": classification,
+        "classification_label": classification_label,
+        "bundle_allowed": False,
+        "task_ids": task_ids,
+        "runs": runs,
+        "rationale": rationale,
+        "blockers": blockers,
+        "scope_collisions": collisions,
+        "scope_collision_warning": scope_warning,
+        "elapsed_comparison": {
+            "parallel": parallel_elapsed,
+            "sequential": sequential_elapsed,
+        },
+        "handoff": {
+            "label": "Open the detailed five-run execution handoff",
+            "path": "handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md",
+        },
+    }
+
+
 def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, Any]:
     backlog = _load_yaml(root / BACKLOG_PATH)
     state = _load_yaml(root / STATE_PATH)
@@ -245,8 +627,16 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
                 "dependents": [],
                 "critical_path": bool(task.get("critical_path", False)),
                 "description": str(task.get("scope", "No scope description recorded.")),
+                "application": "",
+                "origin_documents": _origin_documents(task),
                 "outputs": [str(item) for item in task.get("outputs", [])],
                 "completion_evidence": [str(item) for item in task.get("completion_evidence", [])],
+                "planning": _planning(
+                    task,
+                    status=status,
+                    dependency_mode=dependency_mode,
+                    incomplete_dependencies=incomplete_dependencies,
+                ),
             }
         )
 
@@ -255,6 +645,8 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
         for dependency in task["dependencies"]:
             if dependency in by_id:
                 by_id[dependency]["dependents"].append(task["id"])
+    for task in rendered:
+        task["application"] = _application(task, by_id)
 
     delivery_tasks = [task for task in rendered if task["critical_path"]]
     completed_delivery = sum(task["status"] == "complete" for task in delivery_tasks)
@@ -295,6 +687,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
             "surface_counts_remaining": surface_counts,
         },
         "tasks": rendered,
+        "next_suggested_run": _next_suggested_run(rendered),
         "sources": {
             "backlog": str(BACKLOG_PATH).replace("\\", "/"),
             "state": str(STATE_PATH).replace("\\", "/"),
