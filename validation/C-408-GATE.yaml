@@ -1,0 +1,121 @@
+schema_version: '1.0'
+gate_id: C-408-READ-ONLY-MODEL-EVALUATOR
+generated_at: '2026-07-21T20:14:46.8710467+02:00'
+review_fixed_at: '2026-07-21T20:39:08.5723969+02:00'
+coordinator_review_fixed_at: '2026-07-21T21:55:51.8552986+02:00'
+mandatory_criteria_fixed_at: '2026-07-21T21:57:38.6727961+02:00'
+status: PASS
+status_reason: >-
+  C-408 invokes an optional model evaluator only after deterministic PASS and only
+  for an explicit frozen semantic request containing mandatory criteria exclusively.
+  Deterministic FAIL and evidence gaps are preserved without invocation, immutable
+  read-only inputs expose no effect handle, and accepted responses cannot rewrite
+  criteria or expand evidence/correction scope.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c408_worker'
+  branch: codex/c408-readonly-evaluator
+  base_commit: c90b619e7529656d98be9268e81f839d79af460e
+  head_commit_at_gate_write: 83eaada4b2470cca8b680f0c2a9f752e5106c794
+  committed_at_gate_write: true
+  review_fix_source_commit: 83eaada4b2470cca8b680f0c2a9f752e5106c794
+
+criteria:
+  - id: C-408-DETERMINISTIC-PRIMARY
+    verdict: PASS
+    evidence:
+      - Deterministic FAIL returns FAIL unchanged and the evaluator call count remains zero.
+      - Deterministic INSUFFICIENT_EVIDENCE returns that verdict unchanged and the evaluator call count remains zero.
+      - Deterministic PASS with no remaining semantic request returns PASS with no evaluator call.
+      - Only deterministic PASS plus an explicit semantic request can invoke the evaluator.
+  - id: C-408-READ-ONLY
+    verdict: PASS
+    evidence:
+      - Request and result records are frozen and contain only values and LocationReference identities.
+      - The evaluator port exposes only evaluate(request) and receives no filesystem, subprocess, network, persistence, approval, or write handle.
+      - Evaluator identity requires independent_from_generator true, READ_ONLY access, and MODEL_EVALUATOR kind.
+  - id: C-408-CRITERIA-PRESERVATION
+    verdict: PASS
+    evidence:
+      - Criterion IDs, order, statements, and mandatory flags must exactly match the frozen request.
+      - Only mandatory unresolved semantic criteria can be assigned to an evaluation request.
+      - Rewritten, removed, reordered, or added criteria are rejected as protocol errors.
+      - Evidence references cannot exceed supplied references and correction targets are limited to candidate artifacts.
+      - Any PASS or FAIL criterion requires actual-artifact inspection, including within an aggregate INSUFFICIENT_EVIDENCE result.
+      - An all-INSUFFICIENT_EVIDENCE result may declare actual_artifact_inspection false.
+  - id: C-408-VERDICTS
+    verdict: PASS
+    evidence:
+      - PASS, FAIL, and INSUFFICIENT_EVIDENCE are preserved end to end.
+      - NOT_EVALUATED is rejected for criterion and aggregate evaluator results.
+      - FAIL precedence over INSUFFICIENT_EVIDENCE is covered by a two-criterion test.
+      - W-207 evidence, correction, missing-evidence, and blocking invariants are enforced.
+  - id: C-408-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Functional code is confined to src/harness/evaluation.py and tests/unit/test_evaluation.py.
+      - No real provider, prompt routing, persistence, retries, CLI behavior, or external effects were added.
+      - C-401 state, C-403 orchestrator, and C-404 validation contracts remain hash-identical.
+  - id: C-408-REGRESSION
+    verdict: PASS
+    evidence:
+      - Seventeen focused C-408 tests and 269 full non-report repository tests pass on the rebased C-405/C-406 baseline.
+      - Coordinator integration passes the complete 277-test repository suite after the serial shared-report refresh.
+      - Lock, Ruff lint/format, strict mypy, and reference/specification gates pass.
+      - The pre-evidence report check passed; the post-evidence check identified expected coordinator-owned staleness without mutating the shared report.
+  - id: C-408-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - Only the five assigned C-408 functional/evidence paths are changed.
+      - Shared report, updater, mutable current state, backlog, primary checkout, and coordination checkpoint remain untouched.
+      - No push, pull request, merge, release, deployment, destructive cleanup, or worktree mutation occurred.
+
+commands:
+  - uv --version
+  - uv lock --check
+  - uv run python -c "import harness; print(harness.__version__)"
+  - uv run pytest -q tests/unit/test_validation.py tests/unit/test_lifecycle.py
+  - uv run pytest -q tests/unit/test_evaluation.py
+  - uv run pytest -q
+  - uv run pytest -q --ignore=tests/test_capability_readiness_report.py
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/validate_work_specifications.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+
+observed_results:
+  uv: 0.11.25
+  python: 3.14.3
+  harness: 0.1.0
+  resolved_packages: 33
+  clean_baseline_tests: 45_passed
+  focused_C408_tests: 17_passed
+  full_non_report_tests: 269_passed
+  ruff_format_files: 35
+  mypy_source_files: 28
+  location_references: 41
+  schema_references: 237
+  work_specification_gate: PASS
+  capability_report_freshness: STALE_COORDINATOR_OWNED_AFTER_RESULT_GATE
+  coordinator_full_tests: 277_passed
+  coordinator_ruff_format_files: 35
+  coordinator_mypy_source_files: 28
+  coordinator_report_visual_gate: PASS_DESKTOP_AND_MOBILE_ZERO_BROWSER_ERRORS
+
+evidence_hashes_sha256:
+  agent/state/C-408-pre-edit-context.yaml: 09f4ff34ceb46dfebea5ddef834a8b7601705620b926a3c2fc48fd4fce11c424
+  src/harness/evaluation.py: e9c19e408f0148f1431c0ed2b94b64e710f6b6f974e7ffdaaff8a0e5ef1773a8
+  tests/unit/test_evaluation.py: ea2a5dc1d29898ecf58b68f66075c62469f2231d5fb216392283c4ceec6496ad
+
+known_limits:
+  - The coordinator must refresh the shared capability-readiness report after integrating this result/gate.
+  - A future real evaluator must be placed in a host-enforced read-only context; this package intentionally provides no real implementation.
+  - Persistence and C-403 attachment of a W-207 result reference are outside C-408 ownership.
+  - Python 3.12 and 3.13 remain unverified.
+
+next_action: >-
+  Coordinator should inspect the bounded local commit and independently refresh
+  and serialize shared current-state and readiness-report bookkeeping during integration.

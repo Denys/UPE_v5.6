@@ -93,8 +93,8 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-407"]["status"] == "ready"
     assert tasks["C-407"]["dependency_mode"] == "independent_now"
     assert tasks["C-407"]["incomplete_dependencies"] == []
-    assert tasks["C-408"]["status"] == "ready"
-    assert tasks["C-408"]["dependency_mode"] == "independent_now"
+    assert tasks["C-408"]["status"] == "complete"
+    assert tasks["C-408"]["dependency_mode"] == "satisfied"
     assert tasks["C-408"]["incomplete_dependencies"] == []
 
 
@@ -130,7 +130,6 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
         "W-211": "3–5 hours",
         "W-212": "4–8 hours",
         "C-407": "2–4 engineering days",
-        "C-408": "1–2 engineering days",
     }
     for task_id, estimate in expected_estimates.items():
         planning = tasks[task_id]["planning"]
@@ -143,6 +142,7 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     assert tasks["C-404"]["planning"]["estimate"] is None
     assert tasks["C-405"]["planning"]["estimate"] is None
     assert tasks["C-406"]["planning"]["estimate"] is None
+    assert tasks["C-408"]["planning"]["estimate"] is None
 
 
 def test_capability_readiness_report_has_theme_and_click_details_ui() -> None:
@@ -168,10 +168,9 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
     assert recommendation["classification"] == "parallel_runs"
     assert recommendation["classification_label"] == "Parallel runs"
     assert recommendation["bundle_allowed"] is False
-    assert recommendation["task_ids"] == ["C-407", "C-408", "W-211", "W-212"]
+    assert recommendation["task_ids"] == ["C-407", "W-211", "W-212"]
     assert [run["task_ids"] for run in recommendation["runs"]] == [
         ["C-407"],
-        ["C-408"],
         ["W-211"],
         ["W-212"],
     ]
@@ -181,7 +180,7 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
         "2–4 engineering days plus serial integration"
     )
     assert recommendation["elapsed_comparison"]["sequential"] == (
-        "about 3.9–7.6 engineering days plus integration"
+        "about 2.9–5.6 engineering days plus integration"
     )
     assert (ROOT / recommendation["handoff"]["path"]).is_file()
 
