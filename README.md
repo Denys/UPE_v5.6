@@ -124,6 +124,22 @@ The dated routing package, Run 01/02 prompts, archives, and C-101…C-105 handof
 are preserved point-in-time evidence. Their embedded status and next-action
 fields do not replace `docs/research/research-state.yaml`.
 
+### Capability-readiness end-of-run hook
+
+The single-file capability report is refreshed from the canonical backlog,
+mutable current state, accepted result/gate records, and local Git identity:
+
+```powershell
+uv run python scripts/update_capability_readiness_report.py
+uv run python scripts/update_capability_readiness_report.py --check
+```
+
+The first command updates
+`UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html`; the second is a
+non-mutating freshness gate. Local Codex runs execute the update after task-state
+bookkeeping and before final verification. Web-only work is reflected when its
+accepted handoff is materialized in the repository.
+
 ## W-201…W-210 canonical mapping
 
 | ID | Canonical task | Required output | Dependency |
