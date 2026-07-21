@@ -1,0 +1,97 @@
+schema_version: '1.0'
+gate_id: C-404-DETERMINISTIC-VALIDATION
+generated_at: '2026-07-21T12:15:31.3615938+02:00'
+status: PASS
+status_reason: >-
+  C-404 executes only frozen structured validator commands in the exact selected
+  workspace, stores bounded outputs and structured results by reference, normalizes
+  deterministic failures and evidence gaps, aggregates with W-203 precedence, and
+  exposes completion evidence only after every deterministic command passes.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_c404'
+  branch: codex/c404-deterministic-validation
+  base_commit: 63f142901a5f61164e686f8bb6b732e724274d18
+  committed: false
+
+criteria:
+  - id: C-404-COMMAND-SCOPE
+    verdict: PASS
+    evidence:
+      - Structured argv is matched exactly and in order against Task.validation_commands.
+      - Run/Task VALIDATING state, identity, criterion subset, and selected workspace are checked before execution.
+      - Subprocess execution uses shell=false, an explicit environment, the exact cwd, and the configured timeout.
+  - id: C-404-REFERENCED-OUTPUTS
+    verdict: PASS
+    evidence:
+      - stdout and stderr are stored as bounded binary artifacts under the configured artifacts root.
+      - Structured JSON evidence stores only metadata and relative LocationReference records, not captured output.
+      - Existing evidence files are not silently overwritten.
+  - id: C-404-DETERMINISTIC-COMPLETION
+    verdict: PASS
+    evidence:
+      - Aggregate precedence is FAIL, then INSUFFICIENT_EVIDENCE, then all-PASS.
+      - Only aggregate PASS can create C-403 FinalizationEvidence.
+      - The bridge supplies no model-evaluator result and uses deterministic result-record references for completion.
+  - id: C-404-NORMALIZATION
+    verdict: PASS
+    evidence:
+      - Nonzero exit becomes FAIL/NONZERO_EXIT.
+      - Timeout, OSError execution failure, malformed process result, and output overflow become INSUFFICIENT_EVIDENCE with explicit normalized kinds.
+      - Partial timeout output is bounded and retained by reference.
+  - id: C-404-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Functional code is confined to src/harness/validation.py and tests/unit/test_validation.py.
+      - The capability-report HTML and its frontier assertion changed only as derived end-of-run bookkeeping.
+      - C-401 state/configuration and C-403 lifecycle/orchestrator hashes remain unchanged.
+      - No worktree manager, persistence, evaluator, retry, CLI, provider, network, or approval implementation is present.
+  - id: C-404-REGRESSION
+    verdict: PASS
+    evidence:
+      - Fourteen focused C-404 tests and 193 integrated C-401 through C-404 unit tests pass.
+      - The complete repository suite passes 216 tests.
+      - Lock, Ruff lint/format, strict mypy, reference, report freshness, and diff gates pass.
+      - The refreshed report renders at desktop and Pixel 5 viewports with zero browser console or page errors.
+  - id: C-404-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - The primary checkout protected artifacts, custom-harnesses tree, named stash, and separate worktree remain untouched.
+      - No release, deployment, visibility change, destructive cleanup, or unrelated external action occurred.
+
+commands:
+  - uv sync --group dev --locked
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_validation.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_config.py tests/unit/test_fake_adapter.py tests/unit/test_lifecycle.py tests/unit/test_validation.py
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+  - git diff --check
+
+observed_results:
+  python: 3.14.3
+  resolved_packages: 33
+  focused_C404_tests: 14_passed
+  integrated_C401_C404_tests: 193_passed
+  full_tests: 216_passed
+  mypy_source_files: 20
+  ruff_format_files: 27
+  location_references: 41
+  schema_references: 237
+  locked_contract_and_hook_source_hashes: 9_of_9_match
+  capability_report_visual_gate: desktop_and_pixel_5_pass_zero_browser_errors
+
+known_limits:
+  - C-405 must provide broader workspace/worktree containment and safe cleanup.
+  - C-406 must provide authoritative persistence, transactional outbox behavior, and replayable events.
+  - C-408 remains the optional read-only evaluator and cannot override deterministic failure.
+  - Python 3.12 and 3.13 remain unverified.
+
+next_action: >-
+  Publish and merge the verified bounded C-404 result. Keep C-405 and C-406 as
+  separate next work packages; do not mix either into this pull request.

@@ -1037,33 +1037,33 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-20T22:36:51+02:00",
+  "refreshed_at": "2026-07-21T12:18:46+02:00",
   "repository": {
-    "head": "317e0f81000c0456245b1ccea3674c5a8edb4b71",
-    "branch": "main"
+    "head": "63f142901a5f61164e686f8bb6b732e724274d18",
+    "branch": "codex/c404-deterministic-validation"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 33,
-    "progress_percent": 58,
+    "completed_delivery": 34,
+    "progress_percent": 60,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 33,
+      "complete": 34,
       "ready": 5,
-      "blocked": 22,
+      "blocked": 21,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
-      "High": 21,
+      "High": 20,
       "Max": 5,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 23
+      "Local required": 22
     }
   },
   "tasks": [
@@ -2214,12 +2214,12 @@
       "title": "Implement deterministic validation and evidence records",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-305"
@@ -2365,20 +2365,18 @@
       "title": "Implement optional read-only model evaluator interface",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "blocked",
+      "status": "ready",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "sequential",
+      "dependency_mode": "independent_now",
       "dependencies": [
         "C-404",
         "W-203",
         "W-207"
       ],
-      "incomplete_dependencies": [
-        "C-404"
-      ],
+      "incomplete_dependencies": [],
       "dependents": [],
       "critical_path": true,
       "description": "Optional second layer only for irreducible judgment.",
@@ -2413,7 +2411,6 @@
         "C-407"
       ],
       "incomplete_dependencies": [
-        "C-404",
         "C-405",
         "C-406",
         "C-407"
@@ -2455,7 +2452,6 @@
         "C-409"
       ],
       "incomplete_dependencies": [
-        "C-404",
         "C-405",
         "C-406",
         "C-407",
