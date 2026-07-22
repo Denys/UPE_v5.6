@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-505-RESULT
-generated_at: '2026-07-22T12:28:27+02:00'
-status: TESTED_LOCALLY_PR_18_REVIEW_PENDING
+generated_at: '2026-07-22T22:29:36+02:00'
+status: TESTED_LOCALLY_PR_18_REVIEW_REPAIRED
 
 task:
   id: C-505
@@ -75,18 +75,20 @@ local_review_repairs:
   - bounded argument counts/lengths, rule vectors and environment values
   - redacted mapping-key PII plus JWT and PEM payloads
   - tightened hostname labels, IP validation, resolved-destination normalization and unsafe URL separators
+  - repaired PR review finding so prefixed credential assignments such as MY_PASSWORD and AWS_SECRET_ACCESS_KEY are redacted from flat text
+  - repaired PR review finding so malformed request workspaces return a structured FORBIDDEN decision instead of raising
 
 verification:
   result: PASS
-  targeted_C505: 68_passed
+  targeted_C505: 72_passed
   dependency_regression: 188_passed
-  complete_unit_tests: 380_passed
-  complete_repository_tests: 408_passed
+  complete_unit_tests: 409_passed_after_C409_integration_and_review_repairs
+  complete_repository_tests: 437_passed_after_C409_integration_and_review_repairs
   uv_lock: PASS_33_PACKAGES
   package_import: PASS_VERSION_0_1_0
   ruff_lint: PASS
-  ruff_format: PASS_45_FILES
-  strict_mypy: PASS_38_SOURCE_FILES
+  ruff_format: PASS_47_FILES
+  strict_mypy: PASS_40_SOURCE_FILES
   work_specification_validator: PASS_16_CASES
   reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
   schema_validator: PASS_6_INSTANCES
@@ -100,10 +102,10 @@ verification:
 
 evidence_hashes_sha256:
   src/harness/approvals.py: 21dc9c5d4e38639f3e6f9e4b2dc61217f3ef1c14383f112c18d9cf8bb234b9ab
-  src/harness/permissions.py: 5a0ce6a06369a4401e27347a10645e260940ebbaf66f006bcf2a1f02d841181b
+  src/harness/permissions.py: 2e30f6fd2e574c54877a42c1c0cb66dba21d9384aa65c826784857af4bc30083
   tests/unit/test_approvals.py: 8d80d97b058c56db0d8c39c55e1523d7db8c99c1abf468ab2cc41a2512b30bfc
-  tests/unit/test_permissions.py: f9296e4f767c014944d6a9bff468913b2581c2fd2de4764d33a1d8b31848a5a5
-  docs/research/research-state.yaml: b54fd03d712ba3ead8e11225d2b042efbc3b79328dc95e8ba0c2adb5d550cd51
+  tests/unit/test_permissions.py: 70e29478a3d9252d9ae0adbfc9246ad0e0e0c14b54343b1fcf229d718390eed9
+  docs/research/research-state.yaml: a483968a038dd991c79ba3896d7353faa1ce7261144ba7050e1a69ead64c6ad3
   scripts/update_capability_readiness_report.py: e1cd78f9101ee743c57086c7f514ebfbe9b06054ec01566db9f2d429f4cd119e
   tests/test_capability_readiness_report.py: bb5f96f1e2536e52563e3bb581f189d45ffe895ca12b4f19339e3a29cedb0be1
   UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dcb1a537d6cd81f703931ce94d1c632fda755fbc2353fad6fbf3117c5123af1c
@@ -113,7 +115,8 @@ preserved_state:
   real_credentials_read: false
   real_codex_shell_network_or_external_action_from_tests: false
   authorized_commit_push_pr: performed
-  review_accept_merge: pending
+  review_findings: repaired_pending_rereview
+  accept_merge: pending
   release_deploy: not_performed
 
 known_limits:
@@ -123,5 +126,5 @@ known_limits:
   - Python 3.12 and 3.13 remain unverified; the observed Windows runtime is Python 3.14.3.
 
 next_action: >-
-  Complete PR #18 review, repair any substantive finding, and merge only from a
-  passing state under the explicit C-505 delivery authorization.
+  Request PR #18 re-review of the repaired head, confirm no unresolved finding,
+  and merge only from a passing state under the explicit C-505 authorization.

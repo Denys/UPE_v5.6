@@ -1,11 +1,12 @@
 schema_version: '1.0'
 gate_id: C-505-HOST-APPROVAL-PERMISSION-SECURITY
-generated_at: '2026-07-22T12:28:27+02:00'
+generated_at: '2026-07-22T22:29:36+02:00'
 status: PASS
 status_reason: >-
   Immutable host-owned policy fails closed for consequential approvals,
-  commands, Windows paths, environment, network and redaction, with 408 passing
-  Windows repository tests and no real credential, process, network or external effect.
+  commands, Windows paths, environment, network and redaction, with 437 passing
+  post-integration Windows repository tests and no real credential, process,
+  network or external effect.
 
 repository:
   identity: Denys/UPE_v5.6
@@ -52,14 +53,14 @@ criteria:
   - id: C-505-REGRESSION
     verdict: PASS
     evidence:
-      - Sixty-eight focused C-505, 188 dependency-regression, 380 unit and 408 complete repository tests pass on Windows.
+      - Seventy-two focused C-505 and 437 complete post-C-409 integration repository tests pass on Windows; the accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
       - Lock, import, Ruff lint/format, strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates pass.
-      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect.
+      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and both substantive PR review findings.
   - id: C-505-SCOPE-AND-PRESERVATION
     verdict: PASS
     evidence:
       - The dirty primary checkout and every other linked worktree remain untouched.
-      - The explicitly authorized commit, push and PR creation occurred; review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
+      - The explicitly authorized commit, push, PR creation and review occurred; both findings are repaired, re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
   - id: C-505-REPORT-INTEGRATION
     verdict: PASS
     evidence:
@@ -90,5 +91,5 @@ known_limits:
   - Python 3.12 and 3.13 remain unverified.
 
 next_action: >-
-  Complete PR #18 review, repair any substantive finding, and merge only from a
-  passing state under the explicit C-505 delivery authorization.
+  Request PR #18 re-review of the repaired head, confirm no unresolved finding,
+  and merge only from a passing state under the explicit C-505 authorization.

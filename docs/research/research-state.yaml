@@ -130,7 +130,7 @@ upe_state:
       result: agent/state/C-409-result.yaml
       gate: validation/C-409-GATE.yaml
     C_505_local_slice:
-      state: LOCAL_ACCEPTANCE_PASS_PR_18_REVIEW_PENDING
+      state: LOCAL_ACCEPTANCE_PASS_PR_18_REVIEW_REPAIRED
       branch: codex/c505-cloud-coordinator
       original_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
       integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
@@ -141,7 +141,7 @@ upe_state:
 
   active_development:
     C-505:
-      state: PR_18_REVIEW_PENDING
+      state: PR_18_REREVIEW_PENDING
       branch: codex/c505-cloud-coordinator
       original_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
       integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
@@ -183,8 +183,8 @@ upe_state:
     C-408: MERGED_PR_14_PASS
     C-409: MERGED_PR_17_PASS
     C-501: MERGED_PR_16_PASS
-    C-505: PR_18_PASS_PENDING_REVIEW
-    harness_implementation: C505_SECURITY_PASS_PR_18_REVIEW_PENDING
+    C-505: PR_18_PASS_REVIEW_FINDINGS_REPAIRED
+    harness_implementation: C505_SECURITY_PASS_PR_18_REREVIEW_PENDING
     local_implementation_authorization: GRANTED_COMMIT_PUSH_PR_REVIEW_ACCEPT_MERGE_ONLY
 
   authoritative_inputs:
@@ -290,6 +290,7 @@ upe_state:
     - Reproduced and repaired authorization-class drift, WindowsPath rejection, redaction recursion/key/token gaps, versioned-interpreter bypass, unbounded input, malformed host/IP and unsafe-URL defects locally.
     - Passed 68 focused C-505 tests, 188 dependency regressions, 380 unit tests and the complete 408-test pre-C-409 repository suite with lock, import, Ruff, strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates.
     - Committed C-505 at 5d976c3fb79ac578de85cf926be3d4dddcf2514b, pushed the branch, opened PR #18 and integrated merged C-409 for review.
+    - Repaired both substantive PR #18 review findings with prefixed-credential redaction and malformed-workspace fail-closed regressions; 72 focused and 437 complete repository tests pass.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
@@ -364,6 +365,6 @@ upe_state:
     complete repository gate and report freshness before merge.
 
   next_action: >-
-    Complete PR #18 review, repair any substantive finding, accept and merge only
-    from a passing state, then verify report freshness on merged main. Keep C-506
-    separate and do not claim live compatibility from C-501 unit evidence.
+    Request PR #18 re-review of the repaired head, accept and merge only after no
+    unresolved finding remains, then verify report freshness on merged main.
+    Keep C-506 separate and do not claim live compatibility from C-501 evidence.

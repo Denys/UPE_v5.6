@@ -284,6 +284,24 @@ def test_workspace_identity_reparse_and_cleanup_require_stronger_boundaries() ->
     assert cleanup.decision is Decision.FORBIDDEN
 
 
+@pytest.mark.parametrize(
+    "malformed_workspace",
+    [Path("relative"), Path(r"\\server\share"), Path(r"\rooted")],
+)
+def test_malformed_request_workspace_returns_forbidden(malformed_workspace: Path) -> None:
+    result = evaluate_path(
+        PathPolicy(workspace=assignment()),
+        PathRequest(
+            workspace=malformed_workspace,
+            relative_path="file.txt",
+            operation=PathOperation.READ,
+        ),
+    )
+
+    assert result.decision is Decision.FORBIDDEN
+    assert result.reason.startswith("path workspace is malformed:")
+
+
 def test_network_is_default_deny_and_exact_rule_allows_one_destination() -> None:
     denied = evaluate_network(NetworkPolicy(), network_request())
     allowed = evaluate_network(NetworkPolicy(rules=(network_rule(),)), network_request())
@@ -364,6 +382,17 @@ def test_recursive_redaction_covers_success_error_nested_bytes_and_pii() -> None
     assert "person@example.test" not in rendered
     assert "eyJhbGci" not in rendered
     assert "BEGIN PRIVATE KEY" not in rendered
+
+
+def test_flat_text_redaction_covers_prefixed_credential_assignments() -> None:
+    result = redact_payload("MY_PASSWORD=hunter2 AWS_SECRET_ACCESS_KEY=access-key-value")
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert "hunter2" not in rendered
+    assert "access-key-value" not in rendered
+    assert "MY_PASSWORD=<REDACTED:SECRET>" in rendered
+    assert "AWS_SECRET_ACCESS_KEY=<REDACTED:SECRET>" in rendered
 
 
 def test_safe_payload_is_preserved_without_false_redaction_marker() -> None:

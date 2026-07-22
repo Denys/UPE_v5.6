@@ -56,7 +56,8 @@ _EMAIL = re.compile(r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w.-]
 _PHONE = re.compile(r"(?<!\w)(?:\+?\d[\d .()/-]{6,}\d)(?!\w)")
 _BEARER = re.compile(r"(?i)\b(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{6,}")
 _SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(authorization|cookie|credential|password|passwd|secret|token|api[-_]?key|private[-_]?key)"
+    r"(?i)\b([A-Z0-9_-]*(?:authorization|cookie|credential|password|passwd|secret|token|"
+    r"api[-_]?key|private[-_]?key)[A-Z0-9_-]*)"
     r"(\s*[:=]\s*)([^\s,;&]+)"
 )
 _TOKEN = re.compile(
@@ -412,7 +413,15 @@ def evaluate_path(policy: object, request: object) -> PermissionDecision:
             decision=Decision.FORBIDDEN,
             reason="path policy or request is malformed",
         )
-    if _path_key(request.workspace) != _path_key(policy.workspace.workspace):
+    try:
+        request_workspace_key = _path_key(request.workspace)
+        policy_workspace_key = _path_key(policy.workspace.workspace)
+    except (TypeError, ValueError) as exc:
+        return PermissionDecision(
+            decision=Decision.FORBIDDEN,
+            reason=f"path workspace is malformed: {exc}",
+        )
+    if request_workspace_key != policy_workspace_key:
         return PermissionDecision(
             decision=Decision.FORBIDDEN,
             reason="path workspace is not the exact C-405 assignment",
@@ -432,7 +441,7 @@ def evaluate_path(policy: object, request: object) -> PermissionDecision:
     except (TypeError, ValueError) as exc:
         return PermissionDecision(decision=Decision.FORBIDDEN, reason=f"unsafe path: {exc}")
     target = policy.workspace.workspace.joinpath(*parts)
-    if not _path_key(target).startswith(f"{_path_key(policy.workspace.workspace)}\\"):
+    if not _path_key(target).startswith(f"{policy_workspace_key}\\"):
         return PermissionDecision(
             decision=Decision.FORBIDDEN,
             reason="path does not remain within the assigned workspace",
