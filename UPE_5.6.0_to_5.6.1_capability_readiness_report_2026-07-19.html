@@ -756,14 +756,14 @@
         <div>
           <p class="kicker">The schema-bound provider adapter is in. Live App Server behavior is the next proof line.</p>
           <h1>From control language to trusted host.</h1>
-          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral fake, one-task orchestrator, referenced deterministic validation, workspace containment, SQLite/outbox/JSONL durability, bounded retry/no-progress policy, optional read-only evaluation and the C‑501 schema-bound Codex App Server adapter. CLI wiring, live provider smoke, restart recovery, integrated security policy and release proof remain ahead.</p>
+          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral fake, one-task orchestrator, referenced deterministic validation, workspace containment, SQLite/outbox/JSONL durability, bounded retry/no-progress policy, optional read-only evaluation, the C‑501 schema-bound Codex App Server adapter and locally tested C‑505 host approval/permission security. CLI wiring, live provider smoke, restart recovery, cross-module security integration and release proof remain ahead.</p>
         </div>
         <aside class="verdict">
           <h2>Executive verdict</h2>
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑408 plus C‑501 are implemented and tested; W‑211, W‑212, C‑409 and C‑505 can now start independently.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑408 plus C‑501 and C‑505 are implemented and tested locally; W‑211, W‑212 and C‑409 can now start independently.</li>
           </ol>
         </aside>
       </div>
@@ -873,9 +873,9 @@
             <div class="bubble b0">UPE v5.6.0<br>strong governance, prompt-native</div>
             <div class="bubble b1">Planned v5.6.1<br>target state after C‑series</div>
             <div class="bubble b2">OpenAI / Anthropic article systems<br>observed task runtimes</div>
-            <div class="bubble b3">Current C‑301…408 + C‑501<br>tested durable host and schema-bound adapter</div>
+            <div class="bubble b3">Current C‑301…408 + C‑501 + C‑505<br>tested durable host, adapter and security policy</div>
           </div>
-          <p class="note">Inference: C‑301…C‑408 plus C‑501 establish a durable, contained, policy-bounded host and a schema-conformant provider boundary. The article systems remain farther right because they demonstrate live provider sessions, multi-hour runs, application interaction, evaluator cycles or deployed repository loops. UPE has not yet produced equivalent live or long-running evidence.</p>
+          <p class="note">Inference: C‑301…C‑408 plus C‑501 and C‑505 establish a durable, contained host, a schema-conformant provider boundary and locally tested approval/permission security policy. The article systems remain farther right because they demonstrate live provider sessions, multi-hour runs, application interaction, evaluator cycles or deployed repository loops. UPE has not yet produced equivalent live or long-running evidence.</p>
         </div>
         <div class="panel panel-pad">
           <div class="section-label">Capability class</div>
@@ -1306,8 +1306,8 @@
         <ul class="sources">
           <li><strong>Operational:</strong> usable now at the claimed layer. UPE v5.6.0 is operational as instructions, not as a persistent process.</li>
           <li><strong>Specified:</strong> accepted normative artifact exists and passed its stated specification checks.</li>
-          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑408 plus C‑501 cover the package foundation, typed state, fake and schema-bound Codex adapters, one-task orchestration, deterministic validation, workspace containment, durable state, budget/retry policy and optional read-only evaluation.</li>
-          <li><strong>Tested:</strong> an executed check with evidence exists. The accepted C‑501 integration passes the complete 340-test Windows repository suite; the live App Server path, restart recovery, integrated security and release layers remain unproved.</li>
+          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑408 plus C‑501 and C‑505 cover the package foundation, typed state, fake and schema-bound Codex adapters, one-task orchestration, deterministic validation, workspace containment, durable state, budget/retry policy, optional read-only evaluation and host-owned approval/permission security.</li>
+          <li><strong>Tested:</strong> an executed check with evidence exists. The locally accepted C‑505 integration passes the complete 408-test Windows repository suite; the live App Server path, restart recovery, C‑506 cross-module integration and release layers remain unproved.</li>
           <li><strong>Naming assumption:</strong> the repository currently says “harness v0,” not “UPE v5.6.1.” The report maps v0 to the planned v5.6.1 successor because that is the requested project framing; release naming remains to be ratified.</li>
           <li><strong>Freshness:</strong> official publications were inspected on 2026‑07‑19; repository task state was refreshed <span data-refresh-date>from local evidence</span>. Product/model availability remains volatile.</li>
         </ul>
@@ -1318,33 +1318,33 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-22T03:43:17+02:00",
+  "refreshed_at": "2026-07-22T12:39:22+02:00",
   "repository": {
-    "head": "ec04ed06498dfce466e062b9d0f7e2577211a6f3",
-    "branch": "codex/c501-local-review"
+    "head": "a52fc44345e3baf763ef529ff3672dcd7ac3632a",
+    "branch": "codex/c505-cloud-coordinator"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 39,
-    "progress_percent": 68,
+    "completed_delivery": 40,
+    "progress_percent": 70,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 39,
-      "ready": 4,
+      "complete": 40,
+      "ready": 3,
       "blocked": 17,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
       "High": 16,
-      "Max": 4,
+      "Max": 3,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 17
+      "Local required": 16
     }
   },
   "tasks": [
@@ -4074,12 +4074,12 @@
       "title": "Implement permissions, approval gates, command policy, and redaction",
       "phase": "6-app-server-recovery-security",
       "phase_label": "App Server + recovery",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_max_or_highest_exposed",
       "model_label": "Max",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-405",
@@ -4101,18 +4101,13 @@
           "role": "Canonical task definition"
         },
         {
-          "label": "Observed App Server protocol",
-          "path": "docs/research/app-server-protocol-observations.md",
-          "role": "Accepted design basis"
-        },
-        {
-          "label": "Recovery, evaluation, and operations",
-          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
-          "role": "Accepted design basis"
-        },
-        {
           "label": "Security and containment boundary",
           "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
           "role": "Accepted design basis"
         }
       ],
@@ -4129,15 +4124,12 @@
         "secrets and personal data redacted from logs"
       ],
       "planning": {
-        "estimate": "3–5 engineering days",
-        "estimate_hours": {
-          "minimum": 24.0,
-          "maximum": 40.0
-        },
-        "confidence": "rough",
-        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -4163,8 +4155,7 @@
       "incomplete_dependencies": [
         "C-409",
         "C-503",
-        "C-504",
-        "C-505"
+        "C-504"
       ],
       "dependents": [
         "C-601",
@@ -4214,12 +4205,11 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-409, C-503, C-504, C-505.",
+        "parallel_note": "Starts after C-409, C-503, C-504.",
         "blocked_by": [
           "C-409",
           "C-503",
-          "C-504",
-          "C-505"
+          "C-504"
         ]
       }
     },
@@ -4569,7 +4559,6 @@
         "C-603"
       ],
       "incomplete_dependencies": [
-        "C-505",
         "C-602",
         "C-603"
       ],
@@ -4614,9 +4603,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-505, C-602, C-603.",
+        "parallel_note": "Starts after C-602, C-603.",
         "blocked_by": [
-          "C-505",
           "C-602",
           "C-603"
         ]
@@ -5018,7 +5006,6 @@
     "bundle_allowed": false,
     "task_ids": [
       "C-409",
-      "C-505",
       "W-211",
       "W-212"
     ],
@@ -5035,15 +5022,6 @@
       {
         "label": "Run 2",
         "task_ids": [
-          "C-505"
-        ],
-        "surface": "Local required",
-        "estimate": "3–5 engineering days",
-        "application": "Operational effect: Security boundary is host-owned and adjacent to action. Produces src/harness/approvals.py · src/harness/permissions.py · tests/unit/test_approvals.py · +1 more. Directly enables C-506 (Integrate state, workspace, validation, App Server, recovery, and security), C-606 (Run security, secret, malicious-instruction, and no-external-mutation checks)."
-      },
-      {
-        "label": "Run 3",
-        "task_ids": [
           "W-211"
         ],
         "surface": "Web allowed",
@@ -5051,7 +5029,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 4",
+        "label": "Run 3",
         "task_ids": [
           "W-212"
         ],
@@ -5060,18 +5038,17 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "4 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-409 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "3 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-409 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
       "C-410 waits on C-409",
       "C-502 waits on C-409",
-      "C-506 waits on C-409, C-503, C-504, C-505",
-      "C-606 waits on C-505, C-602, C-603"
+      "C-506 waits on C-409, C-503, C-504"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
-      "parallel": "3–5 engineering days plus serial integration",
-      "sequential": "about 4.9–8.6 engineering days plus integration"
+      "parallel": "1–2 engineering days plus serial integration",
+      "sequential": "about 1.9–3.6 engineering days plus integration"
     },
     "handoff": {
       "label": "Open the detailed five-run execution handoff",

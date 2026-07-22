@@ -1,14 +1,15 @@
 upe_state:
   goal: >-
-    Integrate the locally accepted C-407 budget/retry/no-progress slice after
-    merged C-408, refresh the mandatory report, and keep downstream work packages separate.
+    Complete local C-505 host-owned approval, permission, command, path,
+    network and redaction policy from merged C-501, refresh the mandatory
+    report, and keep C-409/C-506 and all delivery actions separate.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
-    observed_main_commit_role: accepted_C408_merge_PR_14
+    observed_main_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+    observed_main_commit_role: accepted_C501_merge_PR_16
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -22,8 +23,8 @@ upe_state:
       state: MERGED
       head_commit: d7d5de9855c26b2581caad6ccfb7fe2bebc390e5
       merge_commit: a7e99bd32e71ef047296446c14f9e4376b444fcd
-    local_implementation_branch: codex/c407-budget-retry-policy
-    local_implementation_base: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
+    local_implementation_branch: codex/c505-cloud-coordinator
+    local_implementation_base: a52fc44345e3baf763ef529ff3672dcd7ac3632a
     implementation_pr_5:
       state: MERGED
       published_C-303_commit: 049bdec9f826761a9f362385ce0f6d165d99fe3e
@@ -106,12 +107,26 @@ upe_state:
       state: MERGED
       merge_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
     C_407_cloud_local_slice:
-      state: LOCAL_ACCEPTANCE_PASS_PENDING_PR
+      state: MERGED_PR_15
       branch: codex/c407-budget-retry-policy
       integration_base_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
       cloud_task_id: task_e_6a5fec4856088328b2fbb30ba2b3db24
       result: agent/state/C-407-result.yaml
       gate: validation/C-407-GATE.yaml
+      merge_commit: 356b5b2ed53289bc6752c466d2cd8a436abe0bc4
+    C_501_cloud_local_slice:
+      state: MERGED_PR_16
+      branch: codex/implement-work-package-c-501-in-codex-cloud
+      integration_base_commit: 356b5b2ed53289bc6752c466d2cd8a436abe0bc4
+      result: agent/state/C-501-result.yaml
+      gate: validation/C-501-GATE.yaml
+      merge_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+    C_505_cloud_local_slice:
+      state: LOCAL_ACCEPTANCE_PASS_UNCOMMITTED
+      branch: codex/c505-cloud-coordinator
+      integration_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+      result: agent/state/C-505-result.yaml
+      gate: validation/C-505-GATE.yaml
 
   must_status:
     research_matrix: PASS
@@ -145,10 +160,12 @@ upe_state:
     C-404: MERGED_PR_9_PASS
     C-405: MERGED_PR_13_PASS
     C-406: MERGED_PR_12_PASS
-    C-407: PASS_PENDING_MERGE
+    C-407: MERGED_PR_15_PASS
     C-408: MERGED_PR_14_PASS
-    harness_implementation: BUDGET_RETRY_INTEGRATION_PASS_PENDING_MERGE
-    local_implementation_authorization: GRANTED_BOUNDED_WORK_PACKAGE_GITHUB_DELIVERY
+    C-501: MERGED_PR_16_PASS
+    C-505: LOCAL_PASS_UNCOMMITTED
+    harness_implementation: C505_SECURITY_LOCAL_PASS_PENDING_DELIVERY_REVIEW
+    local_implementation_authorization: LOCAL_ONLY_NO_COMMIT_PUSH_PR_MERGE_RELEASE_DEPLOY
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -179,7 +196,7 @@ upe_state:
     - PR #3 is merged into main at d0fbfd56c6b533da62db3e4bea147496345b6c90; the W-201 through W-210 specifications are adopted.
     - PR #1 is merged into main at 507cccc1a8dda824220b67afc8c39480b7fb8104; older open/draft statements are dated observations, not current status.
     - PR #5 is merged into main at a8c611b09297fb226f046d54fdfa0f64e84d9396; its C-303 through C-306 result and gate remain historical evidence.
-    - The active user request grants standing implementation and GitHub delivery authority for bounded canonical work packages beginning with C-404; protected/unrelated artifacts, release, deployment, visibility changes, and destructive cleanup remain excluded.
+    - The current C-505 request authorizes local implementation, review and verification only; commit, push, PR, merge, release and deployment remain explicitly withheld, superseding older standing-delivery notes for this run.
     - C-301 used an isolated worktree at the merged main commit and preserved the dirty, stale primary worktree without mutation.
     - The uv environment resolves and the package imports on observed Windows Python 3.14.3; this proves that runtime only, not the entire Python 3.12+ range.
     - The C-302 scaffold contains no lifecycle, state, adapter, orchestrator, CLI, persistence, recovery, or other speculative modules.
@@ -246,11 +263,15 @@ upe_state:
     - Rejected the first Cloud implementation for invented RPC methods and repaired remaining generated-schema/runtime defects locally, including approval decisions, initialize capabilities, text input shape, terminal return, process-exit normalization, cancellation mapping, exact version pinning, and retried-error handling.
     - Passed 19 focused C-501 tests, 312 unit tests, and the complete 340-test Windows repository suite with lock, Ruff, strict mypy, work-specification, reference, schema, report-freshness, and diff gates.
     - Merged C-501 through PR #16; its accepted gate is validation/C-501-GATE.yaml. This proves deterministic schema-bound adapter behavior only, not a live App Server session.
+    - Implemented C-505 immutable exact-scope approval checks plus deny-by-default command, environment, Windows path, network and recursive redaction policy from an incomplete bounded Cloud draft.
+    - Reproduced and repaired authorization-class drift, WindowsPath rejection, redaction recursion/key/token gaps, versioned-interpreter bypass, unbounded input, malformed host/IP and unsafe-URL defects locally.
+    - Passed 68 focused C-505 tests, 188 dependency regressions, 380 unit tests and the complete 408-test Windows repository suite with lock, import, Ruff, strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates.
+    - Recorded the uncommitted local acceptance in agent/state/C-505-result.yaml and validation/C-505-GATE.yaml without performing a delivery or external action.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Implement C-409 CLI wiring and C-505 host-owned approval/permission security; both are dependency-satisfied after C-501.
+    - Implement C-409 CLI wiring; C-505 host policy is locally accepted but remains uncommitted and unwired until C-506 integration.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -289,14 +310,17 @@ upe_state:
       - C-408 deterministic-first invocation, mandatory frozen semantic criteria, exact criteria/evidence/correction bounds, three-valued verdict aggregation, actual-artifact inspection, and read-only effect boundary
       - C-407 exact-limit and prospective budget accounting, total-token derivation, retry/backoff overflow and jitter boundaries, no-progress checkpoint preservation, and non-idempotent reconciliation refusal
       - C-501 strict JSON-RPC envelopes, generated initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
+      - C-505 exact approval identity/scope/expiry/revocation, command/environment minimization, Windows path/network refusal and recursive secret/PII redaction with malformed-input canaries
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
       C-403 lifecycle/orchestration, C-404 deterministic validation, and the
       bounded C-406 SQLite Run/Event/outbox plus JSONL mirror, C-405 workspace
       ownership/containment, the C-408 optional evaluator interface, and C-407
-      executable budget/retry/no-progress policy plus the C-501 schema-bound
-      Codex App Server adapter. Live model/provider calls, cleanup effects,
+      executable budget/retry/no-progress policy, the C-501 schema-bound Codex
+      App Server adapter, and C-505 pure host approval/permission security.
+      C-505 is locally tested but uncommitted and not integrated with the
+      orchestrator/provider boundary. Live model/provider calls, cleanup effects,
       evaluator persistence, broader authoritative entity/action state, CLI
       wiring, resume/recovery, broader Python compatibility, release, and
       deployment are not claimed.
@@ -310,12 +334,13 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume from merged PR #16 on origin/main and verify its exact merge identity.
-    Preserve the protected primary-checkout artifacts and all pre-existing
-    worktrees. Re-run validation/C-501-GATE.yaml, the complete repository gate,
-    report freshness, and rendered report acceptance before starting a consumer.
+    Resume in codex/c505-cloud-coordinator from merged PR #16 at
+    a52fc44345e3baf763ef529ff3672dcd7ac3632a. Preserve the protected primary
+    checkout and all other worktrees. Re-run validation/C-505-GATE.yaml, the
+    complete repository gate and report freshness before any separately
+    authorized delivery action.
 
   next_action: >-
-    Start C-409 CLI wiring or C-505 approval/permission security in a separate
-    isolated worktree. Keep C-502 as the first controlled live App Server smoke
-    after C-409, and do not claim live compatibility from C-501 unit evidence.
+    Review the complete uncommitted C-505 coordinator diff. Keep C-409 separate,
+    C-502 as the first controlled live App Server smoke after C-409, and C-506
+    as the only integration lane; do not infer commit, PR, merge or deployment authority.

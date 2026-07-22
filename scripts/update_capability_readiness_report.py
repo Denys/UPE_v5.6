@@ -159,6 +159,10 @@ TASK_DESIGN_SOURCES: Mapping[str, tuple[str, ...]] = {
         "schemas/verifier_result.schema.yaml",
     ),
     "C-501": ("docs/research/app-server-protocol-observations.md",),
+    "C-505": (
+        "docs/work/SECURITY_THREAT_BOUNDARY.md",
+        "docs/architecture/ADR-001-harness-boundary.md",
+    ),
 }
 
 READY_EFFORT_ESTIMATES: Mapping[str, str] = {
