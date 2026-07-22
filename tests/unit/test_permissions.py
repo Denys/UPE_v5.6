@@ -236,6 +236,7 @@ def test_contained_child_path_is_allowed(operation: PathOperation) -> None:
         PathPolicy(workspace=assignment()),
         PathRequest(
             workspace=WORKSPACE,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path=r"src\harness\state.py",
             operation=operation,
         ),
@@ -264,6 +265,7 @@ def test_windows_path_escape_classes_fail_closed(relative_path: str) -> None:
         PathPolicy(workspace=assignment()),
         PathRequest(
             workspace=WORKSPACE,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path=relative_path,
             operation=PathOperation.WRITE,
         ),
@@ -278,6 +280,7 @@ def test_workspace_identity_reparse_and_cleanup_require_stronger_boundaries() ->
         policy,
         PathRequest(
             workspace=Path(r"C:\repo\worktrees\sibling"),
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path="file.txt",
             operation=PathOperation.WRITE,
         ),
@@ -286,6 +289,7 @@ def test_workspace_identity_reparse_and_cleanup_require_stronger_boundaries() ->
         policy,
         PathRequest(
             workspace=WORKSPACE,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path="file.txt",
             operation=PathOperation.WRITE,
             observed_reparse_components=(r"C:\repo\worktrees\c505\link",),
@@ -295,6 +299,7 @@ def test_workspace_identity_reparse_and_cleanup_require_stronger_boundaries() ->
         policy,
         PathRequest(
             workspace=WORKSPACE,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path="file.txt",
             operation=PathOperation.CLEANUP,
         ),
@@ -314,6 +319,7 @@ def test_malformed_request_workspace_returns_forbidden(malformed_workspace: Path
         PathPolicy(workspace=assignment()),
         PathRequest(
             workspace=malformed_workspace,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=11),
             relative_path="file.txt",
             operation=PathOperation.READ,
         ),
@@ -321,6 +327,21 @@ def test_malformed_request_workspace_returns_forbidden(malformed_workspace: Path
 
     assert result.decision is Decision.FORBIDDEN
     assert result.reason.startswith("path workspace is malformed:")
+
+
+def test_path_requires_fresh_workspace_identity() -> None:
+    result = evaluate_path(
+        PathPolicy(workspace=assignment()),
+        PathRequest(
+            workspace=WORKSPACE,
+            observed_workspace_identity=FilesystemIdentity(device=1, inode=99),
+            relative_path="file.txt",
+            operation=PathOperation.READ,
+        ),
+    )
+
+    assert result.decision is Decision.FORBIDDEN
+    assert result.reason == "path workspace filesystem identity changed after assignment"
 
 
 def test_network_is_default_deny_and_exact_rule_allows_one_destination() -> None:
@@ -414,6 +435,18 @@ def test_flat_text_redaction_covers_prefixed_credential_assignments() -> None:
     assert "access-key-value" not in rendered
     assert "MY_PASSWORD=<REDACTED:SECRET>" in rendered
     assert "AWS_SECRET_ACCESS_KEY=<REDACTED:SECRET>" in rendered
+
+
+def test_assignment_redaction_consumes_quoted_values_with_separators() -> None:
+    result = redact_payload('MY_PASSWORD="abc def,ghi;still-secret" CORRELATION_ID=trace-123')
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert "abc" not in rendered
+    assert "def" not in rendered
+    assert "ghi" not in rendered
+    assert "still-secret" not in rendered
+    assert "CORRELATION_ID=trace-123" in rendered
 
 
 @pytest.mark.parametrize("scheme", ["Bearer", "Basic"])

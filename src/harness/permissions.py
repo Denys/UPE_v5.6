@@ -58,7 +58,7 @@ _BEARER = re.compile(r"(?i)\b(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{6,}")
 _SECRET_ASSIGNMENT = re.compile(
     r"(?i)\b([A-Z0-9_-]*(?:authorization|cookie|credential|password|passwd|secret|token|"
     r"api[-_]?key|private[-_]?key)[A-Z0-9_-]*)"
-    r"(\s*[:=]\s*)([^\s,;&]+)"
+    r"(\s*[:=]\s*)([^\r\n]*?)(?=(?:[\s,;&]+[A-Z][A-Z0-9_-]*\s*[:=])|[\r\n]|$)"
 )
 _TOKEN = re.compile(
     r"(?i)\b(?:sk-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|AKIA[0-9A-Z]{12,})\b"
@@ -209,6 +209,7 @@ class PathPolicy:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class PathRequest:
     workspace: Path
+    observed_workspace_identity: FilesystemIdentity
     relative_path: str
     operation: PathOperation
     observed_reparse_components: tuple[str, ...] = ()
@@ -216,6 +217,8 @@ class PathRequest:
     def __post_init__(self) -> None:
         if not isinstance(self.workspace, Path):
             raise TypeError("PathRequest.workspace must be a Path")
+        if type(self.observed_workspace_identity) is not FilesystemIdentity:
+            raise TypeError("PathRequest.observed_workspace_identity must be FilesystemIdentity")
         if type(self.relative_path) is not str:
             raise TypeError("PathRequest.relative_path must be a string")
         if type(self.operation) is not PathOperation:
@@ -449,6 +452,11 @@ def evaluate_path(policy: object, request: object) -> PermissionDecision:
         return PermissionDecision(
             decision=Decision.FORBIDDEN,
             reason="path workspace is not the exact C-405 assignment",
+        )
+    if request.observed_workspace_identity != policy.workspace.workspace_identity:
+        return PermissionDecision(
+            decision=Decision.FORBIDDEN,
+            reason="path workspace filesystem identity changed after assignment",
         )
     if request.operation is PathOperation.CLEANUP:
         return PermissionDecision(
