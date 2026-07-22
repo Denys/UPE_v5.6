@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-505-RESULT
 generated_at: '2026-07-22T12:28:27+02:00'
-status: TESTED_LOCALLY_READY_FOR_COORDINATOR_REVIEW
+status: TESTED_LOCALLY_PR_18_REVIEW_PENDING
 
 task:
   id: C-505
@@ -14,8 +14,10 @@ repository:
   worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c505-coordinator'
   branch: codex/c505-cloud-coordinator
   base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
-  head_commit_at_result_write: a52fc44345e3baf763ef529ff3672dcd7ac3632a
-  committed_at_result_write: false
+  integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
+  functional_commit: 5d976c3fb79ac578de85cf926be3d4dddcf2514b
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/18
+  committed_at_result_write: true
 
 cloud_source:
   implementation_lane: bounded_single_C505_lane
@@ -101,16 +103,18 @@ evidence_hashes_sha256:
   src/harness/permissions.py: 5a0ce6a06369a4401e27347a10645e260940ebbaf66f006bcf2a1f02d841181b
   tests/unit/test_approvals.py: 8d80d97b058c56db0d8c39c55e1523d7db8c99c1abf468ab2cc41a2512b30bfc
   tests/unit/test_permissions.py: f9296e4f767c014944d6a9bff468913b2581c2fd2de4764d33a1d8b31848a5a5
-  docs/research/research-state.yaml: ea3fc5119d98d16021617d3e7a95f513ce5ff7c4920bd13fec97d1176063a9bb
-  scripts/update_capability_readiness_report.py: 52dc2d44b499332736d27aec2c7de07ea182beec663d88f33fa38b611fe96346
-  tests/test_capability_readiness_report.py: dfe966ac460045d02d2b921ae517cc72397fec3b3858e9e0ae55a5f0639cdfff
-  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: 5410183d43aa456e03d0ff1b92a68425748890a33f5506bd06fe4707b8416104
+  docs/research/research-state.yaml: b54fd03d712ba3ead8e11225d2b042efbc3b79328dc95e8ba0c2adb5d550cd51
+  scripts/update_capability_readiness_report.py: e1cd78f9101ee743c57086c7f514ebfbe9b06054ec01566db9f2d429f4cd119e
+  tests/test_capability_readiness_report.py: bb5f96f1e2536e52563e3bb581f189d45ffe895ca12b4f19339e3a29cedb0be1
+  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dcb1a537d6cd81f703931ce94d1c632fda755fbc2353fad6fbf3117c5123af1c
 
 preserved_state:
   primary_checkout_user_artifacts: preserved_unmodified
   real_credentials_read: false
   real_codex_shell_network_or_external_action_from_tests: false
-  commit_push_pr_merge_release_deploy: not_performed
+  authorized_commit_push_pr: performed
+  review_accept_merge: pending
+  release_deploy: not_performed
 
 known_limits:
   - C-505 supplies pure host policy and is not wired into orchestration, persistence, CLI or provider dispatch; that integration remains C-506.
@@ -119,5 +123,5 @@ known_limits:
   - Python 3.12 and 3.13 remain unverified; the observed Windows runtime is Python 3.14.3.
 
 next_action: >-
-  Review the full uncommitted C-505 functional and coordinator evidence diff
-  before any separately authorized commit, push, pull request or merge.
+  Complete PR #18 review, repair any substantive finding, and merge only from a
+  passing state under the explicit C-505 delivery authorization.

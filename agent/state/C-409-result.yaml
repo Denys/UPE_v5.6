@@ -1,0 +1,70 @@
+schema_version: '1.0'
+record_id: C-409-RESULT
+generated_at: '2026-07-22T16:19:15+02:00'
+status: TESTED_LOCALLY_READY_FOR_MERGE
+
+task:
+  id: C-409
+  title: Implement the CLI and harness doctor
+  verdict: PASS
+  gate: validation/C-409-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c409-local'
+  branch: codex/c409-cli-doctor
+  base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+  functional_head: 4d6392bec8bf6ade6e77b5651bd78006576a9180
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/17
+
+implemented:
+  command_surface:
+    - init, research, doctor, run, status, events, resume, pause, cancel, evaluate and cleanup commands
+    - project entry point exposes `uv run harness`
+    - unavailable lifecycle integrations fail explicitly instead of inventing effects
+  doctor:
+    - exact sanitized Python and Codex versions plus App Server availability through that Codex version
+    - exact Git/worktree, validator, SQLite path, permission and optional credential-reference checks
+    - no invented App Server protocol version and no credential values
+  subprocess_safety:
+    - concurrent stdout and stderr draining with a fixed retained-byte bound per stream
+    - timeout termination is Windows-compatible and does not wait for unbounded captured output
+    - returned diagnostics are sanitized and bounded
+
+verification:
+  result: PASS
+  targeted_C409: 25_passed
+  complete_unit_tests: 337_passed
+  complete_repository_tests: 365_passed
+  uv_lock: PASS_33_PACKAGES
+  ruff_lint: PASS
+  ruff_format: PASS_46_FILES
+  strict_mypy: PASS_36_SOURCE_FILES
+  work_specification_validator: PASS_16_CASES
+  reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+  schema_validator: PASS_6_INSTANCES
+  capability_report_before_evidence: PASS_CURRENT
+  live_doctor: PASS_ALL_REQUIRED_ENVIRONMENT_CHECKS_EXCEPT_EXPECTED_DIRTY_REPOSITORY
+  live_runtime: Python_3.14.3_Codex_0.144.3_SQLite_3.50.4
+  git_diff_check: PASS
+
+evidence_hashes_sha256:
+  pyproject.toml: 510745051340381f69a67a7d7e43571b5fc7b8c51c7b53f29d3a968ca01c23b3
+  src/harness/cli.py: 3cb417ced14d7c897b8d8b71e96157c5eb5bf346562fba93fdcd08c520d07e27
+  tests/unit/test_cli.py: 5404454df7443c19dcdab6dd8d3951214dffefd40269ebc20c8d1fc58f1671d9
+
+preserved_state:
+  primary_checkout_untracked_paths: preserved_unmodified
+  primary_checkout_stashes: preserved_unmodified
+  C_505_worktree: not_touched
+  release_or_deployment: not_performed
+
+known_limits:
+  - The CLI exposes the accepted command surface, but commands whose later runtime integrations do not exist fail explicitly.
+  - App Server availability is reported through exact Codex 0.144.3; no separate or invented protocol version is claimed.
+  - The live doctor cannot report the deliberately dirty primary checkout as usable; that is an expected policy failure, not a dependency failure.
+  - C-505 is locally accepted in a separate unmerged worktree and is not adopted by this result.
+
+next_action: >-
+  Serialize the C-409 gate/current-state/report reconciliation, merge its pull
+  request, then run the controlled C-502 App Server smoke or C-410 operating docs.

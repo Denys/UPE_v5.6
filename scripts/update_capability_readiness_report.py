@@ -158,6 +158,10 @@ TASK_DESIGN_SOURCES: Mapping[str, tuple[str, ...]] = {
         "docs/work/GENERATOR_VERIFIER_PROTOCOL.md",
         "schemas/verifier_result.schema.yaml",
     ),
+    "C-409": (
+        "docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md",
+        "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
+    ),
     "C-501": ("docs/research/app-server-protocol-observations.md",),
     "C-505": (
         "docs/work/SECURITY_THREAT_BOUNDARY.md",
@@ -257,6 +261,21 @@ def _evidence_task_ids(root: Path) -> set[str]:
 
 def _normalize_state_key(value: object) -> str:
     return str(value).strip().upper().replace("_", "-")
+
+
+def _active_development_states(state: Mapping[str, Any]) -> dict[str, str]:
+    upe_state = state.get("upe_state", {})
+    if not isinstance(upe_state, Mapping):
+        return {}
+    active = upe_state.get("active_development", {})
+    if not isinstance(active, Mapping):
+        return {}
+
+    states: dict[str, str] = {}
+    for raw_task_id, record in active.items():
+        raw_state = record.get("state", "") if isinstance(record, Mapping) else record
+        states[_normalize_state_key(raw_task_id)] = _normalize_state_key(raw_state)
+    return states
 
 
 def _completed_task_ids(
@@ -385,6 +404,17 @@ def _planning(
             "basis": "Completed work is not assigned a retrospective estimate.",
             "parallelizable_now": False,
             "parallel_note": "Already complete.",
+            "blocked_by": [],
+        }
+
+    if status == "in_development":
+        return {
+            "estimate": None,
+            "estimate_hours": None,
+            "confidence": "not_applicable",
+            "basis": "Locally accepted work is pending serialized repository delivery.",
+            "parallelizable_now": False,
+            "parallel_note": "In development; not a fresh-work recommendation.",
             "blocked_by": [],
         }
 
@@ -568,7 +598,7 @@ def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
             "sequential": sequential_elapsed,
         },
         "handoff": {
-            "label": "Open the detailed five-run execution handoff",
+            "label": "Live parallel execution handoff",
             "path": "handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md",
         },
     }
@@ -582,6 +612,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
         raise ValueError("Canonical backlog does not contain a valid tasks list")
     tasks = [task for task in raw_tasks if isinstance(task, Mapping)]
     completed = _completed_task_ids(tasks, state, root)
+    active_states = _active_development_states(state)
 
     visible_tasks = [
         task
@@ -598,6 +629,9 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
         if task_id in completed:
             status = "complete"
             dependency_mode = "satisfied"
+        elif active_states.get(task_id) == "LOCALLY-ACCEPTED-UNMERGED":
+            status = "in_development"
+            dependency_mode = "in_progress"
         elif canonical_status == "optional":
             status = "optional"
             dependency_mode = "independent" if not incomplete_dependencies else "sequential"
@@ -656,7 +690,14 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
     completed_delivery = sum(task["status"] == "complete" for task in delivery_tasks)
     status_counts = {
         status: sum(task["status"] == status for task in rendered)
-        for status in ("complete", "ready", "blocked", "optional", "approval_required")
+        for status in (
+            "complete",
+            "in_development",
+            "ready",
+            "blocked",
+            "optional",
+            "approval_required",
+        )
     }
     model_counts = {
         model: sum(

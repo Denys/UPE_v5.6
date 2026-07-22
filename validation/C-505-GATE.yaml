@@ -12,7 +12,10 @@ repository:
   worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c505-coordinator'
   branch: codex/c505-cloud-coordinator
   base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
-  committed_at_gate_write: false
+  integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
+  functional_commit: 5d976c3fb79ac578de85cf926be3d4dddcf2514b
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/18
+  committed_at_gate_write: true
 
 criteria:
   - id: C-505-APPROVAL-AUTHORITY
@@ -56,7 +59,7 @@ criteria:
     verdict: PASS
     evidence:
       - The dirty primary checkout and every other linked worktree remain untouched.
-      - No commit, push, pull request, merge, release, deployment, visibility change, message, purchase, production mutation or destructive cleanup occurred.
+      - The explicitly authorized commit, push and PR creation occurred; review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
   - id: C-505-REPORT-INTEGRATION
     verdict: PASS
     evidence:
@@ -87,5 +90,5 @@ known_limits:
   - Python 3.12 and 3.13 remain unverified.
 
 next_action: >-
-  Inspect the full uncommitted C-505 functional and coordinator evidence diff
-  before any separately authorized commit, push, pull request or merge.
+  Complete PR #18 review, repair any substantive finding, and merge only from a
+  passing state under the explicit C-505 delivery authorization.

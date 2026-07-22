@@ -322,7 +322,7 @@
     }
     .migration-summary {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) repeat(3, minmax(110px, auto));
+      grid-template-columns: minmax(0, 1fr) repeat(4, minmax(110px, auto));
       gap: 1px;
       border-bottom: 1px solid var(--line);
       background: var(--line);
@@ -377,6 +377,7 @@
     .task-brick.is-prerequisite { box-shadow: 0 0 0 2px var(--blue), 0 10px 24px rgba(35,87,198,.13); }
     .task-brick.is-dependent { box-shadow: 0 0 0 2px var(--amber), 0 10px 24px rgba(167,101,24,.13); }
     .task-brick[data-status="complete"] { --brick-accent: var(--green); background: linear-gradient(135deg, #f9fffc, var(--green-soft)); }
+    .task-brick[data-status="in_development"] { --brick-accent: var(--blue); background: linear-gradient(135deg, #f8fbff, var(--blue-soft)); }
     .task-brick[data-status="ready"] { --brick-accent: var(--amber); background: linear-gradient(135deg, #fffdf8, var(--amber-soft)); }
     .task-brick[data-status="approval_required"] { --brick-accent: var(--red); }
     .task-brick[data-status="optional"] { --brick-accent: #7a8390; background: var(--slate-soft); }
@@ -447,6 +448,7 @@
     .legend-item { display: inline-flex; align-items: center; gap: 6px; }
     .legend-swatch { width: 11px; height: 11px; border-radius: 3px; background: var(--slate-soft); }
     .legend-swatch.complete { background: var(--green-soft); border: 2px solid var(--green); }
+    .legend-swatch.in-development { background: var(--blue-soft); border: 2px solid var(--blue); }
     .legend-swatch.ready-now { background: var(--amber-soft); border: 2px solid var(--amber); }
     .legend-swatch.web { background: var(--blue); }
     .legend-swatch.local { background: var(--ink); }
@@ -654,6 +656,7 @@
     html[data-theme="dark"] .migration-stat { background: #151e2c; }
     html[data-theme="dark"] .task-brick { background: #182334; box-shadow: 0 5px 16px rgba(0,0,0,.22); }
     html[data-theme="dark"] .task-brick[data-status="complete"] { background: linear-gradient(135deg, #15251f, var(--green-soft)); }
+    html[data-theme="dark"] .task-brick[data-status="in_development"] { background: linear-gradient(135deg, #152033, var(--blue-soft)); }
     html[data-theme="dark"] .task-brick[data-status="ready"] { background: linear-gradient(135deg, #251f16, var(--amber-soft)); }
     html[data-theme="dark"] .brick-chip.surface-local { color: #fff; background: #080d15; border-color: #53627a; }
     html[data-theme="dark"] .brick-chip.estimate,
@@ -756,14 +759,14 @@
         <div>
           <p class="kicker">The schema-bound provider adapter is in. Live App Server behavior is the next proof line.</p>
           <h1>From control language to trusted host.</h1>
-          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral fake, one-task orchestrator, referenced deterministic validation, workspace containment, SQLite/outbox/JSONL durability, bounded retry/no-progress policy, optional read-only evaluation, the C‑501 schema-bound Codex App Server adapter and locally tested C‑505 host approval/permission security. CLI wiring, live provider smoke, restart recovery, cross-module security integration and release proof remain ahead.</p>
+          <p class="lede">UPE v5.6.0 remains the stable governance and capability-routing layer. The accepted successor now includes the Windows-native package foundation, typed lifecycle, provider-neutral fake, one-task orchestrator, referenced deterministic validation, workspace containment, SQLite/outbox/JSONL durability, bounded retry/no-progress policy, optional read-only evaluation, the C‑501 schema-bound Codex App Server adapter and C‑409 executable CLI/doctor diagnostics. Live provider smoke, restart recovery, integrated security policy and release proof remain ahead.</p>
         </div>
         <aside class="verdict">
           <h2>Executive verdict</h2>
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑408 plus C‑501 and C‑505 are implemented and tested locally; W‑211, W‑212 and C‑409 can now start independently.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑409 plus C‑501 and C‑505 are implemented and tested locally. C‑502 and C‑410 can now start independently alongside W‑211 and W‑212.</li>
           </ol>
         </aside>
       </div>
@@ -833,7 +836,7 @@
           <div class="layer">
             <div class="id">L2 · Core host</div>
             <div class="desc">Typed lifecycle, SQLite + transactional outbox, JSONL mirror, orchestrator, worktrees, budgets/retries, deterministic validator, read-only evaluator and CLI.</div>
-            <span class="status specified">Partial · C‑401…408</span>
+            <span class="status specified">Partial · C‑401…409</span>
           </div>
           <div class="layer">
             <div class="id">L3 · Codex adapter</div>
@@ -873,9 +876,9 @@
             <div class="bubble b0">UPE v5.6.0<br>strong governance, prompt-native</div>
             <div class="bubble b1">Planned v5.6.1<br>target state after C‑series</div>
             <div class="bubble b2">OpenAI / Anthropic article systems<br>observed task runtimes</div>
-            <div class="bubble b3">Current C‑301…408 + C‑501 + C‑505<br>tested durable host, adapter and security policy</div>
+            <div class="bubble b3">Current C‑301…409 + C‑501<br>tested durable host, CLI and schema-bound adapter</div>
           </div>
-          <p class="note">Inference: C‑301…C‑408 plus C‑501 and C‑505 establish a durable, contained host, a schema-conformant provider boundary and locally tested approval/permission security policy. The article systems remain farther right because they demonstrate live provider sessions, multi-hour runs, application interaction, evaluator cycles or deployed repository loops. UPE has not yet produced equivalent live or long-running evidence.</p>
+          <p class="note"><strong>Evidence:</strong> C‑301…C‑409 plus C‑501 now provide a durable, contained, policy-bounded host, executable CLI/doctor/environment diagnostics and a schema-conformant provider boundary. <strong>Inference:</strong> C‑502 moves the project right only after a controlled live App Server session; C‑505 improves host enforcement but adds no live-provider proof. The article systems remain farther right because they demonstrate live sessions, multi-hour runs, application interaction, evaluator cycles or deployed repository loops.</p>
         </div>
         <div class="panel panel-pad">
           <div class="section-label">Capability class</div>
@@ -1135,6 +1138,10 @@
             <strong id="migration-ready-count">—</strong>
           </div>
           <div class="migration-stat">
+            <span class="label">In development</span>
+            <strong id="migration-development-count">—</strong>
+          </div>
+          <div class="migration-stat">
             <span class="label">Sequential / waiting</span>
             <strong id="migration-blocked-count">—</strong>
           </div>
@@ -1170,6 +1177,7 @@
 
         <div class="migration-legend" id="migration-help">
           <span class="legend-item"><span class="legend-swatch complete"></span>Accepted / tested evidence</span>
+          <span class="legend-item"><span class="legend-swatch in-development"></span>Locally accepted · pending delivery</span>
           <span class="legend-item"><span class="legend-swatch ready-now"></span>Independent now</span>
           <span class="legend-item"><span class="legend-swatch web"></span>Web allowed</span>
           <span class="legend-item"><span class="legend-swatch local"></span>Local required</span>
@@ -1306,8 +1314,8 @@
         <ul class="sources">
           <li><strong>Operational:</strong> usable now at the claimed layer. UPE v5.6.0 is operational as instructions, not as a persistent process.</li>
           <li><strong>Specified:</strong> accepted normative artifact exists and passed its stated specification checks.</li>
-          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑408 plus C‑501 and C‑505 cover the package foundation, typed state, fake and schema-bound Codex adapters, one-task orchestration, deterministic validation, workspace containment, durable state, budget/retry policy, optional read-only evaluation and host-owned approval/permission security.</li>
-          <li><strong>Tested:</strong> an executed check with evidence exists. The locally accepted C‑505 integration passes the complete 408-test Windows repository suite; the live App Server path, restart recovery, C‑506 cross-module integration and release layers remain unproved.</li>
+          <li><strong>Implemented:</strong> code exists at an inspected identity. C‑301…C‑409 plus C‑501 cover the package foundation, typed state, fake and schema-bound Codex adapters, one-task orchestration, deterministic validation, workspace containment, durable state, budget/retry policy, optional read-only evaluation and executable CLI/doctor diagnostics.</li>
+          <li><strong>Tested:</strong> an executed check with evidence exists. The accepted C‑409 functional slice passes the complete 365-test Windows repository suite; the live App Server path, restart recovery, integrated security and release layers remain unproved.</li>
           <li><strong>Naming assumption:</strong> the repository currently says “harness v0,” not “UPE v5.6.1.” The report maps v0 to the planned v5.6.1 successor because that is the requested project framing; release naming remains to be ratified.</li>
           <li><strong>Freshness:</strong> official publications were inspected on 2026‑07‑19; repository task state was refreshed <span data-refresh-date>from local evidence</span>. Product/model availability remains volatile.</li>
         </ul>
@@ -1318,33 +1326,34 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-22T12:39:22+02:00",
+  "refreshed_at": "2026-07-22T21:54:08+02:00",
   "repository": {
-    "head": "a52fc44345e3baf763ef529ff3672dcd7ac3632a",
+    "head": "5d976c3fb79ac578de85cf926be3d4dddcf2514b",
     "branch": "codex/c505-cloud-coordinator"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 40,
-    "progress_percent": 70,
+    "completed_delivery": 41,
+    "progress_percent": 72,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 40,
-      "ready": 3,
-      "blocked": 17,
+      "complete": 41,
+      "in_development": 0,
+      "ready": 4,
+      "blocked": 15,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
-      "High": 16,
+      "High": 15,
       "Max": 3,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 16
+      "Local required": 15
     }
   },
   "tasks": [
@@ -3657,12 +3666,12 @@
       "title": "Implement the CLI and harness doctor",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-404",
@@ -3686,13 +3695,13 @@
           "role": "Canonical task definition"
         },
         {
-          "label": "Accepted harness boundary",
-          "path": "docs/architecture/ADR-001-harness-boundary.md",
+          "label": "Work/Codex handoff protocol",
+          "path": "docs/work/WORK_CODEX_HANDOFF_PROTOCOL.md",
           "role": "Accepted design basis"
         },
         {
-          "label": "Accepted local implementation brief",
-          "path": "handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md",
+          "label": "Recovery, evaluation, and operations",
+          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
           "role": "Accepted design basis"
         }
       ],
@@ -3705,15 +3714,12 @@
         "doctor checks runtime/Codex/Git/worktrees/validators/SQLite/permissions safely"
       ],
       "planning": {
-        "estimate": "1–2 engineering days",
-        "estimate_hours": {
-          "minimum": 8.0,
-          "maximum": 16.0
-        },
-        "confidence": "rough",
-        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -3723,12 +3729,12 @@
       "title": "Document threat model, state model, evaluation plan, and operations",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "blocked",
+      "status": "ready",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "sequential",
+      "dependency_mode": "independent_now",
       "dependencies": [
         "C-401",
         "C-404",
@@ -3737,9 +3743,7 @@
         "C-407",
         "C-409"
       ],
-      "incomplete_dependencies": [
-        "C-409"
-      ],
+      "incomplete_dependencies": [],
       "dependents": [],
       "critical_path": true,
       "description": "Documentation follows working code and exact tests, not imagined capabilities.",
@@ -3778,11 +3782,9 @@
         },
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": false,
-        "parallel_note": "Starts after C-409.",
-        "blocked_by": [
-          "C-409"
-        ]
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
       }
     },
     {
@@ -3856,20 +3858,18 @@
       "title": "Run a controlled Codex App Server smoke task",
       "phase": "6-app-server-recovery-security",
       "phase_label": "App Server + recovery",
-      "status": "blocked",
+      "status": "ready",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "sequential",
+      "dependency_mode": "independent_now",
       "dependencies": [
         "C-501",
         "C-305",
         "C-409"
       ],
-      "incomplete_dependencies": [
-        "C-409"
-      ],
+      "incomplete_dependencies": [],
       "dependents": [
         "C-503",
         "C-604"
@@ -3917,11 +3917,9 @@
         },
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": false,
-        "parallel_note": "Starts after C-409.",
-        "blocked_by": [
-          "C-409"
-        ]
+        "parallelizable_now": true,
+        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "blocked_by": []
       }
     },
     {
@@ -4153,7 +4151,6 @@
         "C-505"
       ],
       "incomplete_dependencies": [
-        "C-409",
         "C-503",
         "C-504"
       ],
@@ -4205,9 +4202,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-409, C-503, C-504.",
+        "parallel_note": "Starts after C-503, C-504.",
         "blocked_by": [
-          "C-409",
           "C-503",
           "C-504"
         ]
@@ -5005,7 +5001,8 @@
     "classification_label": "Parallel runs",
     "bundle_allowed": false,
     "task_ids": [
-      "C-409",
+      "C-502",
+      "C-410",
       "W-211",
       "W-212"
     ],
@@ -5013,14 +5010,23 @@
       {
         "label": "Run 1",
         "task_ids": [
-          "C-409"
+          "C-502"
         ],
         "surface": "Local required",
-        "estimate": "1–2 engineering days",
-        "application": "Operational effect: Small explicit CLI. Missing credentials reported without values. Produces src/harness/cli.py · tests/unit/test_cli.py. Directly enables C-410 (Document threat model, state model, evaluation plan, and operations), C-502 (Run a controlled Codex App Server smoke task), C-506 (Integrate state, workspace, validation, App Server, recovery, and security)."
+        "estimate": "2–4 engineering days",
+        "application": "Operational effect: One narrow happy-path smoke run; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics)."
       },
       {
         "label": "Run 2",
+        "task_ids": [
+          "C-410"
+        ],
+        "surface": "Local required",
+        "estimate": "2–4 engineering days",
+        "application": "Operational effect: Documentation follows working code and exact tests, not imagined capabilities. Produces docs/threat-model.md · docs/state-model.md · docs/evaluation-plan.md · +1 more. No direct downstream package is recorded in the visible v0 route."
+      },
+      {
+        "label": "Run 3",
         "task_ids": [
           "W-211"
         ],
@@ -5029,7 +5035,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 3",
+        "label": "Run 4",
         "task_ids": [
           "W-212"
         ],
@@ -5038,20 +5044,19 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "3 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-409 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "4 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-502 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
-      "C-410 waits on C-409",
-      "C-502 waits on C-409",
-      "C-506 waits on C-409, C-503, C-504"
+      "C-503 waits on C-502",
+      "C-604 waits on C-603, C-502"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
-      "parallel": "1–2 engineering days plus serial integration",
-      "sequential": "about 1.9–3.6 engineering days plus integration"
+      "parallel": "2–4 engineering days plus serial integration",
+      "sequential": "about 4.9–9.6 engineering days plus integration"
     },
     "handoff": {
-      "label": "Open the detailed five-run execution handoff",
+      "label": "Live parallel execution handoff",
       "path": "handoffs/NEXT-FIVE-WORK-PACKAGES-PARALLEL-EXECUTION-HANDOFF.md"
     }
   },
@@ -5172,6 +5177,7 @@
 
         const statusLabel = {
           complete: "Accepted / tested",
+          in_development: "Locally accepted / pending delivery",
           ready: "Ready now",
           blocked: "Waiting on dependencies",
           optional: "Optional",
@@ -5179,6 +5185,7 @@
         };
         const dependencyLabel = {
           satisfied: "Dependencies satisfied",
+          in_progress: "Delivery in progress",
           independent: "Independent",
           independent_now: "Independent now",
           sequential: "Sequential"
@@ -5228,7 +5235,7 @@
 
         const tasksById = new Map(payload.tasks.map(task => [task.id, task]));
         const completed = payload.tasks.filter(task => task.status === "complete");
-        const statusOrder = { ready: 0, approval_required: 1, blocked: 2, optional: 3 };
+        const statusOrder = { in_development: 0, ready: 1, approval_required: 2, blocked: 3, optional: 4 };
         const todo = payload.tasks
           .filter(task => task.status !== "complete")
           .sort((a, b) => (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9) || a.order - b.order);
@@ -5406,6 +5413,7 @@
         document.getElementById("migration-progress-bar").style.width = `${progress}%`;
         document.getElementById("migration-complete-count").textContent = summary.status_counts.complete;
         document.getElementById("migration-ready-count").textContent = summary.status_counts.ready;
+        document.getElementById("migration-development-count").textContent = summary.status_counts.in_development;
         document.getElementById("migration-blocked-count").textContent = summary.status_counts.blocked;
         document.getElementById("completed-lane-count").textContent = `${completed.length} tasks`;
         document.getElementById("todo-lane-count").textContent = `${todo.length} tasks`;
