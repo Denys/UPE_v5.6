@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-505-RESULT
-generated_at: '2026-07-23T00:36:29+02:00'
-status: TESTED_LOCALLY_PR_18_SIXTH_REVIEW_REPAIRED
+generated_at: '2026-07-23T00:59:04+02:00'
+status: TESTED_LOCALLY_PR_18_SEVENTH_REVIEW_REPAIRED
 
 task:
   id: C-505
@@ -87,18 +87,19 @@ local_review_repairs:
   - repaired fifth PR review finding by converting malformed recovered command workspace identities into structured FORBIDDEN decisions
   - repaired sixth PR review finding by classifying extensionless and executable/script-suffixed Windows interpreter names
   - repaired sixth PR review finding by rejecting credential-bearing argv switches before a command rule can retain a split secret
+  - repaired seventh PR review finding by redacting split credential-flag values in flat command, exception and tool-output text
 
 verification:
   result: PASS
-  targeted_C505: 92_passed
+  targeted_C505: 95_passed_cumulative_26_approval_plus_69_permission
   dependency_regression: 188_passed
-  complete_unit_tests: 429_passed_after_C409_integration_and_six_review_cycles
-  complete_repository_tests: 457_passed_after_C409_integration_and_six_review_cycles
+  complete_unit_tests: 429_passed_on_immediately_preceding_review_head
+  complete_repository_tests: 457_passed_on_immediately_preceding_review_head
   uv_lock: PASS_33_PACKAGES
   package_import: PASS_VERSION_0_1_0
-  ruff_lint: PASS
-  ruff_format: PASS_47_FILES
-  strict_mypy: PASS_40_SOURCE_FILES
+  ruff_lint: PASS_FULL_PREVIOUS_HEAD_AND_TWO_CHANGED_FILES_CURRENT_HEAD
+  ruff_format: PASS_47_FILES_PREVIOUS_HEAD_AND_TWO_CHANGED_FILES_CURRENT_HEAD
+  strict_mypy: PASS_40_SOURCE_FILES_PREVIOUS_HEAD_AND_CHANGED_MODULE_CURRENT_HEAD
   work_specification_validator: PASS_16_CASES
   reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
   schema_validator: PASS_6_INSTANCES
@@ -112,10 +113,10 @@ verification:
 
 evidence_hashes_sha256:
   src/harness/approvals.py: 21dc9c5d4e38639f3e6f9e4b2dc61217f3ef1c14383f112c18d9cf8bb234b9ab
-  src/harness/permissions.py: fd5a6eadec88b91d164d7f9b9bd0d95cec0fa342b0d0234624eda74d14cd1fbe
+  src/harness/permissions.py: ffbda4f0bbaa7bdacac10bab7d84ede97a80db5211df5c6fef38c0c1059f1a9b
   tests/unit/test_approvals.py: 8d80d97b058c56db0d8c39c55e1523d7db8c99c1abf468ab2cc41a2512b30bfc
-  tests/unit/test_permissions.py: 9ae155230e0e46e369bd336dccb42bfcbef7e31fa105775d1ec8b3cf0763127d
-  docs/research/research-state.yaml: 15418520275fead7001038d825247af714479ece935bc44be452bbd9aa7ac104
+  tests/unit/test_permissions.py: c6e25bafcb559499b8da1532bf878ff08f2244d7c10b3382e806e55ef528312a
+  docs/research/research-state.yaml: 5f1a4e8a4adb4a5644b252e3875ee7f13cbda7615b4c74114e7942ba7d1b3fe4
   scripts/update_capability_readiness_report.py: e1cd78f9101ee743c57086c7f514ebfbe9b06054ec01566db9f2d429f4cd119e
   tests/test_capability_readiness_report.py: bb5f96f1e2536e52563e3bb581f189d45ffe895ca12b4f19339e3a29cedb0be1
   UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dcb1a537d6cd81f703931ce94d1c632fda755fbc2353fad6fbf3117c5123af1c
@@ -125,7 +126,7 @@ preserved_state:
   real_credentials_read: false
   real_codex_shell_network_or_external_action_from_tests: false
   authorized_commit_push_pr: performed
-  review_findings: six_cycles_repaired_pending_final_rereview
+  review_findings: seven_cycles_repaired_pending_final_rereview
   accept_merge: pending
   release_deploy: not_performed
 

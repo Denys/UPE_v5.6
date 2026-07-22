@@ -484,6 +484,27 @@ def test_assignment_redaction_consumes_quoted_values_with_separators() -> None:
 @pytest.mark.parametrize(
     ("payload", "secret", "safe_context"),
     [
+        ("cmd --token opaque-session-token --verbose", "opaque-session-token", "--verbose"),
+        ("tool --api-key abcdef status=failed", "abcdef", "status=failed"),
+        ('runner /password "abc def" trace-id=123', "abc def", "trace-id=123"),
+    ],
+)
+def test_flat_text_redaction_covers_split_credential_flags(
+    payload: str,
+    secret: str,
+    safe_context: str,
+) -> None:
+    result = redact_payload(payload)
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert secret not in rendered
+    assert safe_context in rendered
+
+
+@pytest.mark.parametrize(
+    ("payload", "secret", "safe_context"),
+    [
         ('{"api_key":"opaque-session","status":"ok"}', "opaque-session", '"status":"ok"'),
         ("'password': 'hunter2'\nstatus: ok", "hunter2", "status: ok"),
     ],

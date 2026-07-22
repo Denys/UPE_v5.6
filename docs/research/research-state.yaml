@@ -130,7 +130,7 @@ upe_state:
       result: agent/state/C-409-result.yaml
       gate: validation/C-409-GATE.yaml
     C_505_local_slice:
-      state: LOCAL_ACCEPTANCE_PASS_PR_18_SIX_REVIEW_CYCLES_REPAIRED
+      state: LOCAL_ACCEPTANCE_PASS_PR_18_SEVEN_REVIEW_CYCLES_REPAIRED
       branch: codex/c505-cloud-coordinator
       original_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
       integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
@@ -296,6 +296,7 @@ upe_state:
     - Repaired the fourth PR #18 review round by redacting username-only URI userinfo and rejecting control/invalid characters across Windows path and policy text surfaces; 83 focused and 448 complete repository tests pass.
     - Repaired the fifth PR #18 review round by recognizing quoted serialized credential keys and returning FORBIDDEN for malformed recovered command workspaces; 86 focused and 451 complete repository tests pass.
     - Repaired the sixth PR #18 review round by classifying extensionless Windows interpreters and rejecting credential-bearing argv switches before policy retention; 92 focused and 457 complete repository tests pass.
+    - Repaired the seventh PR #18 review round by redacting split credential-flag values in flat command, exception and tool-output text; all 69 permission tests plus changed-file Ruff and strict mypy checks pass, while the immediately preceding head retains the 457-test complete-suite evidence.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
@@ -366,8 +367,8 @@ upe_state:
   recovery: >-
     Resume PR #18 in codex/c505-cloud-coordinator from merged C-409 at
     c5bf5b3b81091f6c74465a77f204535e0f1389bc. Preserve the protected primary
-    checkout and all other worktrees. Re-run validation/C-505-GATE.yaml, the
-    complete repository gate and report freshness before merge.
+    checkout and all other worktrees. Confirm the targeted seventh-review
+    regression checks, then verify report freshness on merged main.
 
   next_action: >-
     Request PR #18 re-review of the repaired head, accept and merge only after no

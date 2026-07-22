@@ -1,12 +1,13 @@
 schema_version: '1.0'
 gate_id: C-505-HOST-APPROVAL-PERMISSION-SECURITY
-generated_at: '2026-07-23T00:36:29+02:00'
+generated_at: '2026-07-23T00:59:04+02:00'
 status: PASS
 status_reason: >-
   Immutable host-owned policy fails closed for consequential approvals,
-  commands, Windows paths, environment, network and redaction, with 457 passing
-  post-integration Windows repository tests and no real credential, process,
-  network or external effect.
+  commands, Windows paths, environment, network and redaction. The immediately
+  preceding review head passed 457 repository tests; the seventh-review delta
+  passes all 69 permission tests plus changed-file lint, format and strict typing,
+  with no real credential, process, network or external effect.
 
 repository:
   identity: Denys/UPE_v5.6
@@ -41,7 +42,7 @@ criteria:
   - id: C-505-REDACTION
     verdict: PASS
     evidence:
-      - Success and exception payloads redact synthetic secrets, complete quoted or separator-bearing prefixed assignments, quoted serialized credential keys, bearer/basic headers, username-only or password-bearing URI userinfo, command/URL carriers, JWTs, PEM data, emails, phone-like data and bytes before transfer.
+      - Success and exception payloads redact synthetic secrets, complete quoted or separator-bearing prefixed assignments, split credential-flag values, quoted serialized credential keys, bearer/basic headers, username-only or password-bearing URI userinfo, command/URL carriers, JWTs, PEM data, emails, phone-like data and bytes before transfer.
       - Mapping-key leaks, cycles, excess depth and unsupported types produce deterministic redaction markers.
       - Useful non-secret error type and correlation context remain available.
   - id: C-505-STRICT-BOUNDARY
@@ -53,14 +54,14 @@ criteria:
   - id: C-505-REGRESSION
     verdict: PASS
     evidence:
-      - Ninety-two focused C-505 and 457 complete post-C-409 integration repository tests pass on Windows; the accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
-      - Lock, import, Ruff lint/format, strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates pass.
-      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and six rounds of substantive PR review findings.
+      - Ninety-five cumulative focused C-505 tests pass: 26 approval tests from the unchanged module and all 69 permission tests on the current head. The immediately preceding review head passed all 457 post-C-409 repository tests on Windows; accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
+      - Current changed-file Ruff lint/format and strict mypy pass; the immediately preceding head also passed lock, import, full Ruff, full strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates.
+      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and seven rounds of substantive PR review findings.
   - id: C-505-SCOPE-AND-PRESERVATION
     verdict: PASS
     evidence:
       - The dirty primary checkout and every other linked worktree remain untouched.
-      - The explicitly authorized commit, push, PR creation and review occurred; six review rounds are repaired, final re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
+      - The explicitly authorized commit, push, PR creation and review occurred; seven review rounds are repaired, final re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
   - id: C-505-REPORT-INTEGRATION
     verdict: PASS
     evidence:

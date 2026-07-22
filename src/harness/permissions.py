@@ -49,6 +49,11 @@ _SENSITIVE_ARGUMENT_FLAG = re.compile(
     r"(?i)^(?:--?|/)[A-Z0-9_-]*(?:authorization|cookie|credential|password|passwd|secret|"
     r"token|api[-_]?key|private[-_]?key)[A-Z0-9_-]*\Z"
 )
+_SENSITIVE_ARGUMENT_VALUE = re.compile(
+    r"""(?i)(?<![A-Z0-9_-])((?:--?|/)[A-Z0-9_-]*(?:authorization|cookie|credential|"""
+    r"""password|passwd|secret|token|api[-_]?key|private[-_]?key)[A-Z0-9_-]*)(\s+)"""
+    r"""(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;&|<>`]+)"""
+)
 _RESERVED_NAMES = frozenset(
     {"AUX", "CLOCK$", "CON", "NUL", "PRN"}
     | {f"COM{index}" for index in range(1, 10)}
@@ -672,6 +677,7 @@ def _redact_text(value: str) -> tuple[str, bool]:
     redacted = value
     redacted = _URL_USERINFO.sub(r"\1<REDACTED:USERINFO>@", redacted)
     redacted = _BEARER.sub("Bearer <REDACTED:SECRET>", redacted)
+    redacted = _SENSITIVE_ARGUMENT_VALUE.sub(r"\1\2<REDACTED:SECRET>", redacted)
     redacted = _SECRET_ASSIGNMENT.sub(r"\1\2<REDACTED:SECRET>", redacted)
     redacted = _TOKEN.sub("<REDACTED:SECRET>", redacted)
     redacted = _JWT.sub("<REDACTED:SECRET>", redacted)
