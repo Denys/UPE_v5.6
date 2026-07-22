@@ -1,10 +1,10 @@
 schema_version: '1.0'
 gate_id: C-505-HOST-APPROVAL-PERMISSION-SECURITY
-generated_at: '2026-07-22T23:14:21+02:00'
+generated_at: '2026-07-22T23:43:00+02:00'
 status: PASS
 status_reason: >-
   Immutable host-owned policy fails closed for consequential approvals,
-  commands, Windows paths, environment, network and redaction, with 443 passing
+  commands, Windows paths, environment, network and redaction, with 448 passing
   post-integration Windows repository tests and no real credential, process,
   network or external effect.
 
@@ -35,13 +35,13 @@ criteria:
   - id: C-505-PATH-NETWORK
     verdict: PASS
     evidence:
-      - Traversal, sibling, UNC, device namespace, ADS, glob, expansion, reserved name, stale workspace identity, reparse observation and cleanup requests are refused.
+      - Traversal, sibling, UNC, device namespace, ADS, glob, expansion, control/invalid characters, reserved names, stale workspace identity, reparse observation and cleanup requests are refused.
       - Cleanup remains behind C-405 ownership/identity revalidation and a separate approval boundary.
       - Network is default-deny and exact-scope; malformed hosts/IPs, userinfo, fragments, redirects, unsafe separators, credential URLs and destination drift are refused.
   - id: C-505-REDACTION
     verdict: PASS
     evidence:
-      - Success and exception payloads redact synthetic secrets, complete quoted or separator-bearing prefixed assignments, bearer/basic headers, credential fields, command/URL carriers, JWTs, PEM data, emails, phone-like data and bytes before transfer.
+      - Success and exception payloads redact synthetic secrets, complete quoted or separator-bearing prefixed assignments, bearer/basic headers, username-only or password-bearing URI userinfo, credential fields, command/URL carriers, JWTs, PEM data, emails, phone-like data and bytes before transfer.
       - Mapping-key leaks, cycles, excess depth and unsupported types produce deterministic redaction markers.
       - Useful non-secret error type and correlation context remain available.
   - id: C-505-STRICT-BOUNDARY
@@ -53,14 +53,14 @@ criteria:
   - id: C-505-REGRESSION
     verdict: PASS
     evidence:
-      - Seventy-eight focused C-505 and 443 complete post-C-409 integration repository tests pass on Windows; the accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
+      - Eighty-three focused C-505 and 448 complete post-C-409 integration repository tests pass on Windows; the accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
       - Lock, import, Ruff lint/format, strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates pass.
-      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and three rounds of substantive PR review findings.
+      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and four rounds of substantive PR review findings.
   - id: C-505-SCOPE-AND-PRESERVATION
     verdict: PASS
     evidence:
       - The dirty primary checkout and every other linked worktree remain untouched.
-      - The explicitly authorized commit, push, PR creation and review occurred; three review rounds are repaired, final re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
+      - The explicitly authorized commit, push, PR creation and review occurred; four review rounds are repaired, final re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
   - id: C-505-REPORT-INTEGRATION
     verdict: PASS
     evidence:

@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-505-RESULT
-generated_at: '2026-07-22T23:14:21+02:00'
-status: TESTED_LOCALLY_PR_18_THIRD_REVIEW_REPAIRED
+generated_at: '2026-07-22T23:43:00+02:00'
+status: TESTED_LOCALLY_PR_18_FOURTH_REVIEW_REPAIRED
 
 task:
   id: C-505
@@ -81,13 +81,15 @@ local_review_repairs:
   - repaired second PR review finding by requiring fresh workspace identity and zero observed reparse components for every allowed command request
   - repaired third PR review finding by requiring fresh workspace identity for every allowed file path request
   - repaired third PR review finding by consuming a complete sensitive assignment value up to the next structured assignment or line boundary
+  - repaired fourth PR review finding by redacting username-only userinfo for any URI scheme, not only colon-separated HTTP credentials
+  - repaired fourth PR review finding by rejecting control and invalid characters across Windows paths and other host policy text surfaces
 
 verification:
   result: PASS
-  targeted_C505: 78_passed
+  targeted_C505: 83_passed
   dependency_regression: 188_passed
-  complete_unit_tests: 415_passed_after_C409_integration_and_three_review_cycles
-  complete_repository_tests: 443_passed_after_C409_integration_and_three_review_cycles
+  complete_unit_tests: 420_passed_after_C409_integration_and_four_review_cycles
+  complete_repository_tests: 448_passed_after_C409_integration_and_four_review_cycles
   uv_lock: PASS_33_PACKAGES
   package_import: PASS_VERSION_0_1_0
   ruff_lint: PASS
@@ -106,10 +108,10 @@ verification:
 
 evidence_hashes_sha256:
   src/harness/approvals.py: 21dc9c5d4e38639f3e6f9e4b2dc61217f3ef1c14383f112c18d9cf8bb234b9ab
-  src/harness/permissions.py: 66762e0d7e9506fc3ade52ea1a33b8264714ab63f2cb56552f4c113208200593
+  src/harness/permissions.py: 642629f2a5edd0d2efa8a7d22d011953742a0d9600b869dba61fa3276b920797
   tests/unit/test_approvals.py: 8d80d97b058c56db0d8c39c55e1523d7db8c99c1abf468ab2cc41a2512b30bfc
-  tests/unit/test_permissions.py: 4161c371f867d3ae30b0f5a5bb8b492cc52e1ae927726a15763bb074772458e7
-  docs/research/research-state.yaml: 71c52bf661dcd6b4c763db1b4bee367a33bdb17c675cb9c056e1da948fbac92d
+  tests/unit/test_permissions.py: 7e2ef711228960ff8c90ad3188ceedf208b873108cb00c8fa61cae78654bb7bc
+  docs/research/research-state.yaml: e0957ca85dafbbc537ac804c62eadebdc22a9e194351fbb00ac16ce7fa1c7c86
   scripts/update_capability_readiness_report.py: e1cd78f9101ee743c57086c7f514ebfbe9b06054ec01566db9f2d429f4cd119e
   tests/test_capability_readiness_report.py: bb5f96f1e2536e52563e3bb581f189d45ffe895ca12b4f19339e3a29cedb0be1
   UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dcb1a537d6cd81f703931ce94d1c632fda755fbc2353fad6fbf3117c5123af1c
@@ -119,7 +121,7 @@ preserved_state:
   real_credentials_read: false
   real_codex_shell_network_or_external_action_from_tests: false
   authorized_commit_push_pr: performed
-  review_findings: three_cycles_repaired_pending_final_rereview
+  review_findings: four_cycles_repaired_pending_final_rereview
   accept_merge: pending
   release_deploy: not_performed
 

@@ -211,7 +211,7 @@ def test_command_arguments_and_environment_values_are_bounded() -> None:
             executable=EXECUTABLE,
             argument_vectors=(tuple("arg" for _ in range(65)),),
         )
-    with pytest.raises(TypeError, match="NUL-free"):
+    with pytest.raises(TypeError, match="control-free"):
         CommandRule(
             executable=EXECUTABLE,
             argument_vectors=(("x" * 4097,),),
@@ -258,6 +258,9 @@ def test_contained_child_path_is_allowed(operation: PathOperation) -> None:
         r"%TEMP%\file.txt",
         r"NUL.txt",
         r"folder.\file.txt",
+        "src\\ok\nFORGED=1.txt",
+        "src\\bad\tname.txt",
+        'src\\bad"name.txt',
     ],
 )
 def test_windows_path_escape_classes_fail_closed(relative_path: str) -> None:
@@ -458,6 +461,19 @@ def test_authorization_header_redacts_opaque_secret_before_assignment(
 
     assert result.status is RedactionStatus.REDACTED
     assert "opaque-session-token" not in rendered
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["https://opaque-token@localhost/repo", "ssh://opaque-token@internal/repo"],
+)
+def test_url_userinfo_redacts_username_only_credentials(url: str) -> None:
+    result = redact_payload(url)
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert "opaque-token" not in rendered
+    assert "<REDACTED:USERINFO>@" in rendered
 
 
 def test_safe_payload_is_preserved_without_false_redaction_marker() -> None:

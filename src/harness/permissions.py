@@ -51,6 +51,8 @@ _RESERVED_NAMES = frozenset(
 )
 _SHELL_COMPOSITION = re.compile(r"[|&;<>`\r\n]|\$\(|\)\s*\{")
 _VARIABLE_EXPANSION = re.compile(r"%[^%]+%|\$\{[^}]+\}|\$[A-Za-z_][A-Za-z0-9_]*")
+_CONTROL_CHARACTER = re.compile(r"[\x00-\x1f\x7f]")
+_WINDOWS_INVALID_PATH_CHARACTER = re.compile(r'[<>"|\x00-\x1f\x7f]')
 
 _EMAIL = re.compile(r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w.-])")
 _PHONE = re.compile(r"(?<!\w)(?:\+?\d[\d .()/-]{6,}\d)(?!\w)")
@@ -67,7 +69,7 @@ _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}
 _PRIVATE_KEY = re.compile(
     r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"
 )
-_URL_USERINFO = re.compile(r"(?i)(https?://)([^/@\s:]+):([^/@\s]+)@")
+_URL_USERINFO = re.compile(r"(?i)([a-z][a-z0-9+.-]*://)([^/@\s]+)@")
 _SECRET_CANARY = re.compile(r"C505_SECRET_CANARY_[A-Za-z0-9_-]+")
 
 _MAX_ARGUMENTS = 64
@@ -318,8 +320,8 @@ def filter_environment(
         if raw_key not in allowed:
             dropped.append(raw_key)
             continue
-        if "\x00" in raw_value or len(raw_value) > _MAX_ENVIRONMENT_VALUE:
-            raise ValueError("environment values must be bounded and NUL-free")
+        if _CONTROL_CHARACTER.search(raw_value) or len(raw_value) > _MAX_ENVIRONMENT_VALUE:
+            raise ValueError("environment values must be bounded and control-free")
         if _contains_secret(raw_value):
             raise ValueError("environment values must not contain inline credentials")
         retained.append((raw_key, raw_value))
@@ -667,8 +669,8 @@ def _redact_text(value: str) -> tuple[str, bool]:
 def _require_text(value: object, location: str) -> None:
     if type(value) is not str:
         raise TypeError(f"{location} must be a string")
-    if not value or value != value.strip() or "\x00" in value or len(value) > 8192:
-        raise ValueError(f"{location} must be normalized non-empty NUL-free text")
+    if not value or value != value.strip() or _CONTROL_CHARACTER.search(value) or len(value) > 8192:
+        raise ValueError(f"{location} must be normalized non-empty control-free text")
 
 
 def _require_arguments(value: object, location: str) -> None:
@@ -677,8 +679,12 @@ def _require_arguments(value: object, location: str) -> None:
     if len(value) > _MAX_ARGUMENTS:
         raise ValueError(f"{location} contains too many arguments")
     for argument in value:
-        if type(argument) is not str or "\x00" in argument or len(argument) > _MAX_ARGUMENT_LENGTH:
-            raise TypeError(f"{location} must contain NUL-free strings")
+        if (
+            type(argument) is not str
+            or _CONTROL_CHARACTER.search(argument)
+            or len(argument) > _MAX_ARGUMENT_LENGTH
+        ):
+            raise TypeError(f"{location} must contain control-free strings")
         if _SHELL_COMPOSITION.search(argument) or _VARIABLE_EXPANSION.search(argument):
             raise ValueError(f"{location} contains shell composition or variable expansion")
         if _contains_secret(argument):
@@ -698,8 +704,8 @@ def _require_environment_keys(keys: object) -> None:
 
 
 def _safe_absolute_windows_path(value: object, location: str) -> PureWindowsPath:
-    if type(value) is not str or not value or "\x00" in value:
-        raise ValueError(f"{location} must be a non-empty NUL-free string")
+    if type(value) is not str or not value or _WINDOWS_INVALID_PATH_CHARACTER.search(value):
+        raise ValueError(f"{location} must be a non-empty control-free Windows path")
     normalized = value.replace("/", "\\")
     lowered = normalized.casefold()
     if lowered.startswith(("\\\\?\\", "\\\\.\\", "\\??\\")):
@@ -716,8 +722,8 @@ def _safe_absolute_windows_path(value: object, location: str) -> PureWindowsPath
 
 
 def _safe_relative_windows_path(value: str) -> tuple[str, ...]:
-    if not value or "\x00" in value:
-        raise ValueError("relative path must be non-empty and NUL-free")
+    if not value or _WINDOWS_INVALID_PATH_CHARACTER.search(value):
+        raise ValueError("relative path must be non-empty and control-free")
     normalized = value.replace("/", "\\")
     if normalized.casefold().startswith(("\\\\?\\", "\\\\.\\", "\\??\\")):
         raise ValueError("device namespace")
