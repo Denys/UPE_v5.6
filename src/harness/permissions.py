@@ -58,9 +58,9 @@ _EMAIL = re.compile(r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w.-]
 _PHONE = re.compile(r"(?<!\w)(?:\+?\d[\d .()/-]{6,}\d)(?!\w)")
 _BEARER = re.compile(r"(?i)\b(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{6,}")
 _SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b([A-Z0-9_-]*(?:authorization|cookie|credential|password|passwd|secret|token|"
-    r"api[-_]?key|private[-_]?key)[A-Z0-9_-]*)"
-    r"(\s*[:=]\s*)([^\r\n]*?)(?=(?:[\s,;&]+[A-Z][A-Z0-9_-]*\s*[:=])|[\r\n]|$)"
+    r"""(?i)(?<![A-Z0-9_-])(["']?[A-Z0-9_-]*(?:authorization|cookie|credential|password|"""
+    r"""passwd|secret|token|api[-_]?key|private[-_]?key)[A-Z0-9_-]*["']?)"""
+    r"""(\s*[:=]\s*)([^\r\n]*?)(?=(?:[\s,;&]+["']?[A-Z][A-Z0-9_-]*["']?\s*[:=])|[\r\n]|$)"""
 )
 _TOKEN = re.compile(
     r"(?i)\b(?:sk-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|AKIA[0-9A-Z]{12,})\b"
@@ -357,7 +357,18 @@ def evaluate_command(
             ),
             empty_environment,
         )
-    if _path_key(request.cwd) != _path_key(policy.workspace.workspace):
+    try:
+        request_cwd_key = _path_key(request.cwd)
+        policy_workspace_key = _path_key(policy.workspace.workspace)
+    except (TypeError, ValueError) as exc:
+        return (
+            PermissionDecision(
+                decision=Decision.FORBIDDEN,
+                reason=f"command cwd or assigned workspace is malformed: {exc}",
+            ),
+            filtered,
+        )
+    if request_cwd_key != policy_workspace_key:
         return (
             PermissionDecision(
                 decision=Decision.FORBIDDEN,

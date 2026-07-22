@@ -46,6 +46,7 @@ def command_policy(
     *,
     rules: tuple[CommandRule, ...] | None = None,
     environment_keys: tuple[str, ...] = ("PATH", "TEMP"),
+    workspace: Path = WORKSPACE,
 ) -> CommandPolicy:
     if rules is None:
         rules = (
@@ -55,7 +56,7 @@ def command_policy(
             ),
         )
     return CommandPolicy(
-        workspace=assignment(),
+        workspace=assignment(workspace=workspace),
         rules=rules,
         allowed_environment_keys=environment_keys,
         maximum_timeout_seconds=60,
@@ -158,6 +159,17 @@ def test_command_requires_fresh_workspace_identity_and_no_reparse(
     )
 
     assert decision.decision is Decision.FORBIDDEN
+
+
+def test_malformed_assigned_command_workspace_returns_forbidden() -> None:
+    decision, _ = evaluate_command(
+        command_policy(workspace=Path("relative")),
+        command_request(),
+        environment={},
+    )
+
+    assert decision.decision is Decision.FORBIDDEN
+    assert decision.reason.startswith("command cwd or assigned workspace is malformed:")
 
 
 @pytest.mark.parametrize(
@@ -450,6 +462,26 @@ def test_assignment_redaction_consumes_quoted_values_with_separators() -> None:
     assert "ghi" not in rendered
     assert "still-secret" not in rendered
     assert "CORRELATION_ID=trace-123" in rendered
+
+
+@pytest.mark.parametrize(
+    ("payload", "secret", "safe_context"),
+    [
+        ('{"api_key":"opaque-session","status":"ok"}', "opaque-session", '"status":"ok"'),
+        ("'password': 'hunter2'\nstatus: ok", "hunter2", "status: ok"),
+    ],
+)
+def test_assignment_redaction_covers_quoted_serialized_keys(
+    payload: str,
+    secret: str,
+    safe_context: str,
+) -> None:
+    result = redact_payload(payload)
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert secret not in rendered
+    assert safe_context in rendered
 
 
 @pytest.mark.parametrize("scheme", ["Bearer", "Basic"])
