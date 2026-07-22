@@ -45,9 +45,18 @@ evidence, not authority for an external or destructive action.
 - `C-501` is adopted by PR `#16`; its schema-bound adapter gate is
   `validation/C-501-GATE.yaml`. No live App Server compatibility is claimed
   until the controlled `C-502` smoke.
+- `C-409` is locally accepted at `4d6392bec8bf6ade6e77b5651bd78006576a9180`;
+  its result and gate are `agent/state/C-409-result.yaml` and
+  `validation/C-409-GATE.yaml`. The CLI reports the observed Codex/App Server
+  availability as Codex `0.144.3`; it does not invent a separate App Server
+  protocol version. Treat C-409 as adopted only after its reconciliation PR merges.
+- `C-505` is locally accepted in a separate worktree but remains unmerged and in
+  development. Do not treat its functional branch or coordinator observation as
+  accepted repository state.
 - The capability-readiness report and its refresh hook are adopted by PRs `#7`
-  and `#8`. W-211, W-212, C-409 and C-505 are dependency-satisfied; keep their
-  functional ownership, result/gate evidence and Git changes separate.
+  and `#8`. After C-409 adoption, W-211, W-212, C-410 and C-502 form the ready
+  frontier; keep their functional ownership, result/gate evidence and Git changes
+  separate.
 
 ## Repository map
 

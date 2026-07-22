@@ -1,0 +1,67 @@
+schema_version: '1.0'
+gate_id: C-409-CLI-DOCTOR
+generated_at: '2026-07-22T16:19:15+02:00'
+status: PASS
+status_reason: >-
+  The bounded Windows CLI exposes the accepted command surface, reports exact
+  sanitized runtime/Codex/SQLite facts without inventing an App Server protocol
+  version, and passes 365 repository tests plus strict static and contract gates.
+
+repository:
+  identity: Denys/UPE_v5.6
+  base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+  functional_head: 4d6392bec8bf6ade6e77b5651bd78006576a9180
+  pull_request: pending
+
+criteria:
+  - id: C-409-COMMAND-SURFACE
+    verdict: PASS
+    evidence:
+      - init, research, doctor, run, status, events, resume, pause, cancel, evaluate and cleanup are registered through the project entry point.
+      - Commands validate inputs and fail explicitly where later lifecycle/recovery/security integrations do not yet exist.
+  - id: C-409-DOCTOR-CONTRACT
+    verdict: PASS
+    evidence:
+      - Doctor reports exact Python 3.14.3, Codex 0.144.3, App Server availability through Codex 0.144.3 and SQLite 3.50.4 with the resolved database path.
+      - Git, cleanliness, worktree support, validators, permissions and optional credential references are checked without printing credential values.
+      - No separate App Server or protocol version is invented.
+  - id: C-409-BOUNDED-PROBE
+    verdict: PASS
+    evidence:
+      - stdout and stderr are drained concurrently into fixed retained-byte buffers instead of being captured without limit and sliced after exit.
+      - Timeout termination is Windows-compatible, drains both pipes safely and returns bounded sanitized diagnostics.
+      - A discriminating large-output regression proves the captured prefix remains bounded before the child completes.
+  - id: C-409-REGRESSION
+    verdict: PASS
+    evidence:
+      - Twenty-five focused C-409, 337 unit and 365 complete repository tests pass on Windows.
+      - Lock, Ruff lint/format, strict mypy, work-specification, reference, schema, report-freshness and diff checks pass.
+  - id: C-409-SCOPE-AND-LIMITS
+    verdict: PASS
+    evidence:
+      - Functional behavior remains confined to pyproject.toml, src/harness/cli.py and tests/unit/test_cli.py.
+      - Coordinator evidence/state/report paths are serialized separately; the dirty C-505 worktree and primary untracked/stash state are untouched.
+      - Live provider compatibility, restart recovery, integrated security, release and deployment remain unclaimed.
+
+commands:
+  - uv lock --check
+  - uv run pytest -q tests/unit/test_cli.py
+  - uv run pytest -q tests/unit
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_work_specifications.py
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/validate_schema.py
+  - uv run pytest -q tests/test_capability_readiness_report.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+  - uv run harness doctor
+  - git diff --check
+
+known_limits:
+  - Live App Server behavior remains C-502 evidence.
+  - Restart/reconciliation remains C-503, host security remains C-505/C-506, and complete operational documentation remains C-410.
+  - Python 3.12 and 3.13 remain unverified.
+
+next_action: Merge the C-409 reconciliation and verify report freshness plus the rendered desktop/mobile report on merged main.
