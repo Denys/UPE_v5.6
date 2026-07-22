@@ -39,9 +39,15 @@ evidence, not authority for an external or destructive action.
 - `C-404` deterministic validation is adopted on `main` by PR `#9` at
   `dc41f569b8f575e8f872e53fd5ed6adabdf3e12e`; its accepted gate is
   `validation/C-404-GATE.yaml`.
+- `C-405` through `C-408` are adopted on `main` by PRs `#12` through `#15`;
+  their accepted gates remain `validation/C-405-GATE.yaml` through
+  `validation/C-408-GATE.yaml`.
+- `C-501` is adopted by PR `#16`; its schema-bound adapter gate is
+  `validation/C-501-GATE.yaml`. No live App Server compatibility is claimed
+  until the controlled `C-502` smoke.
 - The capability-readiness report and its refresh hook are adopted by PRs `#7`
-  and `#8`. W-211, W-212, C-405, C-406 and C-408 are dependency-satisfied; keep
-  their functional ownership, result/gate evidence and Git changes separate.
+  and `#8`. W-211, W-212, C-409 and C-505 are dependency-satisfied; keep their
+  functional ownership, result/gate evidence and Git changes separate.
 
 ## Repository map
 
