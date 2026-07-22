@@ -68,6 +68,8 @@ def command_request(**changes: object) -> CommandRequest:
         "executable": EXECUTABLE,
         "arguments": ("run", "pytest", "-q"),
         "cwd": WORKSPACE,
+        "observed_workspace_identity": FilesystemIdentity(device=1, inode=11),
+        "observed_reparse_components": (),
         "timeout_seconds": 30,
         "output_limit_bytes": 2048,
     }
@@ -130,6 +132,25 @@ def test_default_deny_command_policy_runs_nothing() -> None:
     ],
 )
 def test_command_scope_drift_is_forbidden(changes: dict[str, object]) -> None:
+    decision, _ = evaluate_command(
+        command_policy(),
+        command_request(**changes),
+        environment={},
+    )
+
+    assert decision.decision is Decision.FORBIDDEN
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"observed_workspace_identity": FilesystemIdentity(device=1, inode=99)},
+        {"observed_reparse_components": (str(WORKSPACE),)},
+    ],
+)
+def test_command_requires_fresh_workspace_identity_and_no_reparse(
+    changes: dict[str, object],
+) -> None:
     decision, _ = evaluate_command(
         command_policy(),
         command_request(**changes),
@@ -393,6 +414,17 @@ def test_flat_text_redaction_covers_prefixed_credential_assignments() -> None:
     assert "access-key-value" not in rendered
     assert "MY_PASSWORD=<REDACTED:SECRET>" in rendered
     assert "AWS_SECRET_ACCESS_KEY=<REDACTED:SECRET>" in rendered
+
+
+@pytest.mark.parametrize("scheme", ["Bearer", "Basic"])
+def test_authorization_header_redacts_opaque_secret_before_assignment(
+    scheme: str,
+) -> None:
+    result = redact_payload(f"Authorization: {scheme} opaque-session-token")
+    rendered = str(result.value)
+
+    assert result.status is RedactionStatus.REDACTED
+    assert "opaque-session-token" not in rendered
 
 
 def test_safe_payload_is_preserved_without_false_redaction_marker() -> None:

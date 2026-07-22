@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 
 from harness.approvals import Decision
 from harness.state import RedactionStatus
-from harness.workspace import WorkspaceAssignment
+from harness.workspace import FilesystemIdentity, WorkspaceAssignment
 
 _ENVIRONMENT_KEY = re.compile(r"[A-Z][A-Z0-9_]{0,127}\Z")
 _HOST = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?\Z")
@@ -168,6 +168,8 @@ class CommandRequest:
     executable: str
     arguments: tuple[str, ...]
     cwd: Path
+    observed_workspace_identity: FilesystemIdentity
+    observed_reparse_components: tuple[str, ...]
     timeout_seconds: float
     output_limit_bytes: int
 
@@ -177,6 +179,12 @@ class CommandRequest:
         if not isinstance(self.cwd, Path):
             raise TypeError("CommandRequest.cwd must be a Path")
         _safe_absolute_windows_path(str(self.cwd), "CommandRequest.cwd")
+        if type(self.observed_workspace_identity) is not FilesystemIdentity:
+            raise TypeError("CommandRequest.observed_workspace_identity must be FilesystemIdentity")
+        if type(self.observed_reparse_components) is not tuple or any(
+            type(item) is not str or not item for item in self.observed_reparse_components
+        ):
+            raise TypeError("CommandRequest.observed_reparse_components must be text tuple")
         if type(self.timeout_seconds) not in (int, float) or not 0 < float(self.timeout_seconds):
             raise ValueError("CommandRequest.timeout_seconds must be positive")
         if type(self.output_limit_bytes) is not int or self.output_limit_bytes < 1:
@@ -349,6 +357,22 @@ def evaluate_command(
             PermissionDecision(
                 decision=Decision.FORBIDDEN,
                 reason="command cwd is not the exact assigned workspace",
+            ),
+            filtered,
+        )
+    if request.observed_reparse_components:
+        return (
+            PermissionDecision(
+                decision=Decision.FORBIDDEN,
+                reason="command cwd contains an observed reparse component",
+            ),
+            filtered,
+        )
+    if request.observed_workspace_identity != policy.workspace.workspace_identity:
+        return (
+            PermissionDecision(
+                decision=Decision.FORBIDDEN,
+                reason="command cwd filesystem identity changed after assignment",
             ),
             filtered,
         )
@@ -621,8 +645,8 @@ def _redact(
 def _redact_text(value: str) -> tuple[str, bool]:
     redacted = value
     redacted = _URL_USERINFO.sub(r"\1<REDACTED:USERINFO>@", redacted)
-    redacted = _SECRET_ASSIGNMENT.sub(r"\1\2<REDACTED:SECRET>", redacted)
     redacted = _BEARER.sub("Bearer <REDACTED:SECRET>", redacted)
+    redacted = _SECRET_ASSIGNMENT.sub(r"\1\2<REDACTED:SECRET>", redacted)
     redacted = _TOKEN.sub("<REDACTED:SECRET>", redacted)
     redacted = _JWT.sub("<REDACTED:SECRET>", redacted)
     redacted = _PRIVATE_KEY.sub("<REDACTED:SECRET>", redacted)
