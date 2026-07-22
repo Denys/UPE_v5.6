@@ -130,7 +130,7 @@ upe_state:
       result: agent/state/C-409-result.yaml
       gate: validation/C-409-GATE.yaml
     C_505_local_slice:
-      state: LOCAL_ACCEPTANCE_PASS_PR_18_FIVE_REVIEW_CYCLES_REPAIRED
+      state: LOCAL_ACCEPTANCE_PASS_PR_18_SIX_REVIEW_CYCLES_REPAIRED
       branch: codex/c505-cloud-coordinator
       original_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
       integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
@@ -183,7 +183,7 @@ upe_state:
     C-408: MERGED_PR_14_PASS
     C-409: MERGED_PR_17_PASS
     C-501: MERGED_PR_16_PASS
-    C-505: PR_18_PASS_FIVE_REVIEW_CYCLES_REPAIRED
+    C-505: PR_18_PASS_SIX_REVIEW_CYCLES_REPAIRED
     harness_implementation: C505_SECURITY_PASS_PR_18_REREVIEW_PENDING
     local_implementation_authorization: GRANTED_COMMIT_PUSH_PR_REVIEW_ACCEPT_MERGE_ONLY
 
@@ -295,6 +295,7 @@ upe_state:
     - Repaired the third PR #18 review round by requiring fresh workspace identity for file paths and consuming complete sensitive assignment values through the next structured assignment boundary; 78 focused and 443 complete repository tests pass.
     - Repaired the fourth PR #18 review round by redacting username-only URI userinfo and rejecting control/invalid characters across Windows path and policy text surfaces; 83 focused and 448 complete repository tests pass.
     - Repaired the fifth PR #18 review round by recognizing quoted serialized credential keys and returning FORBIDDEN for malformed recovered command workspaces; 86 focused and 451 complete repository tests pass.
+    - Repaired the sixth PR #18 review round by classifying extensionless Windows interpreters and rejecting credential-bearing argv switches before policy retention; 92 focused and 457 complete repository tests pass.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.

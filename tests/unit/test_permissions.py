@@ -189,8 +189,11 @@ def test_shell_composition_expansion_and_secrets_are_rejected(
         CommandRule(executable=EXECUTABLE, argument_vectors=(arguments,))
 
 
-def test_interpreters_require_an_explicit_narrow_rule() -> None:
-    executable = r"C:\tools\python3.14.exe"
+@pytest.mark.parametrize(
+    "executable",
+    [r"C:\tools\python3.14.exe", r"C:\tools\python3.14", r"C:\tools\cmd"],
+)
+def test_interpreters_require_an_explicit_narrow_rule(executable: str) -> None:
     request = command_request(executable=executable, arguments=("-m", "pytest"))
     denied, _ = evaluate_command(
         command_policy(
@@ -215,6 +218,20 @@ def test_interpreters_require_an_explicit_narrow_rule() -> None:
 
     assert denied.decision is Decision.FORBIDDEN
     assert allowed.decision is Decision.ALLOWED
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ("--password", "hunter2"),
+        ("--token", "opaque-session-token"),
+        ("--api-key", "abcdef"),
+        ("/client-secret", "opaque-session-secret"),
+    ],
+)
+def test_split_credential_flags_are_rejected(arguments: tuple[str, ...]) -> None:
+    with pytest.raises(ValueError, match="credential-bearing argument flag"):
+        CommandRule(executable=EXECUTABLE, argument_vectors=(arguments,))
 
 
 def test_command_arguments_and_environment_values_are_bounded() -> None:

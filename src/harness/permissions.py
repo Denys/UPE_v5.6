@@ -42,7 +42,12 @@ _INTERPRETERS = frozenset(
 )
 _INTERPRETER_NAME = re.compile(
     r"(?i)(?:bash|bun|cmd|cscript|deno|fish|java|jshell|nodejs?|perl|php|"
-    r"powershell|pwsh|py|pypy\d*|python(?:\d+(?:\.\d+)*)?|ruby|sh|wscript|zsh)\.exe\Z"
+    r"powershell|pwsh|py|pypy\d*|python(?:\d+(?:\.\d+)*)?|ruby|sh|wscript|zsh)"
+    r"(?:\.(?:exe|com|bat|cmd))?\Z"
+)
+_SENSITIVE_ARGUMENT_FLAG = re.compile(
+    r"(?i)^(?:--?|/)[A-Z0-9_-]*(?:authorization|cookie|credential|password|passwd|secret|"
+    r"token|api[-_]?key|private[-_]?key)[A-Z0-9_-]*\Z"
 )
 _RESERVED_NAMES = frozenset(
     {"AUX", "CLOCK$", "CON", "NUL", "PRN"}
@@ -698,6 +703,8 @@ def _require_arguments(value: object, location: str) -> None:
             raise TypeError(f"{location} must contain control-free strings")
         if _SHELL_COMPOSITION.search(argument) or _VARIABLE_EXPANSION.search(argument):
             raise ValueError(f"{location} contains shell composition or variable expansion")
+        if _SENSITIVE_ARGUMENT_FLAG.fullmatch(argument):
+            raise ValueError(f"{location} contains a credential-bearing argument flag")
         if _contains_secret(argument):
             raise ValueError(f"{location} contains inline credential material")
 
