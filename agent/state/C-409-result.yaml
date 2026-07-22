@@ -15,7 +15,7 @@ repository:
   branch: codex/c409-cli-doctor
   base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
   functional_head: 4d6392bec8bf6ade6e77b5651bd78006576a9180
-  pull_request: pending
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/17
 
 implemented:
   command_surface:
