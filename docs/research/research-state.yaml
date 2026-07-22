@@ -1,14 +1,14 @@
 upe_state:
   goal: >-
-    Integrate the locally accepted C-407 budget/retry/no-progress slice after
-    merged C-408, refresh the mandatory report, and keep downstream work packages separate.
+    Reconcile the locally accepted C-409 CLI/doctor slice with merged C-501,
+    refresh the mandatory report, and serialize the already accepted C-505 branch afterward.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
-    observed_main_commit_role: accepted_C408_merge_PR_14
+    observed_main_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+    observed_main_commit_role: accepted_C501_merge_PR_16
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -106,12 +106,34 @@ upe_state:
       state: MERGED
       merge_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
     C_407_cloud_local_slice:
-      state: LOCAL_ACCEPTANCE_PASS_PENDING_PR
+      state: MERGED_PR_15
       branch: codex/c407-budget-retry-policy
       integration_base_commit: 4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e
       cloud_task_id: task_e_6a5fec4856088328b2fbb30ba2b3db24
       result: agent/state/C-407-result.yaml
       gate: validation/C-407-GATE.yaml
+    C_407_integration_pr_15:
+      state: MERGED
+      merge_commit: 356b5b2ed53289bc6752c466d2cd8a436abe0bc4
+    C_501_integration_pr_16:
+      state: MERGED
+      merge_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+      result: agent/state/C-501-result.yaml
+      gate: validation/C-501-GATE.yaml
+    C_409_local_slice:
+      state: LOCAL_ACCEPTANCE_PASS_PR_17
+      branch: codex/c409-cli-doctor
+      functional_commit: 4d6392bec8bf6ade6e77b5651bd78006576a9180
+      pull_request: https://github.com/Denys/UPE_v5.6/pull/17
+      result: agent/state/C-409-result.yaml
+      gate: validation/C-409-GATE.yaml
+
+  active_development:
+    C-505:
+      state: LOCALLY_ACCEPTED_UNMERGED
+      branch: codex/c505-cloud-coordinator
+      base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+      authority: coordinator_observation_only
 
   must_status:
     research_matrix: PASS
@@ -145,9 +167,11 @@ upe_state:
     C-404: MERGED_PR_9_PASS
     C-405: MERGED_PR_13_PASS
     C-406: MERGED_PR_12_PASS
-    C-407: PASS_PENDING_MERGE
+    C-407: MERGED_PR_15_PASS
     C-408: MERGED_PR_14_PASS
-    harness_implementation: BUDGET_RETRY_INTEGRATION_PASS_PENDING_MERGE
+    C-409: PR_17_PASS_PENDING_MERGE
+    C-501: MERGED_PR_16_PASS
+    harness_implementation: CLI_DOCTOR_RECONCILIATION_PASS_PENDING_MERGE
     local_implementation_authorization: GRANTED_BOUNDED_WORK_PACKAGE_GITHUB_DELIVERY
 
   authoritative_inputs:
@@ -246,11 +270,13 @@ upe_state:
     - Rejected the first Cloud implementation for invented RPC methods and repaired remaining generated-schema/runtime defects locally, including approval decisions, initialize capabilities, text input shape, terminal return, process-exit normalization, cancellation mapping, exact version pinning, and retried-error handling.
     - Passed 19 focused C-501 tests, 312 unit tests, and the complete 340-test Windows repository suite with lock, Ruff, strict mypy, work-specification, reference, schema, report-freshness, and diff gates.
     - Merged C-501 through PR #16; its accepted gate is validation/C-501-GATE.yaml. This proves deterministic schema-bound adapter behavior only, not a live App Server session.
+    - Implemented the C-409 eleven-command parser, fail-closed dispatch, and bounded secret-safe doctor at functional commit 4d6392bec8bf6ade6e77b5651bd78006576a9180.
+    - Passed 25 focused C-409 tests, 337 unit tests, and the complete 365-test repository suite with lock, Ruff, strict mypy, specification, reference, schema, freshness, and diff gates.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Implement C-409 CLI wiring and C-505 host-owned approval/permission security; both are dependency-satisfied after C-501.
+    - Merge the accepted C-409 reconciliation before rebasing and delivering the locally accepted C-505 approval/permission security branch.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -289,16 +315,18 @@ upe_state:
       - C-408 deterministic-first invocation, mandatory frozen semantic criteria, exact criteria/evidence/correction bounds, three-valued verdict aggregation, actual-artifact inspection, and read-only effect boundary
       - C-407 exact-limit and prospective budget accounting, total-token derivation, retry/backoff overflow and jitter boundaries, no-progress checkpoint preservation, and non-idempotent reconciliation refusal
       - C-501 strict JSON-RPC envelopes, generated initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
+      - C-409 exact command parsing, fail-closed dispatch, concurrent bounded process reads, timeout child termination, secret-safe diagnostics, deterministic JSON, and read-only SQLite inspection
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
       C-403 lifecycle/orchestration, C-404 deterministic validation, and the
       bounded C-406 SQLite Run/Event/outbox plus JSONL mirror, C-405 workspace
       ownership/containment, the C-408 optional evaluator interface, and C-407
-      executable budget/retry/no-progress policy plus the C-501 schema-bound
-      Codex App Server adapter. Live model/provider calls, cleanup effects,
-      evaluator persistence, broader authoritative entity/action state, CLI
-      wiring, resume/recovery, broader Python compatibility, release, and
+      executable budget/retry/no-progress policy, the C-501 schema-bound
+      Codex App Server adapter, and C-409 executable CLI/doctor diagnostics.
+      Live model/provider calls, cleanup effects,
+      evaluator persistence, broader authoritative entity/action state,
+      resume/recovery, broader Python compatibility, release, and
       deployment are not claimed.
 
   historical_snapshots:
@@ -312,10 +340,10 @@ upe_state:
   recovery: >-
     Resume from merged PR #16 on origin/main and verify its exact merge identity.
     Preserve the protected primary-checkout artifacts and all pre-existing
-    worktrees. Re-run validation/C-501-GATE.yaml, the complete repository gate,
-    report freshness, and rendered report acceptance before starting a consumer.
+    worktrees. Re-run validation/C-409-GATE.yaml, the complete repository gate,
+    report freshness, and rendered report acceptance before delivering C-505.
 
   next_action: >-
-    Start C-409 CLI wiring or C-505 approval/permission security in a separate
-    isolated worktree. Keep C-502 as the first controlled live App Server smoke
-    after C-409, and do not claim live compatibility from C-501 unit evidence.
+    Merge C-409, then rebase and deliver the already locally accepted C-505 slice.
+    C-502 and C-410 become the next local implementation frontier; W-211 and W-212
+    remain independently runnable. Do not claim live compatibility from C-501 unit evidence.

@@ -1,5 +1,18 @@
 # Next Five Work Packages: Parallel Execution Handoff
 
+## Current reconciliation — 2026-07-22
+
+The five-run decision below is retained as historical execution evidence; its
+original C-405/C-406/C-408 frontier has been completed. C-409 is now locally
+accepted at `4d6392bec8bf6ade6e77b5651bd78006576a9180` and is in its serialized
+reconciliation/delivery lane. Once adopted, the live ready frontier is `C-502`,
+`C-410`, `W-211` and `W-212`.
+
+C-505 is also locally accepted in a separate worktree, but it remains unmerged
+and therefore appears as **in development**, not completed or recommended as
+fresh work. Its coordinator must rebase and reconcile shared state/report files
+after C-409 merges. No live App Server compatibility is claimed until C-502 runs.
+
 ## Decision
 
 Start the next implementation wave in a **new coordinator chat**, with five
