@@ -1,0 +1,96 @@
+schema_version: '1.0'
+record_id: C-501-RESULT
+generated_at: '2026-07-22T03:30:00+02:00'
+status: TESTED_LOCALLY_READY_FOR_MERGE
+
+task:
+  id: C-501
+  title: Implement the Codex App Server adapter
+  verdict: PASS
+  gate: validation/C-501-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c501-review'
+  branch: codex/c501-local-review
+  base_commit: 356b5b2ed53289bc6752c466d2cd8a436abe0bc4
+  functional_head: ec04ed06498dfce466e062b9d0f7e2577211a6f3
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/16
+
+cloud_source:
+  task_id: task_e_6a60106e668c832895a198576c4179fc
+  result_label: CLOUD_IMPLEMENTATION_UNVERIFIED_LOCALLY
+  initial_review_verdict: REJECTED_PROTOCOL_NONCONFORMANCE
+  cloud_initial_work_time: 6m59s
+  cloud_repair_work_time: 6m14s
+  corrected_cloud_pr_head: 689eb918097a1ca9857e176e43052b7f1e017499
+  local_review_verdict: REPAIR_REQUIRED_THEN_PASS
+
+implemented:
+  transport:
+    - standard-library synchronous subprocess JSONL transport with injectable fake boundary
+    - strict JSON-RPC 2.0 response, notification and server-request envelope parsing
+    - interleaved-message preservation, missing-executable handling, process-exit normalization and stderr redaction
+  compatibility:
+    - initialize request and initialized notification use the generated stable schema
+    - exact Codex CLI 0.144.3 and accepted schema-reference pin fail closed
+    - no live compatibility or C-502 smoke claim
+  lifecycle:
+    - idempotent start, stop and preflight
+    - schema-aligned thread/start, thread/resume, turn/start and turn/interrupt operations
+    - provider thread/turn identity collision and forged-handle refusal
+  streaming:
+    - real turn/item/error notification and approval-request translation
+    - contiguous adapter-local ordering, bounded reference-only summaries and redacted deltas
+    - exactly-one terminal return without blocking after completion
+    - deterministic success, failure, interruption and host-requested cancellation mapping
+  approvals:
+    - command and file approval requests retain original JSON-RPC request identity
+    - granted and denied host decisions map to generated accept and decline values
+
+local_review_repairs:
+  - replaced invented Cloud RPC methods and flat payloads with generated slash methods and nested envelopes
+  - replaced invalid initialize capabilities with experimentalApi and requestAttestation
+  - added required text_elements to text user input
+  - replaced invalid approved/denied approval replies with accept/decline
+  - made terminal streaming return immediately instead of waiting for another provider message
+  - made process-exit normalization reachable and kept stderr contents out of errors
+  - enforced exact CLI-version token and accepted schema-reference identity
+  - distinguished host-requested cancellation from provider interruption without inventing a cancelled wire status
+  - prevented retried error notifications from poisoning a later successful terminal
+  - added strict malformed-envelope, boolean-ID, interleaving, process-exit and post-terminal regressions
+
+verification:
+  result: PASS
+  targeted_C501: 19_passed
+  complete_unit_tests: 312_passed
+  complete_repository_tests: 340_passed
+  uv_lock: PASS_33_PACKAGES
+  ruff_lint: PASS
+  ruff_format: PASS_41_FILES
+  strict_mypy: PASS_34_SOURCE_FILES
+  work_specification_validator: PASS_16_CASES
+  reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+  schema_validator: PASS_6_INSTANCES
+  capability_report_frontier_tests_before_evidence: PASS_8_TESTS
+  capability_report_before_evidence: PASS_CURRENT
+  git_diff_check: PASS
+
+evidence_hashes_sha256:
+  src/harness/adapters/codex_app_server.py: fe13e4a366d4da1c0f86184cb80b9ad09c1ef709260f0a27e7e52b0c07336c3e
+  tests/unit/test_codex_adapter.py: 37c880e1be07a40dcc9933a78b68b064dcea6b292412838f3ad700fb94362a0f
+
+preserved_state:
+  primary_checkout_user_artifacts: preserved_unmodified
+  cloud_tests_started_real_codex_shell_model_or_network: false
+  release_or_deployment: not_performed
+
+known_limits:
+  - No real Codex App Server process was started; live initialize/thread/turn/tool/approval/interrupt behavior remains C-502 evidence.
+  - Crash, reconnect and process-state reconciliation remain C-503 work.
+  - CLI wiring remains C-409 work, and integrated approval/security enforcement remains C-505/C-506 work.
+  - Python 3.12 and 3.13 remain unverified; the accepted Windows runtime is Python 3.14.3.
+
+next_action: >-
+  Materialize the coordinator gate/current-state/report update, merge PR #16,
+  and verify the merged main identity plus rendered desktop/mobile report.

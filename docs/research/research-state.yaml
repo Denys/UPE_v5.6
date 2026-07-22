@@ -242,11 +242,15 @@ upe_state:
     - Implemented C-407 immutable host budgets, overflow-safe bounded retry/backoff, identical-failure/no-progress stops, and fail-closed action reconciliation through a bounded Codex Cloud task.
     - Reproduced and repaired five Cloud-diff defects locally: total-token bypass, successful-action retry, backoff overflow, missing runtime validation, and unstable checkpoint replacement.
     - Passed 43 focused C-407 tests, 214 dependency-regression tests, 293 unit tests, and the complete 320-test Windows repository suite with lock, Ruff, strict mypy, work-specification, reference, import, report-freshness, and diff gates.
+    - Implemented the C-501 synchronous Codex App Server adapter through Cloud generation, two skeptical review cycles, and local Windows repair against the accepted generated 0.144.3 schema.
+    - Rejected the first Cloud implementation for invented RPC methods and repaired remaining generated-schema/runtime defects locally, including approval decisions, initialize capabilities, text input shape, terminal return, process-exit normalization, cancellation mapping, exact version pinning, and retried-error handling.
+    - Passed 19 focused C-501 tests, 312 unit tests, and the complete 340-test Windows repository suite with lock, Ruff, strict mypy, work-specification, reference, schema, report-freshness, and diff gates.
+    - Merged C-501 through PR #16; its accepted gate is validation/C-501-GATE.yaml. This proves deterministic schema-bound adapter behavior only, not a live App Server session.
 
   unresolved:
     - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
-    - Publish and merge the verified C-407 slice before starting dependency consumers C-409 or C-501; CLI wiring, the real provider adapter, recovery, approvals, and security remain later packages.
+    - Implement C-409 CLI wiring and C-505 host-owned approval/permission security; both are dependency-satisfied after C-501.
     - Add CI and complete release/security review before release readiness.
     - The actor and authorization history of the legacy-upstream merge remain unknown; no authority is inferred.
     - Repository visibility remains public unless separately authorized to change.
@@ -284,16 +288,18 @@ upe_state:
       - C-405 exact worktree ownership, Windows lexical/reparse and filesystem-identity checks, dirty-state preservation, and two-step cleanup-target verification with no cleanup effect
       - C-408 deterministic-first invocation, mandatory frozen semantic criteria, exact criteria/evidence/correction bounds, three-valued verdict aggregation, actual-artifact inspection, and read-only effect boundary
       - C-407 exact-limit and prospective budget accounting, total-token derivation, retry/backoff overflow and jitter boundaries, no-progress checkpoint preservation, and non-idempotent reconciliation refusal
+      - C-501 strict JSON-RPC envelopes, generated initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
       C-403 lifecycle/orchestration, C-404 deterministic validation, and the
       bounded C-406 SQLite Run/Event/outbox plus JSONL mirror, C-405 workspace
       ownership/containment, the C-408 optional evaluator interface, and C-407
-      executable budget/retry/no-progress policy. Real model/provider calls,
-      prompts, cleanup effects, evaluator persistence, broader authoritative
-      entity/action state, CLI wiring, resume/recovery, broader Python
-      compatibility, release, and deployment are not claimed.
+      executable budget/retry/no-progress policy plus the C-501 schema-bound
+      Codex App Server adapter. Live model/provider calls, cleanup effects,
+      evaluator persistence, broader authoritative entity/action state, CLI
+      wiring, resume/recovery, broader Python compatibility, release, and
+      deployment are not claimed.
 
   historical_snapshots:
     - WEB_RUN_01_REPORT.md
@@ -304,12 +310,12 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume C-407 integration from origin/main
-    4382fdc31f2fb0116aa5d6b1cc834bcc4e11a32e and branch
-    codex/c407-budget-retry-policy. Preserve the protected primary-checkout
-    artifacts and all pre-existing worktrees. Re-run validation/C-407-GATE.yaml,
-    the complete repository gate, and rendered report acceptance before delivery.
+    Resume from merged PR #16 on origin/main and verify its exact merge identity.
+    Preserve the protected primary-checkout artifacts and all pre-existing
+    worktrees. Re-run validation/C-501-GATE.yaml, the complete repository gate,
+    report freshness, and rendered report acceptance before starting a consumer.
 
   next_action: >-
-    Refresh and verify the C-407 capability report, review the complete branch
-    diff, then separately authorize publication and merge before starting C-409 or C-501.
+    Start C-409 CLI wiring or C-505 approval/permission security in a separate
+    isolated worktree. Keep C-502 as the first controlled live App Server smoke
+    after C-409, and do not claim live compatibility from C-501 unit evidence.
