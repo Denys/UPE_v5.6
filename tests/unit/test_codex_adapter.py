@@ -128,7 +128,7 @@ def thread(thread_id: str = "thread.c501.001") -> Mapping[str, Any]:
     }
 
 
-def turn(turn_id: str = "turn.c501.001", status: str = "running") -> Mapping[str, Any]:
+def turn(turn_id: str = "turn.c501.001", status: str = "inProgress") -> Mapping[str, Any]:
     return {
         "id": turn_id,
         "items": [],
@@ -253,12 +253,24 @@ def test_initialize_initialized_sequence_and_schema_method_names_are_exact() -> 
     initialize = transport.calls[0][2]
     assert initialize is not None
     assert initialize["clientInfo"] == {"name": CLIENT_NAME, "version": CLIENT_VERSION}
-    assert "capabilities" in initialize
+    assert initialize["capabilities"] == {
+        "experimentalApi": False,
+        "requestAttestation": False,
+    }
     turn_start = transport.calls[-1][2]
     assert turn_start is not None
     assert turn_start["threadId"] == "thread.c501.001"
     assert turn_start["clientUserMessageId"] == "request.c501.001"
-    assert "input" in turn_start
+    assert turn_start["input"] == [
+        {
+            "type": "text",
+            "text": "Prompt text must only cross the wire and never return in events.",
+            "text_elements": [],
+        }
+    ]
+    adapter.start()
+    adapter.preflight()
+    assert [call[1] for call in transport.calls].count("initialize") == 1
     adapter.stop()
     adapter.stop()
 
@@ -290,6 +302,23 @@ def test_preflight_fails_closed_when_initialize_schema_pin_mismatches() -> None:
     with pytest.raises(ProviderAdapterError) as error:
         adapter.preflight()
     assert error.value.category is ProviderErrorCategory.COMPATIBILITY
+
+    near_match = FakeTransport(
+        {
+            "initialize": [
+                {
+                    "userAgent": f"codex-cli/{EXPECTED_CODEX_CLI_VERSION}0",
+                    "codexHome": r"C:\\.codex",
+                    "platformFamily": "windows",
+                    "platformOs": "windows",
+                }
+            ]
+        }
+    )
+    adapter = CodexAppServerAdapter(near_match)
+    adapter.start()
+    with pytest.raises(ProviderAdapterError, match="schema pin"):
+        adapter.preflight()
 
 
 def test_thread_resume_wraps_thread_object_and_rejects_identity_mismatch() -> None:
@@ -366,7 +395,6 @@ def handle_session() -> str:
     [
         ("failed", ProviderTurnOutcome.FAILED),
         ("interrupted", ProviderTurnOutcome.INTERRUPTED),
-        ("cancelled", ProviderTurnOutcome.CANCELLED),
     ],
 )
 def test_failure_interrupted_and_cancelled_terminal_statuses_are_normalized(
@@ -392,6 +420,25 @@ def test_failure_interrupted_and_cancelled_terminal_statuses_are_normalized(
     assert events[-1].outcome is outcome
     if outcome is ProviderTurnOutcome.FAILED:
         assert events[-1].failure is not None
+
+
+def test_session_cancel_uses_turn_interrupt_and_normalizes_terminal_as_cancelled() -> None:
+    inbound = [
+        note(
+            "turn/completed",
+            {
+                "threadId": handle_session(),
+                "turnId": "turn.c501.001",
+                "turn": turn(status="interrupted"),
+            },
+        )
+    ]
+    adapter, transport, session, handle = prepared_adapter(inbound)
+    adapter.cancel(session=session, reason="operator cancelled the session")
+    terminal = tuple(adapter.stream_events(turn=handle))[-1]
+
+    assert transport.calls[-1][1] == "turn/interrupt"
+    assert terminal.outcome is ProviderTurnOutcome.CANCELLED
 
 
 def test_approval_allow_and_deny_reply_to_original_server_request_ids() -> None:
@@ -420,8 +467,8 @@ def test_approval_allow_and_deny_reply_to_original_server_request_ids() -> None:
             reason="deny in test",
         ),
     )
-    assert transport.responses == [("server.req.1", {"decision": "approved"})]
-    assert transport2.responses == [("server.req.2", {"decision": "denied"})]
+    assert transport.responses == [("server.req.1", {"decision": "accept"})]
+    assert transport2.responses == [("server.req.2", {"decision": "decline"})]
 
 
 @pytest.mark.parametrize(
@@ -446,28 +493,6 @@ def test_approval_allow_and_deny_reply_to_original_server_request_ids() -> None:
         ),
         (
             [
-                note(
-                    "turn/completed",
-                    {
-                        "threadId": handle_session(),
-                        "turnId": "turn.c501.001",
-                        "turn": turn(status="completed"),
-                    },
-                ),
-                note(
-                    "item/started",
-                    {
-                        "threadId": handle_session(),
-                        "turnId": "turn.c501.001",
-                        "item": {"type": "agentMessage", "id": "item.after"},
-                        "startedAtMs": 1,
-                    },
-                ),
-            ],
-            "post-terminal",
-        ),
-        (
-            [
                 InboundMessage(
                     kind=InboundKind.SERVER_REQUEST,
                     method="item/tool/requestUserInput",
@@ -485,6 +510,37 @@ def test_unknown_duplicate_post_terminal_and_unsupported_messages_fail_closed(
     adapter, _, _, handle = prepared_adapter(inbound)
     with pytest.raises(ProviderAdapterError, match=message):
         tuple(adapter.stream_events(turn=handle))
+
+
+def test_terminal_returns_without_waiting_and_post_terminal_translation_fails_closed() -> None:
+    post_terminal = note(
+        "item/started",
+        {
+            "threadId": handle_session(),
+            "turnId": "turn.c501.001",
+            "item": {"type": "agentMessage", "id": "item.after"},
+            "startedAtMs": 1,
+        },
+    )
+    adapter, transport, _, handle = prepared_adapter(
+        [
+            note(
+                "turn/completed",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "turn": turn(status="completed"),
+                },
+            ),
+            post_terminal,
+        ]
+    )
+
+    assert tuple(adapter.stream_events(turn=handle))[-1].outcome is ProviderTurnOutcome.SUCCEEDED
+    assert transport.inbound == [post_terminal]
+    state = adapter._turns[handle.turn_id]
+    with pytest.raises(ProviderAdapterError, match="post-terminal"):
+        adapter._translate_message(state, transport.inbound.pop(0))
 
 
 def test_error_notification_can_be_nonterminal_or_terminal() -> None:
@@ -517,6 +573,38 @@ def test_error_notification_can_be_nonterminal_or_terminal() -> None:
     events = tuple(adapter.stream_events(turn=handle))
     assert events[0].kind is ProviderEventKind.ACTION
     assert events[1].outcome is ProviderTurnOutcome.FAILED
+
+
+def test_retried_error_does_not_poison_a_successful_terminal() -> None:
+    adapter, _, _, handle = prepared_adapter(
+        [
+            note(
+                "error",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "willRetry": True,
+                    "error": {
+                        "message": "retry",
+                        "codexErrorInfo": None,
+                        "additionalDetails": None,
+                    },
+                },
+            ),
+            note(
+                "turn/completed",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "turn": turn(status="completed"),
+                },
+            ),
+        ]
+    )
+
+    terminal = tuple(adapter.stream_events(turn=handle))[-1]
+    assert terminal.outcome is ProviderTurnOutcome.SUCCEEDED
+    assert terminal.failure is None
 
 
 def test_state_guards_reject_duplicate_request_forged_handles_and_bad_approval() -> None:
@@ -584,6 +672,78 @@ def test_subprocess_transport_startup_missing_executable_invalid_json_envelope_a
         ).provider_code
         == "bad"
     )
+    assert (
+        parse_failure(
+            '{"jsonrpc":"2.0","id":1,"result":{},"error":{"code":"bad","message":"boom"}}\n'
+        ).category
+        is ProviderErrorCategory.PROTOCOL
+    )
+    assert (
+        parse_failure('{"jsonrpc":"2.0","id":true,"result":{}}\n').category
+        is ProviderErrorCategory.PROTOCOL
+    )
+
+
+def test_subprocess_transport_preserves_interleaved_notification() -> None:
+    class Stdout:
+        def __init__(self) -> None:
+            self.lines = iter(
+                [
+                    '{"jsonrpc":"2.0","method":"thread/started","params":{}}\n',
+                    '{"jsonrpc":"2.0","id":1,"result":{"ok":"yes"}}\n',
+                ]
+            )
+
+        def readline(self) -> str:
+            return next(self.lines)
+
+    class Stdin:
+        def write(self, value: str) -> int:
+            return len(value)
+
+        def flush(self) -> None:
+            return None
+
+    class Process:
+        stdin = Stdin()
+        stdout = Stdout()
+        stderr = None
+        returncode = None
+
+        def poll(self) -> None:
+            return None
+
+    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport._process = Process()  # type: ignore[assignment]
+
+    assert transport.request("initialize", {}) == {"ok": "yes"}
+    preserved = next(transport.iter_messages())
+    assert preserved.kind is InboundKind.NOTIFICATION
+    assert preserved.method == "thread/started"
+
+
+def test_subprocess_transport_normalizes_process_exit_without_leaking_stderr() -> None:
+    class Stderr:
+        def read(self, _maximum: int) -> str:
+            return "secret-provider-stderr"
+
+    class Process:
+        stdin = None
+        stdout = None
+        stderr = Stderr()
+        returncode = 7
+
+        def poll(self) -> int:
+            return 7
+
+    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport._process = Process()  # type: ignore[assignment]
+
+    with pytest.raises(ProviderAdapterError) as raised:
+        transport.request("initialize", {})
+    assert raised.value.category is ProviderErrorCategory.TRANSIENT
+    assert raised.value.provider_code == "process_exit"
+    assert "secret-provider-stderr" not in str(raised.value)
 
 
 def parse_failure(line: str) -> ProviderAdapterError:

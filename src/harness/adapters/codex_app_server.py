@@ -8,6 +8,7 @@ confined to this module.  The harness-facing surface remains the provider-neutra
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from collections import deque
 from collections.abc import Iterator, Mapping, Sequence
@@ -40,6 +41,7 @@ CLIENT_VERSION = "0.1.0"
 
 JSON = Mapping[str, Any]
 RpcId = str | int
+_STABLE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
 
 class InboundKind(StrEnum):
@@ -161,6 +163,8 @@ class SubprocessJsonRpcTransport:
 
     def _write(self, envelope: JSON) -> None:
         process = self._require_process()
+        if process.poll() is not None:
+            raise self._process_exit_error(process)
         stdin = cast(TextIO, process.stdin)
         stdin.write(json.dumps(envelope, separators=(",", ":")) + "\n")
         stdin.flush()
@@ -168,16 +172,7 @@ class SubprocessJsonRpcTransport:
     def _read_message(self) -> InboundMessage:
         process = self._require_process()
         if process.poll() is not None:
-            stderr = ""
-            if process.stderr is not None:
-                stderr = process.stderr.read(4096)
-            raise _error(
-                f"Codex App Server exited with code {process.returncode}",
-                ProviderErrorCategory.TRANSIENT,
-                retryable=True,
-                provider_code="process_exit",
-                details=stderr,
-            )
+            raise self._process_exit_error(process)
         stdout = cast(TextIO, process.stdout)
         line = stdout.readline()
         if line == "":
@@ -189,9 +184,22 @@ class SubprocessJsonRpcTransport:
         return _parse_inbound(raw)
 
     def _require_process(self) -> subprocess.Popen[str]:
-        if self._process is None or not self.started:
+        if self._process is None:
             raise _error("transport is not started", ProviderErrorCategory.STATE, retryable=False)
         return self._process
+
+    @staticmethod
+    def _process_exit_error(process: subprocess.Popen[str]) -> ProviderAdapterError:
+        stderr = ""
+        if process.stderr is not None:
+            stderr = process.stderr.read(4096)
+        return _error(
+            f"Codex App Server exited with code {process.returncode}",
+            ProviderErrorCategory.TRANSIENT,
+            retryable=True,
+            provider_code="process_exit",
+            details=stderr,
+        )
 
 
 @dataclass(slots=True)
@@ -202,7 +210,7 @@ class _TurnState:
     seen_real_ids: set[str] = field(default_factory=set)
     pending_approvals: dict[str, RpcId] = field(default_factory=dict)
     redacted: bool = False
-    error_seen: ProviderFailure | None = None
+    cancellation_requested: bool = False
 
 
 class CodexAppServerAdapter:
@@ -215,6 +223,10 @@ class CodexAppServerAdapter:
         expected_cli_version: str = EXPECTED_CODEX_CLI_VERSION,
         schema_ref: str = SCHEMA_REF,
     ) -> None:
+        if not expected_cli_version or expected_cli_version != expected_cli_version.strip():
+            raise ValueError("expected_cli_version must be a normalized non-empty string")
+        if schema_ref != SCHEMA_REF:
+            raise ValueError("schema_ref must match the accepted C-501 schema pin")
         self._transport = transport
         self._expected_cli_version = expected_cli_version
         self._identity = AdapterIdentity(
@@ -244,17 +256,21 @@ class CodexAppServerAdapter:
     def stop(self) -> None:
         self._transport.stop()
         self._initialized = False
+        self._sessions.clear()
+        self._turns.clear()
+        self._request_ids.clear()
 
     def preflight(self) -> AdapterIdentity:
         self._require_started()
+        if self._initialized:
+            return self._identity
         result = self._transport.request(
             "initialize",
             {
                 "clientInfo": {"name": CLIENT_NAME, "version": CLIENT_VERSION},
                 "capabilities": {
-                    "supportsStreaming": True,
-                    "supportsApprovals": True,
-                    "supportsTurnInterrupt": True,
+                    "experimentalApi": False,
+                    "requestAttestation": False,
                 },
             },
         )
@@ -262,7 +278,8 @@ class CodexAppServerAdapter:
         _string(result.get("codexHome"), "initialize.codexHome")
         _string(result.get("platformFamily"), "initialize.platformFamily")
         _string(result.get("platformOs"), "initialize.platformOs")
-        if self._expected_cli_version not in user_agent:
+        version_pattern = rf"(?<![\d.]){re.escape(self._expected_cli_version)}(?![\d.])"
+        if re.search(version_pattern, user_agent) is None:
             raise _error(
                 "initialize response did not match the expected Codex CLI/schema pin",
                 ProviderErrorCategory.COMPATIBILITY,
@@ -293,6 +310,9 @@ class CodexAppServerAdapter:
             run_id=run.run_id,
             provider="codex",
         )
+        existing = self._sessions.get(session.session_id)
+        if existing is not None and existing != session:
+            raise _error("provider thread identity collision", ProviderErrorCategory.PROTOCOL)
         self._sessions[session.session_id] = session
         return session
 
@@ -306,6 +326,9 @@ class CodexAppServerAdapter:
         if returned != session_id:
             raise _error("resumed thread identity mismatch", ProviderErrorCategory.PROTOCOL)
         session = SessionHandle(session_id=session_id, run_id=run.run_id, provider="codex")
+        existing = self._sessions.get(session.session_id)
+        if existing is not None and existing != session:
+            raise _error("provider thread identity collision", ProviderErrorCategory.PROTOCOL)
         self._sessions[session.session_id] = session
         return session
 
@@ -320,7 +343,7 @@ class CodexAppServerAdapter:
             {
                 "threadId": session.session_id,
                 "clientUserMessageId": request.request_id,
-                "input": [{"type": "text", "text": request.instructions}],
+                "input": [{"type": "text", "text": request.instructions, "text_elements": []}],
                 "cwd": request.task.selected_workspace,
                 "model": request.run.model,
                 "effort": request.run.reasoning_effort,
@@ -334,6 +357,8 @@ class CodexAppServerAdapter:
             run_id=request.run.run_id,
             task_id=request.task.task_id,
         )
+        if handle.turn_id in self._turns:
+            raise _error("duplicate provider turn id", ProviderErrorCategory.PROTOCOL)
         self._request_ids.add(request.request_id)
         self._turns[handle.turn_id] = _TurnState(handle=handle)
         return handle
@@ -348,14 +373,16 @@ class CodexAppServerAdapter:
         state = self._require_turn(turn)
         if state.terminal:
             raise _error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
-        request_id = state.pending_approvals.pop(response.approval_id, None)
+        request_id = state.pending_approvals.get(response.approval_id)
         if request_id is None:
             raise _error("approval id mismatch", ProviderErrorCategory.STATE, retryable=False)
-        decision = "approved" if response.decision is ApprovalStatus.GRANTED else "denied"
+        decision = "accept" if response.decision is ApprovalStatus.GRANTED else "decline"
         self._transport.respond(request_id, {"decision": decision})
+        del state.pending_approvals[response.approval_id]
 
     def interrupt(self, *, turn: TurnHandle, reason: str) -> None:
         state = self._require_turn(turn)
+        _string(reason, "interrupt.reason")
         if state.terminal:
             raise _error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
         self._transport.request(
@@ -364,9 +391,11 @@ class CodexAppServerAdapter:
 
     def cancel(self, *, session: SessionHandle, reason: str) -> None:
         self._require_session(session)
+        _string(reason, "cancel.reason")
         for state in self._turns.values():
             if state.handle.session_id == session.session_id and not state.terminal:
                 self.interrupt(turn=state.handle, reason=reason)
+                state.cancellation_requested = True
 
     def _stream(self, state: _TurnState) -> Iterator[ProviderEvent]:
         for message in self._transport.iter_messages():
@@ -374,12 +403,17 @@ class CodexAppServerAdapter:
             if event is None:
                 continue
             yield event
-            if event.kind is ProviderEventKind.APPROVAL_REQUIRED:
+            if event.kind in {
+                ProviderEventKind.APPROVAL_REQUIRED,
+                ProviderEventKind.TURN_TERMINAL,
+            }:
                 break
 
     def _translate_message(
         self, state: _TurnState, message: InboundMessage
     ) -> ProviderEvent | None:
+        if state.terminal:
+            raise _error("post-terminal provider message", ProviderErrorCategory.PROTOCOL)
         if message.kind is InboundKind.RESPONSE:
             raise _error("unexpected interleaved response", ProviderErrorCategory.PROTOCOL)
         if message.kind is InboundKind.SERVER_REQUEST:
@@ -396,8 +430,6 @@ class CodexAppServerAdapter:
             return None
         if _string(params.get("threadId"), f"{method}.threadId") != state.handle.session_id:
             raise _error("thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
-        if state.terminal:
-            raise _error("post-terminal provider message", ProviderErrorCategory.PROTOCOL)
         if method == "turn/started":
             turn = _object(params.get("turn"), "turn/started.turn")
             self._dedupe(state, "turn", _stable_id(turn.get("id"), "turn.id"))
@@ -428,14 +460,16 @@ class CodexAppServerAdapter:
             )
         if method == "turn/completed":
             turn = _object(params.get("turn"), "turn/completed.turn")
-            outcome, failure = _turn_outcome(turn)
+            outcome, failure = _turn_outcome(
+                turn, cancellation_requested=state.cancellation_requested
+            )
             state.terminal = True
             return self._event(
                 state,
                 ProviderEventKind.TURN_TERMINAL,
                 "Codex turn terminal",
                 outcome=outcome,
-                failure=failure or state.error_seen,
+                failure=failure,
             )
         raise _error(f"unknown mandatory notification {method!r}", ProviderErrorCategory.PROTOCOL)
 
@@ -480,9 +514,17 @@ class CodexAppServerAdapter:
     def _translate_error(self, state: _TurnState, params: JSON) -> ProviderEvent | None:
         if _string(params.get("turnId"), "error.turnId") != state.handle.turn_id:
             return None
-        failure = _failure(_object(params.get("error"), "error.error"), state.handle.turn_id)
-        if bool(params.get("willRetry", False)):
-            state.error_seen = failure
+        if _string(params.get("threadId"), "error.threadId") != state.handle.session_id:
+            raise _error("error thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
+        will_retry = params.get("willRetry")
+        if type(will_retry) is not bool:
+            raise _error("error.willRetry must be a boolean", ProviderErrorCategory.PROTOCOL)
+        failure = _failure(
+            _object(params.get("error"), "error.error"),
+            state.handle.turn_id,
+            retryable=will_retry,
+        )
+        if will_retry:
             return self._event(
                 state, ProviderEventKind.ACTION, "Codex transient error notification"
             )
@@ -561,6 +603,11 @@ def _parse_inbound(raw: Any) -> InboundMessage:
     has_id = "id" in envelope
     has_method = "method" in envelope
     if has_method:
+        if "result" in envelope or "error" in envelope:
+            raise _error(
+                "JSON-RPC method message cannot contain result or error",
+                ProviderErrorCategory.PROTOCOL,
+            )
         method = _string(envelope.get("method"), "json-rpc method")
         params = _object(envelope.get("params", {}), "json-rpc params")
         if has_id:
@@ -573,7 +620,14 @@ def _parse_inbound(raw: Any) -> InboundMessage:
         return InboundMessage(kind=InboundKind.NOTIFICATION, method=method, params=params)
     if has_id:
         request_id = _rpc_id(envelope.get("id"), "json-rpc id")
-        if "error" in envelope:
+        has_error = "error" in envelope
+        has_result = "result" in envelope
+        if has_error == has_result:
+            raise _error(
+                "JSON-RPC response must contain exactly one of result or error",
+                ProviderErrorCategory.PROTOCOL,
+            )
+        if has_error:
             return InboundMessage(
                 kind=InboundKind.RESPONSE,
                 request_id=request_id,
@@ -595,27 +649,36 @@ def _rpc_error(error: JSON) -> ProviderAdapterError:
     return _error(message, ProviderErrorCategory.PROTOCOL, retryable=False, provider_code=code)
 
 
-def _turn_outcome(turn: JSON) -> tuple[ProviderTurnOutcome, ProviderFailure | None]:
+def _turn_outcome(
+    turn: JSON, *, cancellation_requested: bool
+) -> tuple[ProviderTurnOutcome, ProviderFailure | None]:
     status = _string(turn.get("status"), "turn.status")
     if status == "completed":
         return ProviderTurnOutcome.SUCCEEDED, None
     if status == "interrupted":
-        return ProviderTurnOutcome.INTERRUPTED, None
-    if status == "cancelled":
-        return ProviderTurnOutcome.CANCELLED, None
+        outcome = (
+            ProviderTurnOutcome.CANCELLED
+            if cancellation_requested
+            else ProviderTurnOutcome.INTERRUPTED
+        )
+        return outcome, None
     if status == "failed":
         failure = _failure(
-            _object(turn.get("error"), "turn.error"), _string(turn.get("id"), "turn.id")
+            _object(turn.get("error"), "turn.error"),
+            _string(turn.get("id"), "turn.id"),
+            retryable=False,
         )
         return ProviderTurnOutcome.FAILED, failure
     raise _error(f"unknown terminal turn status {status!r}", ProviderErrorCategory.PROTOCOL)
 
 
-def _failure(raw: JSON, correlation_id: str) -> ProviderFailure:
+def _failure(raw: JSON, correlation_id: str, *, retryable: bool) -> ProviderFailure:
     return ProviderFailure(
-        category=ProviderErrorCategory.TRANSIENT,
+        category=(
+            ProviderErrorCategory.TRANSIENT if retryable else ProviderErrorCategory.PERMANENT
+        ),
         message=_string(raw.get("message"), "turn.error.message"),
-        retryable=False,
+        retryable=retryable,
         provider_code="codex_turn_error",
         correlation_id=correlation_id,
     )
@@ -646,11 +709,16 @@ def _string(value: Any, location: str) -> str:
 
 
 def _stable_id(value: Any, location: str) -> str:
-    return _string(value, location)
+    normalized = _string(value, location)
+    if _STABLE_ID_RE.fullmatch(normalized) is None:
+        raise _error(f"{location} must be a stable identifier", ProviderErrorCategory.PROTOCOL)
+    return normalized
 
 
 def _rpc_id(value: Any, location: str) -> RpcId:
-    if isinstance(value, str | int):
+    if type(value) is str and value != "":
+        return value
+    if type(value) is int:
         return value
     raise _error(
         f"{location} must be a JSON-RPC string or integer id", ProviderErrorCategory.PROTOCOL
