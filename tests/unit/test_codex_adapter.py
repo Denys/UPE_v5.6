@@ -1,4 +1,4 @@
-"""C-501 Codex App Server adapter tests using a deterministic fake transport."""
+"""C-501 Codex App Server adapter tests with schema-shaped fake transports."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import pytest
 
 from harness.adapters.base import (
     ApprovalResponse,
+    ProviderAdapter,
     ProviderAdapterError,
     ProviderErrorCategory,
     ProviderEventKind,
@@ -19,13 +20,22 @@ from harness.adapters.base import (
     TurnHandle,
     TurnRequest,
 )
-from harness.adapters.codex_app_server import SUPPORTED_PROTOCOL_VERSION, CodexAppServerAdapter
+from harness.adapters.codex_app_server import (
+    CLIENT_NAME,
+    CLIENT_VERSION,
+    EXPECTED_CODEX_CLI_VERSION,
+    CodexAppServerAdapter,
+    InboundKind,
+    InboundMessage,
+    SubprocessJsonRpcTransport,
+)
 from harness.state import (
     ApprovalStatus,
     BudgetState,
     BudgetValues,
     CompletionVerdict,
     LifecycleState,
+    RedactionStatus,
     Run,
     Task,
     TaskStatus,
@@ -53,40 +63,6 @@ def budget_state() -> BudgetState:
             cost=0.0,
         ),
     )
-
-
-@dataclass(slots=True)
-class FakeTransport:
-    replies: dict[str, list[Mapping[str, Any]]]
-    events: dict[str, list[Mapping[str, Any]]] = field(default_factory=dict)
-    cursors: dict[str, int] = field(default_factory=dict)
-    is_started: bool = False
-    calls: list[tuple[str, Mapping[str, Any]]] = field(default_factory=list)
-
-    @property
-    def started(self) -> bool:
-        return self.is_started
-
-    def start(self) -> None:
-        self.is_started = True
-
-    def stop(self) -> None:
-        self.is_started = False
-
-    def request(self, method: str, params: Mapping[str, Any]) -> Mapping[str, Any]:
-        self.calls.append((method, dict(params)))
-        queue = self.replies.get(method)
-        if not queue:
-            raise AssertionError(f"unexpected method {method}")
-        return queue.pop(0)
-
-    def iter_events(self, *, turn_id: str) -> Iterator[Mapping[str, Any]]:
-        queued = self.events.get(turn_id, [])
-        index = self.cursors.get(turn_id, 0)
-        while index < len(queued):
-            self.cursors[turn_id] = index + 1
-            yield queued[index]
-            index += 1
 
 
 def run_record(**changes: object) -> Run:
@@ -136,226 +112,416 @@ def task_record(**changes: object) -> Task:
     return Task(**values)  # type: ignore[arg-type]
 
 
+def thread(thread_id: str = "thread.c501.001") -> Mapping[str, Any]:
+    return {
+        "id": thread_id,
+        "sessionId": "session.c501",
+        "preview": "redacted",
+        "modelProvider": "openai",
+        "createdAt": 1,
+        "updatedAt": 1,
+        "status": "running",
+        "cwd": r"C:\worktrees\c501",
+        "cliVersion": EXPECTED_CODEX_CLI_VERSION,
+        "source": "appServer",
+        "turns": [],
+    }
+
+
+def turn(turn_id: str = "turn.c501.001", status: str = "running") -> Mapping[str, Any]:
+    return {
+        "id": turn_id,
+        "items": [],
+        "itemsView": "complete",
+        "status": status,
+        "error": {"message": "failed", "codexErrorInfo": None, "additionalDetails": None}
+        if status == "failed"
+        else None,
+        "startedAt": 1,
+        "completedAt": 2 if status != "running" else None,
+        "durationMs": 1000 if status != "running" else None,
+    }
+
+
+@dataclass(slots=True)
+class FakeTransport:
+    replies: dict[str, list[Mapping[str, Any]]]
+    inbound: list[InboundMessage] = field(default_factory=list)
+    is_started: bool = False
+    calls: list[tuple[str, str, Mapping[str, Any] | None]] = field(default_factory=list)
+    responses: list[tuple[str | int, Mapping[str, Any]]] = field(default_factory=list)
+
+    @property
+    def started(self) -> bool:
+        return self.is_started
+
+    def start(self) -> None:
+        self.is_started = True
+
+    def stop(self) -> None:
+        self.is_started = False
+
+    def request(self, method: str, params: Mapping[str, Any]) -> Mapping[str, Any]:
+        self.calls.append(("request", method, dict(params)))
+        queue = self.replies.get(method)
+        if not queue:
+            raise AssertionError(f"unexpected request {method}")
+        return queue.pop(0)
+
+    def notify(self, method: str, params: Mapping[str, Any] | None = None) -> None:
+        self.calls.append(("notify", method, params))
+
+    def respond(self, request_id: str | int, result: Mapping[str, Any]) -> None:
+        self.responses.append((request_id, dict(result)))
+
+    def iter_messages(self) -> Iterator[InboundMessage]:
+        while self.inbound:
+            yield self.inbound.pop(0)
+
+
 def ready_replies() -> dict[str, list[Mapping[str, Any]]]:
     return {
-        "server.compatibility": [
+        "initialize": [
             {
-                "protocol_version": SUPPORTED_PROTOCOL_VERSION,
-                "mandatory_capabilities": [
-                    "initialize",
-                    "thread",
-                    "turn",
-                    "approval",
-                    "cancel",
-                    "interrupt",
-                    "stream",
-                ],
+                "userAgent": f"codex-cli/{EXPECTED_CODEX_CLI_VERSION}",
+                "codexHome": r"C:\Users\operator\.codex",
+                "platformFamily": "windows",
+                "platformOs": "windows",
             }
         ],
-        "thread.start": [{"thread_id": "thread.c501.001"}],
-        "thread.resume": [{"thread_id": "thread.c501.001"}],
-        "turn.submit": [{"turn_id": "turn.c501.001"}],
-        "approval.respond": [{}],
-        "turn.interrupt": [{}],
-        "thread.cancel": [{}],
+        "thread/start": [{"thread": thread(), "model": "gpt-5.6-codex"}],
+        "thread/resume": [{"thread": thread(), "model": "gpt-5.6-codex"}],
+        "turn/start": [{"turn": turn()}],
+        "turn/interrupt": [{"turn": turn(status="interrupted")}],
     }
 
 
-def event(sequence: int, kind: str, **extra: object) -> Mapping[str, Any]:
-    raw: dict[str, object] = {
-        "event_id": f"event.c501.{sequence}",
-        "sequence": sequence,
-        "timestamp": f"2026-07-22T12:00:0{sequence}+00:00",
-        "turn_id": "turn.c501.001",
-        "type": kind,
-        "summary": kind,
-    }
-    raw.update(extra)
-    return raw
+def note(method: str, params: Mapping[str, Any]) -> InboundMessage:
+    return InboundMessage(kind=InboundKind.NOTIFICATION, method=method, params=params)
+
+
+def approval_request(
+    request_id: str, method: str = "item/commandExecution/requestApproval"
+) -> InboundMessage:
+    return InboundMessage(
+        kind=InboundKind.SERVER_REQUEST,
+        request_id=request_id,
+        method=method,
+        params={
+            "threadId": "thread.c501.001",
+            "turnId": "turn.c501.001",
+            "itemId": "item.approval.001",
+            "startedAtMs": 1,
+            "reason": "redacted",
+        },
+    )
 
 
 def prepared_adapter(
-    events: list[Mapping[str, Any]] | None = None,
+    inbound: list[InboundMessage] | None = None,
 ) -> tuple[CodexAppServerAdapter, FakeTransport, SessionHandle, TurnHandle]:
-    transport = FakeTransport(ready_replies(), {"turn.c501.001": events or []})
+    transport = FakeTransport(ready_replies(), inbound or [])
     adapter = CodexAppServerAdapter(transport)
+    assert isinstance(adapter, ProviderAdapter)
     adapter.start()
     adapter.preflight()
     session = adapter.create_session(run=run_record())
-    turn = adapter.submit_turn(
+    handle = adapter.submit_turn(
         session=session,
         request=TurnRequest(
             request_id="request.c501.001",
             run=run_record(),
             task=task_record(),
-            instructions="Implement C-501 without starting Codex.",
+            instructions="Prompt text must only cross the wire and never return in events.",
         ),
     )
-    return adapter, transport, session, turn
+    return adapter, transport, session, handle
 
 
-def test_start_stop_preflight_initialize_thread_start_resume_and_turn_submission() -> None:
-    adapter, transport, session, turn = prepared_adapter()
+def test_initialize_initialized_sequence_and_schema_method_names_are_exact() -> None:
+    adapter, transport, session, handle = prepared_adapter()
 
     assert adapter.started
-    assert adapter.identity.protocol_version == SUPPORTED_PROTOCOL_VERSION
     assert session.session_id == "thread.c501.001"
-    assert turn.turn_id == "turn.c501.001"
-    resumed = adapter.resume_session(run=run_record(), session_id=session.session_id)
-    assert resumed == session
-    adapter.stop()
-    assert [call[0] for call in transport.calls] == [
-        "server.compatibility",
-        "thread.start",
-        "turn.submit",
-        "thread.resume",
+    assert handle.turn_id == "turn.c501.001"
+    assert [call[1] for call in transport.calls] == [
+        "initialize",
+        "initialized",
+        "thread/start",
+        "turn/start",
     ]
+    initialize = transport.calls[0][2]
+    assert initialize is not None
+    assert initialize["clientInfo"] == {"name": CLIENT_NAME, "version": CLIENT_VERSION}
+    assert "capabilities" in initialize
+    turn_start = transport.calls[-1][2]
+    assert turn_start is not None
+    assert turn_start["threadId"] == "thread.c501.001"
+    assert turn_start["clientUserMessageId"] == "request.c501.001"
+    assert "input" in turn_start
+    adapter.stop()
+    adapter.stop()
 
 
-def test_preflight_fails_closed_for_incompatible_or_missing_mandatory_protocol() -> None:
-    bad_version = FakeTransport(
-        {"server.compatibility": [{"protocol_version": "old", "mandatory_capabilities": []}]}
-    )
-    adapter = CodexAppServerAdapter(bad_version)
-    adapter.start()
-    with pytest.raises(ProviderAdapterError) as incompatible:
-        adapter.preflight()
-    assert incompatible.value.category is ProviderErrorCategory.COMPATIBILITY
+def test_no_invented_compatibility_or_thread_cancel_methods_are_sent() -> None:
+    adapter, transport, session, _ = prepared_adapter()
+    adapter.cancel(session=session, reason="cancel all active turns")
+    methods = [call[1] for call in transport.calls]
+    assert "server.compatibility" not in methods
+    assert "thread.cancel" not in methods
+    assert "turn/interrupt" in methods
 
-    missing = FakeTransport(
+
+def test_preflight_fails_closed_when_initialize_schema_pin_mismatches() -> None:
+    transport = FakeTransport(
         {
-            "server.compatibility": [
+            "initialize": [
                 {
-                    "protocol_version": SUPPORTED_PROTOCOL_VERSION,
-                    "mandatory_capabilities": ["initialize"],
+                    "userAgent": "codex-cli/0.000.0",
+                    "codexHome": r"C:\.codex",
+                    "platformFamily": "windows",
+                    "platformOs": "windows",
                 }
             ]
         }
     )
-    adapter = CodexAppServerAdapter(missing)
+    adapter = CodexAppServerAdapter(transport)
     adapter.start()
-    with pytest.raises(ProviderAdapterError, match="missing mandatory"):
+    with pytest.raises(ProviderAdapterError) as error:
         adapter.preflight()
+    assert error.value.category is ProviderErrorCategory.COMPATIBILITY
 
 
-def test_stream_translation_terminal_detection_and_exactly_once_ordering() -> None:
-    adapter, _, _, turn = prepared_adapter(
+def test_thread_resume_wraps_thread_object_and_rejects_identity_mismatch() -> None:
+    adapter, _, session, _ = prepared_adapter()
+    assert adapter.resume_session(run=run_record(), session_id=session.session_id) == session
+
+    bad_transport = FakeTransport(
+        ready_replies() | {"thread/resume": [{"thread": thread("other")}]}
+    )
+    bad = CodexAppServerAdapter(bad_transport)
+    bad.start()
+    bad.preflight()
+    with pytest.raises(ProviderAdapterError, match="mismatch"):
+        bad.resume_session(run=run_record(), session_id="thread.c501.001")
+
+
+def test_stream_translates_real_notifications_with_bounded_redacted_output() -> None:
+    adapter, _, _, handle = prepared_adapter(
         [
-            event(1, "turn.started"),
-            event(2, "message.output", output_refs=["provider://output/1"]),
-            event(3, "action.started", input_refs=["provider://action/1"]),
-            event(4, "turn.completed", evidence_refs=["provider://terminal/1"]),
+            note("thread/status/changed", {"threadId": "thread.other"}),
+            note(
+                "turn/started",
+                {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
+            ),
+            note(
+                "item/started",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "item": {"type": "commandExecution", "id": "item.command.1"},
+                    "startedAtMs": 1,
+                },
+            ),
+            note(
+                "item/agentMessage/delta",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "itemId": "item.agent.1",
+                    "delta": "secret prompt payload",
+                },
+            ),
+            note(
+                "turn/completed",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "turn": turn(status="completed"),
+                },
+            ),
         ]
     )
 
-    events = tuple(adapter.stream_events(turn=turn))
-    assert [item.kind for item in events] == [
+    events = tuple(adapter.stream_events(turn=handle))
+    assert [event.kind for event in events] == [
         ProviderEventKind.TURN_STARTED,
-        ProviderEventKind.OUTPUT,
         ProviderEventKind.ACTION,
+        ProviderEventKind.OUTPUT,
         ProviderEventKind.TURN_TERMINAL,
     ]
+    assert [event.sequence for event in events] == [1, 2, 3, 4]
+    assert events[2].redaction_status is RedactionStatus.REDACTED
+    assert "secret prompt payload" not in events[2].summary
     assert events[-1].outcome is ProviderTurnOutcome.SUCCEEDED
-    assert tuple(adapter.stream_events(turn=turn)) == ()
+    assert tuple(adapter.stream_events(turn=handle)) == ()
 
 
-def test_approval_blocks_segment_and_response_allows_remaining_stream() -> None:
-    adapter, transport, _, turn = prepared_adapter(
-        [
-            event(1, "turn.started"),
-            event(
-                2,
-                "approval.required",
-                approval={
-                    "approval_id": "approval.c501.001",
-                    "action_class": "WRITE",
-                    "summary": "write file",
-                },
-            ),
-            event(3, "turn.completed"),
-        ]
-    )
-
-    first = tuple(adapter.stream_events(turn=turn))
-    assert first[-1].kind is ProviderEventKind.APPROVAL_REQUIRED
-    adapter.respond_to_approval(
-        turn=turn,
-        response=ApprovalResponse(
-            approval_id="approval.c501.001",
-            decision=ApprovalStatus.GRANTED,
-            reason="test approval",
-        ),
-    )
-    assert transport.calls[-1][0] == "approval.respond"
-    assert tuple(adapter.stream_events(turn=turn))[-1].outcome is ProviderTurnOutcome.SUCCEEDED
-
-
-def test_interrupt_cancel_and_provider_failure_normalization() -> None:
-    adapter, transport, session, turn = prepared_adapter(
-        [
-            event(1, "turn.started"),
-            event(
-                2,
-                "turn.failed",
-                failure={
-                    "category": "transient",
-                    "message": "provider failed",
-                    "retryable": True,
-                    "code": "E_TEMP",
-                },
-            ),
-        ]
-    )
-
-    adapter.interrupt(turn=turn, reason="operator interrupt")
-    adapter.cancel(session=session, reason="operator cancel")
-    events = tuple(adapter.stream_events(turn=turn))
-    assert [call[0] for call in transport.calls][-2:] == ["turn.interrupt", "thread.cancel"]
-    assert events[-1].outcome is ProviderTurnOutcome.FAILED
-    assert events[-1].failure is not None
-    assert events[-1].failure.category is ProviderErrorCategory.TRANSIENT
-    assert events[-1].failure.retryable
+def handle_session() -> str:
+    return "thread.c501.001"
 
 
 @pytest.mark.parametrize(
-    "bad_events, message",
+    "status,outcome",
     [
-        ([event(1, "future.required")], "unknown mandatory"),
-        ([event(2, "turn.started")], "sequence gap"),
-        ([event(1, "turn.started"), event(1, "message.output")], "duplicate"),
-        (
-            [event(1, "turn.started", unknown_mandatory=["field.x"])],
-            "unknown mandatory protocol field",
-        ),
-        ([{"event_id": "event.c501.bad", "sequence": 1, "type": "turn.started"}], "timestamp"),
+        ("failed", ProviderTurnOutcome.FAILED),
+        ("interrupted", ProviderTurnOutcome.INTERRUPTED),
+        ("cancelled", ProviderTurnOutcome.CANCELLED),
     ],
 )
-def test_malformed_unknown_mandatory_and_out_of_order_stream_fail_closed(
-    bad_events: list[Mapping[str, Any]], message: str
+def test_failure_interrupted_and_cancelled_terminal_statuses_are_normalized(
+    status: str, outcome: ProviderTurnOutcome
 ) -> None:
-    adapter, _, _, turn = prepared_adapter(bad_events)
-
-    with pytest.raises(ProviderAdapterError, match=message) as error:
-        tuple(adapter.stream_events(turn=turn))
-    assert error.value.category is ProviderErrorCategory.PROTOCOL
-
-
-def test_state_guards_reject_duplicate_requests_forged_handles_and_bad_approvals() -> None:
-    adapter, _, session, turn = prepared_adapter(
+    adapter, _, _, handle = prepared_adapter(
         [
-            event(
-                1,
-                "approval.required",
-                approval={
-                    "approval_id": "approval.c501.001",
-                    "action_class": "WRITE",
-                    "summary": "write",
+            note(
+                "turn/started",
+                {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
+            ),
+            note(
+                "turn/completed",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "turn": turn(status=status),
                 },
-            )
+            ),
         ]
     )
+    events = tuple(adapter.stream_events(turn=handle))
+    assert events[-1].outcome is outcome
+    if outcome is ProviderTurnOutcome.FAILED:
+        assert events[-1].failure is not None
 
-    with pytest.raises(ProviderAdapterError, match="duplicate request id"):
+
+def test_approval_allow_and_deny_reply_to_original_server_request_ids() -> None:
+    adapter, transport, _, handle = prepared_adapter([approval_request("server.req.1")])
+    approval = tuple(adapter.stream_events(turn=handle))[-1].approval
+    assert approval is not None
+    adapter.respond_to_approval(
+        turn=handle,
+        response=ApprovalResponse(
+            approval_id=approval.approval_id,
+            decision=ApprovalStatus.GRANTED,
+            reason="allow in test",
+        ),
+    )
+
+    adapter2, transport2, _, handle2 = prepared_adapter(
+        [approval_request("server.req.2", "item/fileChange/requestApproval")]
+    )
+    approval2 = tuple(adapter2.stream_events(turn=handle2))[-1].approval
+    assert approval2 is not None
+    adapter2.respond_to_approval(
+        turn=handle2,
+        response=ApprovalResponse(
+            approval_id=approval2.approval_id,
+            decision=ApprovalStatus.DENIED,
+            reason="deny in test",
+        ),
+    )
+    assert transport.responses == [("server.req.1", {"decision": "approved"})]
+    assert transport2.responses == [("server.req.2", {"decision": "denied"})]
+
+
+@pytest.mark.parametrize(
+    "inbound, message",
+    [
+        (
+            [note("future/mandatory", {"threadId": handle_session(), "turnId": "turn.c501.001"})],
+            "unknown",
+        ),
+        (
+            [
+                note(
+                    "turn/started",
+                    {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
+                ),
+                note(
+                    "turn/started",
+                    {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
+                ),
+            ],
+            "duplicate",
+        ),
+        (
+            [
+                note(
+                    "turn/completed",
+                    {
+                        "threadId": handle_session(),
+                        "turnId": "turn.c501.001",
+                        "turn": turn(status="completed"),
+                    },
+                ),
+                note(
+                    "item/started",
+                    {
+                        "threadId": handle_session(),
+                        "turnId": "turn.c501.001",
+                        "item": {"type": "agentMessage", "id": "item.after"},
+                        "startedAtMs": 1,
+                    },
+                ),
+            ],
+            "post-terminal",
+        ),
+        (
+            [
+                InboundMessage(
+                    kind=InboundKind.SERVER_REQUEST,
+                    method="item/tool/requestUserInput",
+                    request_id=3,
+                    params={},
+                )
+            ],
+            "unsupported",
+        ),
+    ],
+)
+def test_unknown_duplicate_post_terminal_and_unsupported_messages_fail_closed(
+    inbound: list[InboundMessage], message: str
+) -> None:
+    adapter, _, _, handle = prepared_adapter(inbound)
+    with pytest.raises(ProviderAdapterError, match=message):
+        tuple(adapter.stream_events(turn=handle))
+
+
+def test_error_notification_can_be_nonterminal_or_terminal() -> None:
+    adapter, _, _, handle = prepared_adapter(
+        [
+            note(
+                "error",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "willRetry": True,
+                    "error": {
+                        "message": "retry",
+                        "codexErrorInfo": None,
+                        "additionalDetails": None,
+                    },
+                },
+            ),
+            note(
+                "error",
+                {
+                    "threadId": handle_session(),
+                    "turnId": "turn.c501.001",
+                    "willRetry": False,
+                    "error": {"message": "stop", "codexErrorInfo": None, "additionalDetails": None},
+                },
+            ),
+        ]
+    )
+    events = tuple(adapter.stream_events(turn=handle))
+    assert events[0].kind is ProviderEventKind.ACTION
+    assert events[1].outcome is ProviderTurnOutcome.FAILED
+
+
+def test_state_guards_reject_duplicate_request_forged_handles_and_bad_approval() -> None:
+    adapter, _, session, handle = prepared_adapter([approval_request("server.req.1")])
+    with pytest.raises(ProviderAdapterError, match="duplicate request"):
         adapter.submit_turn(
             session=session,
             request=TurnRequest(
@@ -378,18 +544,71 @@ def test_state_guards_reject_duplicate_requests_forged_handles_and_bad_approvals
                 turn=TurnHandle(
                     turn_id="turn.forged",
                     session_id=session.session_id,
-                    request_id=turn.request_id,
-                    run_id=turn.run_id,
-                    task_id=turn.task_id,
+                    request_id=handle.request_id,
+                    run_id=handle.run_id,
+                    task_id=handle.task_id,
                 )
             )
         )
-
-    tuple(adapter.stream_events(turn=turn))
+    tuple(adapter.stream_events(turn=handle))
     with pytest.raises(ProviderAdapterError, match="approval id mismatch"):
         adapter.respond_to_approval(
-            turn=turn,
+            turn=handle,
             response=ApprovalResponse(
-                approval_id="approval.other", decision=ApprovalStatus.DENIED, reason="no"
+                approval_id="approval.other",
+                decision=ApprovalStatus.DENIED,
+                reason="deny",
             ),
         )
+
+
+def test_subprocess_transport_startup_missing_executable_invalid_json_envelope_and_rpc_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    missing = SubprocessJsonRpcTransport(("missing-codex-binary", "app-server"))
+
+    def raise_oserror(*_args: object, **_kwargs: object) -> object:
+        raise FileNotFoundError("missing")
+
+    monkeypatch.setattr("subprocess.Popen", raise_oserror)
+    with pytest.raises(ProviderAdapterError, match="failed to start"):
+        missing.start()
+
+    assert parse_failure("not-json\n").category is ProviderErrorCategory.PROTOCOL
+    assert (
+        parse_failure('{"jsonrpc":"2.0","result":{}}\n').category is ProviderErrorCategory.PROTOCOL
+    )
+    assert (
+        parse_failure(
+            '{"jsonrpc":"2.0","id":1,"error":{"code":"bad","message":"boom"}}\n'
+        ).provider_code
+        == "bad"
+    )
+
+
+def parse_failure(line: str) -> ProviderAdapterError:
+    class Stdout:
+        def readline(self) -> str:
+            return line
+
+    class Stdin:
+        def write(self, _value: str) -> int:
+            return len(_value)
+
+        def flush(self) -> None:
+            return None
+
+    class Process:
+        stdin = Stdin()
+        stdout = Stdout()
+        stderr = None
+        returncode = None
+
+        def poll(self) -> None:
+            return None
+
+    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport._process = Process()  # type: ignore[assignment]
+    with pytest.raises(ProviderAdapterError) as error:
+        transport.request("initialize", {})
+    return error.value

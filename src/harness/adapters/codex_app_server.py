@@ -1,17 +1,19 @@
-"""Synchronous Codex App Server adapter with an injectable JSON-RPC transport.
+"""Codex App Server adapter bound to the generated JSON-RPC schema.
 
-The raw App Server JSON-RPC/JSONL protocol is intentionally confined to this
-module.  Callers receive only provider-neutral adapter contracts from
-``harness.adapters.base``.
+Raw App Server request, response, notification, and server-request envelopes are
+confined to this module.  The harness-facing surface remains the provider-neutral
+``harness.adapters.base`` contract.
 """
 
 from __future__ import annotations
 
 import json
 import subprocess
+from collections import deque
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any, Protocol, TextIO, cast
 
 from harness.adapters.base import (
@@ -28,41 +30,57 @@ from harness.adapters.base import (
     TurnHandle,
     TurnRequest,
 )
-from harness.state import ActionClass
+from harness.state import ActionClass, ApprovalStatus, RedactionStatus
 
-SUPPORTED_PROTOCOL_VERSION = "app-server-v2"
+EXPECTED_CODEX_CLI_VERSION = "0.144.3"
+APP_SERVER_PROTOCOL_VERSION = "codex-app-server-jsonrpc-v2"
 SCHEMA_REF = "docs/research/generated-app-server-schema/codex-cli-0.144.3/stable"
+CLIENT_NAME = "upe-harness-c501"
+CLIENT_VERSION = "0.1.0"
 
 JSON = Mapping[str, Any]
+RpcId = str | int
+
+
+class InboundKind(StrEnum):
+    RESPONSE = "response"
+    NOTIFICATION = "notification"
+    SERVER_REQUEST = "server_request"
+
+
+@dataclass(frozen=True, slots=True)
+class InboundMessage:
+    """Parsed JSON-RPC message from the App Server."""
+
+    kind: InboundKind
+    method: str | None = None
+    params: JSON | None = None
+    request_id: RpcId | None = None
+    result: JSON | None = None
+    error: JSON | None = None
 
 
 class CodexAppServerTransport(Protocol):
-    """Minimal synchronous JSON-RPC transport used by the adapter."""
+    """Injectable synchronous JSON-RPC/JSONL transport."""
 
     @property
-    def started(self) -> bool:
-        """Return whether the transport is running."""
+    def started(self) -> bool: ...
 
-    def start(self) -> None:
-        """Start the underlying transport."""
+    def start(self) -> None: ...
 
-    def stop(self) -> None:
-        """Stop the underlying transport."""
+    def stop(self) -> None: ...
 
-    def request(self, method: str, params: JSON) -> JSON:
-        """Send one JSON-RPC request and return its result object."""
+    def request(self, method: str, params: JSON) -> JSON: ...
 
-    def iter_events(self, *, turn_id: str) -> Iterator[JSON]:
-        """Yield raw provider events for one turn until a terminal/blocked segment."""
+    def notify(self, method: str, params: JSON | None = None) -> None: ...
+
+    def respond(self, request_id: RpcId, result: JSON) -> None: ...
+
+    def iter_messages(self) -> Iterator[InboundMessage]: ...
 
 
 class SubprocessJsonRpcTransport:
-    """Standard-library subprocess/JSONL JSON-RPC transport.
-
-    This transport is deliberately small and injectable.  Unit tests pass a fake
-    transport, so constructing this class is the only place that can start the
-    real Codex App Server process.
-    """
+    """Strict standard-library JSONL JSON-RPC transport for Codex App Server."""
 
     def __init__(self, command: Sequence[str]) -> None:
         if not command:
@@ -70,6 +88,7 @@ class SubprocessJsonRpcTransport:
         self._command = tuple(command)
         self._process: subprocess.Popen[str] | None = None
         self._next_id = 0
+        self._pending: deque[InboundMessage] = deque()
 
     @property
     def started(self) -> bool:
@@ -78,78 +97,100 @@ class SubprocessJsonRpcTransport:
     def start(self) -> None:
         if self.started:
             return
-        self._process = subprocess.Popen(  # noqa: S603 - caller supplies pinned command.
-            self._command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding="utf-8",
-        )
+        try:
+            self._process = subprocess.Popen(  # noqa: S603 - caller supplies pinned binary.
+                self._command,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            raise _error(
+                f"failed to start Codex App Server: {exc}",
+                ProviderErrorCategory.PERMANENT,
+                retryable=False,
+                provider_code="startup_failure",
+            ) from exc
 
     def stop(self) -> None:
         process = self._process
         self._process = None
+        self._pending.clear()
         if process is None:
             return
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=5)
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
 
     def request(self, method: str, params: JSON) -> JSON:
-        process = self._require_process()
-        stdin = cast(TextIO, process.stdin)
-        stdout = cast(TextIO, process.stdout)
         self._next_id += 1
         request_id = self._next_id
-        stdin.write(
-            json.dumps({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
-            + "\n"
-        )
-        stdin.flush()
+        self._write({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         while True:
-            line = stdout.readline()
-            if line == "":
-                raise _adapter_error(
-                    "transport closed", ProviderErrorCategory.TRANSIENT, retryable=True
-                )
-            message = _object(json.loads(line), "json-rpc response")
-            if message.get("id") != request_id:
+            message = self._read_message()
+            if message.kind is not InboundKind.RESPONSE or message.request_id != request_id:
+                self._pending.append(message)
                 continue
-            if "error" in message:
-                error = _object(message["error"], "json-rpc error")
-                raise _adapter_error(
-                    _string(error.get("message"), "json-rpc error.message"),
-                    _category_from_code(error.get("code")),
-                    retryable=False,
-                    provider_code=str(error.get("code", "json_rpc_error")),
-                )
-            return _object(message.get("result"), "json-rpc result")
+            if message.error is not None:
+                raise _rpc_error(message.error)
+            if message.result is None:
+                raise _error("JSON-RPC response missing result", ProviderErrorCategory.PROTOCOL)
+            return message.result
 
-    def iter_events(self, *, turn_id: str) -> Iterator[JSON]:
-        process = self._require_process()
-        stdout = cast(TextIO, process.stdout)
+    def notify(self, method: str, params: JSON | None = None) -> None:
+        envelope: dict[str, object] = {"jsonrpc": "2.0", "method": method}
+        if params is not None:
+            envelope["params"] = params
+        self._write(envelope)
+
+    def respond(self, request_id: RpcId, result: JSON) -> None:
+        self._write({"jsonrpc": "2.0", "id": request_id, "result": result})
+
+    def iter_messages(self) -> Iterator[InboundMessage]:
         while True:
-            line = stdout.readline()
-            if line == "":
-                raise _adapter_error(
-                    "transport closed",
-                    ProviderErrorCategory.TRANSIENT,
-                    retryable=True,
-                    correlation_id=turn_id,
-                )
-            message = _object(json.loads(line), "stream message")
-            if message.get("turn_id") == turn_id:
-                yield message
+            if self._pending:
+                yield self._pending.popleft()
+            else:
+                yield self._read_message()
+
+    def _write(self, envelope: JSON) -> None:
+        process = self._require_process()
+        stdin = cast(TextIO, process.stdin)
+        stdin.write(json.dumps(envelope, separators=(",", ":")) + "\n")
+        stdin.flush()
+
+    def _read_message(self) -> InboundMessage:
+        process = self._require_process()
+        if process.poll() is not None:
+            stderr = ""
+            if process.stderr is not None:
+                stderr = process.stderr.read(4096)
+            raise _error(
+                f"Codex App Server exited with code {process.returncode}",
+                ProviderErrorCategory.TRANSIENT,
+                retryable=True,
+                provider_code="process_exit",
+                details=stderr,
+            )
+        stdout = cast(TextIO, process.stdout)
+        line = stdout.readline()
+        if line == "":
+            raise _error("Codex App Server stdout closed", ProviderErrorCategory.TRANSIENT)
+        try:
+            raw = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise _error("invalid JSON-RPC JSON", ProviderErrorCategory.PROTOCOL) from exc
+        return _parse_inbound(raw)
 
     def _require_process(self) -> subprocess.Popen[str]:
-        if not self.started or self._process is None:
-            raise _adapter_error(
-                "transport is not started", ProviderErrorCategory.STATE, retryable=False
-            )
+        if self._process is None or not self.started:
+            raise _error("transport is not started", ProviderErrorCategory.STATE, retryable=False)
         return self._process
 
 
@@ -157,24 +198,33 @@ class SubprocessJsonRpcTransport:
 class _TurnState:
     handle: TurnHandle
     terminal: bool = False
-    waiting_approval: str | None = None
-    next_sequence: int = 1
-    emitted_ids: set[str] = field(default_factory=set)
+    sequence: int = 0
+    seen_real_ids: set[str] = field(default_factory=set)
+    pending_approvals: dict[str, RpcId] = field(default_factory=dict)
+    redacted: bool = False
+    error_seen: ProviderFailure | None = None
 
 
 class CodexAppServerAdapter:
-    """ProviderAdapter implementation for the Codex App Server protocol."""
+    """Synchronous ProviderAdapter for the generated Codex App Server schema."""
 
-    def __init__(self, transport: CodexAppServerTransport) -> None:
+    def __init__(
+        self,
+        transport: CodexAppServerTransport,
+        *,
+        expected_cli_version: str = EXPECTED_CODEX_CLI_VERSION,
+        schema_ref: str = SCHEMA_REF,
+    ) -> None:
         self._transport = transport
+        self._expected_cli_version = expected_cli_version
         self._identity = AdapterIdentity(
             adapter="codex_app_server",
             provider="codex",
-            implementation_version="c501-local",
-            protocol_version=SUPPORTED_PROTOCOL_VERSION,
-            schema_ref=SCHEMA_REF,
+            implementation_version="c501-schema-bound",
+            protocol_version=APP_SERVER_PROTOCOL_VERSION,
+            schema_ref=schema_ref,
         )
-        self._preflighted = False
+        self._initialized = False
         self._sessions: dict[str, SessionHandle] = {}
         self._turns: dict[str, _TurnState] = {}
         self._request_ids: set[str] = set()
@@ -193,43 +243,53 @@ class CodexAppServerAdapter:
 
     def stop(self) -> None:
         self._transport.stop()
-        self._preflighted = False
+        self._initialized = False
 
     def preflight(self) -> AdapterIdentity:
         self._require_started()
-        result = self._request(
-            "server.compatibility", {"required_protocol": SUPPORTED_PROTOCOL_VERSION}
+        result = self._transport.request(
+            "initialize",
+            {
+                "clientInfo": {"name": CLIENT_NAME, "version": CLIENT_VERSION},
+                "capabilities": {
+                    "supportsStreaming": True,
+                    "supportsApprovals": True,
+                    "supportsTurnInterrupt": True,
+                },
+            },
         )
-        protocol = _string(result.get("protocol_version"), "compatibility.protocol_version")
-        if protocol != SUPPORTED_PROTOCOL_VERSION:
-            raise _adapter_error(
-                f"incompatible Codex App Server protocol {protocol!r}",
+        user_agent = _string(result.get("userAgent"), "initialize.userAgent")
+        _string(result.get("codexHome"), "initialize.codexHome")
+        _string(result.get("platformFamily"), "initialize.platformFamily")
+        _string(result.get("platformOs"), "initialize.platformOs")
+        if self._expected_cli_version not in user_agent:
+            raise _error(
+                "initialize response did not match the expected Codex CLI/schema pin",
                 ProviderErrorCategory.COMPATIBILITY,
                 retryable=False,
-                provider_code="incompatible_protocol",
+                provider_code="schema_pin_mismatch",
             )
-        mandatory = result.get("mandatory_capabilities", ())
-        if not isinstance(mandatory, list) or not all(isinstance(item, str) for item in mandatory):
-            raise _adapter_error(
-                "malformed mandatory capabilities", ProviderErrorCategory.PROTOCOL, retryable=False
-            )
-        required = {"initialize", "thread", "turn", "approval", "cancel", "interrupt", "stream"}
-        missing = required.difference(mandatory)
-        if missing:
-            raise _adapter_error(
-                f"missing mandatory capabilities: {', '.join(sorted(missing))}",
-                ProviderErrorCategory.COMPATIBILITY,
-                retryable=False,
-                provider_code="missing_capability",
-            )
-        self._preflighted = True
+        self._transport.notify("initialized")
+        self._initialized = True
         return self._identity
 
     def create_session(self, *, run: Any) -> SessionHandle:
         self._require_ready_run(run)
-        result = self._request("thread.start", {"run_id": run.run_id, "model": run.model})
+        result = self._transport.request(
+            "thread/start",
+            {
+                "model": run.model,
+                "cwd": _selected_workspace(run),
+                "baseInstructions": None,
+                "developerInstructions": None,
+                "approvalPolicy": None,
+                "approvalsReviewer": None,
+                "sandbox": None,
+            },
+        )
+        thread = _object(result.get("thread"), "thread/start.thread")
         session = SessionHandle(
-            session_id=_stable_id(result.get("thread_id"), "thread.thread_id"),
+            session_id=_stable_id(thread.get("id"), "thread.id"),
             run_id=run.run_id,
             provider="codex",
         )
@@ -238,49 +298,45 @@ class CodexAppServerAdapter:
 
     def resume_session(self, *, run: Any, session_id: str) -> SessionHandle:
         self._require_ready_run(run)
-        result = self._request("thread.resume", {"run_id": run.run_id, "thread_id": session_id})
-        returned = _stable_id(result.get("thread_id"), "thread.thread_id")
+        result = self._transport.request(
+            "thread/resume", {"threadId": session_id, "model": run.model}
+        )
+        thread = _object(result.get("thread"), "thread/resume.thread")
+        returned = _stable_id(thread.get("id"), "thread.id")
         if returned != session_id:
-            raise _adapter_error(
-                "resumed thread identity mismatch", ProviderErrorCategory.PROTOCOL, retryable=False
-            )
+            raise _error("resumed thread identity mismatch", ProviderErrorCategory.PROTOCOL)
         session = SessionHandle(session_id=session_id, run_id=run.run_id, provider="codex")
         self._sessions[session.session_id] = session
         return session
 
     def submit_turn(self, *, session: SessionHandle, request: TurnRequest) -> TurnHandle:
         self._require_session(session)
-        if request.run.provider != "codex":
-            raise _adapter_error(
-                "run provider must be codex", ProviderErrorCategory.STATE, retryable=False
-            )
-        if session.run_id != request.run.run_id:
-            raise _adapter_error(
-                "session/run mismatch", ProviderErrorCategory.STATE, retryable=False
-            )
+        if session.run_id != request.run.run_id or request.run.provider != "codex":
+            raise _error("session/run mismatch", ProviderErrorCategory.STATE, retryable=False)
         if request.request_id in self._request_ids:
-            raise _adapter_error(
-                "duplicate request id", ProviderErrorCategory.STATE, retryable=False
-            )
-        result = self._request(
-            "turn.submit",
+            raise _error("duplicate request id", ProviderErrorCategory.STATE, retryable=False)
+        result = self._transport.request(
+            "turn/start",
             {
-                "thread_id": session.session_id,
-                "request_id": request.request_id,
-                "instructions": request.instructions,
-                "input_refs": list(request.input_refs),
+                "threadId": session.session_id,
+                "clientUserMessageId": request.request_id,
+                "input": [{"type": "text", "text": request.instructions}],
+                "cwd": request.task.selected_workspace,
+                "model": request.run.model,
+                "effort": request.run.reasoning_effort,
             },
         )
-        turn = TurnHandle(
-            turn_id=_stable_id(result.get("turn_id"), "turn.turn_id"),
+        turn = _object(result.get("turn"), "turn/start.turn")
+        handle = TurnHandle(
+            turn_id=_stable_id(turn.get("id"), "turn.id"),
             session_id=session.session_id,
             request_id=request.request_id,
             run_id=request.run.run_id,
             task_id=request.task.task_id,
         )
         self._request_ids.add(request.request_id)
-        self._turns[turn.turn_id] = _TurnState(handle=turn)
-        return turn
+        self._turns[handle.turn_id] = _TurnState(handle=handle)
+        return handle
 
     def stream_events(self, *, turn: TurnHandle) -> Iterator[ProviderEvent]:
         state = self._require_turn(turn)
@@ -291,232 +347,300 @@ class CodexAppServerAdapter:
     def respond_to_approval(self, *, turn: TurnHandle, response: ApprovalResponse) -> None:
         state = self._require_turn(turn)
         if state.terminal:
-            raise _adapter_error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
-        if state.waiting_approval != response.approval_id:
-            raise _adapter_error(
-                "approval id mismatch", ProviderErrorCategory.STATE, retryable=False
-            )
-        self._request(
-            "approval.respond",
-            {
-                "turn_id": turn.turn_id,
-                "approval_id": response.approval_id,
-                "decision": response.decision.value,
-                "reason": response.reason,
-                "evidence_refs": list(response.evidence_refs),
-            },
-        )
-        state.waiting_approval = None
+            raise _error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
+        request_id = state.pending_approvals.pop(response.approval_id, None)
+        if request_id is None:
+            raise _error("approval id mismatch", ProviderErrorCategory.STATE, retryable=False)
+        decision = "approved" if response.decision is ApprovalStatus.GRANTED else "denied"
+        self._transport.respond(request_id, {"decision": decision})
 
     def interrupt(self, *, turn: TurnHandle, reason: str) -> None:
         state = self._require_turn(turn)
         if state.terminal:
-            raise _adapter_error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
-        self._request(
-            "turn.interrupt", {"turn_id": turn.turn_id, "reason": _non_empty(reason, "reason")}
+            raise _error("turn is terminal", ProviderErrorCategory.STATE, retryable=False)
+        self._transport.request(
+            "turn/interrupt", {"threadId": turn.session_id, "turnId": turn.turn_id}
         )
 
     def cancel(self, *, session: SessionHandle, reason: str) -> None:
         self._require_session(session)
-        self._request(
-            "thread.cancel",
-            {"thread_id": session.session_id, "reason": _non_empty(reason, "reason")},
-        )
+        for state in self._turns.values():
+            if state.handle.session_id == session.session_id and not state.terminal:
+                self.interrupt(turn=state.handle, reason=reason)
 
     def _stream(self, state: _TurnState) -> Iterator[ProviderEvent]:
-        for raw in self._transport.iter_events(turn_id=state.handle.turn_id):
-            event = self._translate_event(state, raw)
+        for message in self._transport.iter_messages():
+            event = self._translate_message(state, message)
+            if event is None:
+                continue
             yield event
-            if (
-                event.kind is ProviderEventKind.APPROVAL_REQUIRED
-                or event.kind is ProviderEventKind.TURN_TERMINAL
-            ):
+            if event.kind is ProviderEventKind.APPROVAL_REQUIRED:
                 break
 
-    def _translate_event(self, state: _TurnState, raw: JSON) -> ProviderEvent:
-        self._reject_unknown_mandatory(raw)
-        event_id = _stable_id(raw.get("event_id"), "event.event_id")
-        if event_id in state.emitted_ids:
-            raise _adapter_error(
-                "duplicate provider event id",
-                ProviderErrorCategory.PROTOCOL,
-                retryable=False,
-                correlation_id=state.handle.turn_id,
+    def _translate_message(
+        self, state: _TurnState, message: InboundMessage
+    ) -> ProviderEvent | None:
+        if message.kind is InboundKind.RESPONSE:
+            raise _error("unexpected interleaved response", ProviderErrorCategory.PROTOCOL)
+        if message.kind is InboundKind.SERVER_REQUEST:
+            return self._translate_server_request(state, message)
+        if message.method is None or message.params is None:
+            raise _error("malformed notification", ProviderErrorCategory.PROTOCOL)
+        if message.method == "error":
+            return self._translate_error(state, message.params)
+        method = message.method
+        params = message.params
+        if "turnId" not in params:
+            return None
+        if _string(params.get("turnId"), f"{method}.turnId") != state.handle.turn_id:
+            return None
+        if _string(params.get("threadId"), f"{method}.threadId") != state.handle.session_id:
+            raise _error("thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
+        if state.terminal:
+            raise _error("post-terminal provider message", ProviderErrorCategory.PROTOCOL)
+        if method == "turn/started":
+            turn = _object(params.get("turn"), "turn/started.turn")
+            self._dedupe(state, "turn", _stable_id(turn.get("id"), "turn.id"))
+            return self._event(state, ProviderEventKind.TURN_STARTED, "Codex turn started")
+        if method == "item/started":
+            item = _object(params.get("item"), "item/started.item")
+            item_id = _stable_id(item.get("id"), "item.id")
+            self._dedupe(state, "item-started", item_id)
+            return self._event(
+                state, ProviderEventKind.ACTION, _bounded_item_summary(item, "started")
             )
-        sequence = _int(raw.get("sequence"), "event.sequence")
-        if sequence != state.next_sequence:
-            raise _adapter_error(
-                "provider event sequence gap",
-                ProviderErrorCategory.PROTOCOL,
-                retryable=False,
-                correlation_id=state.handle.turn_id,
+        if method == "item/completed":
+            item = _object(params.get("item"), "item/completed.item")
+            item_id = _stable_id(item.get("id"), "item.id")
+            self._dedupe(state, "item-completed", item_id)
+            return self._event(
+                state, ProviderEventKind.ACTION, _bounded_item_summary(item, "completed")
             )
-        timestamp = _timestamp(raw.get("timestamp"))
-        kind_value = _string(raw.get("type"), "event.type")
-        state.emitted_ids.add(event_id)
-        state.next_sequence += 1
-        summary = _non_empty(str(raw.get("summary", kind_value)), "event.summary")
-        input_refs = _tuple(raw.get("input_refs", ()), "event.input_refs")
-        output_refs = _tuple(raw.get("output_refs", ()), "event.output_refs")
-        evidence_refs = _tuple(raw.get("evidence_refs", ()), "event.evidence_refs")
-        correlation_id_value = raw.get("correlation_id")
-        correlation_id = (
-            None
-            if correlation_id_value is None
-            else _stable_id(correlation_id_value, "event.correlation_id")
-        )
-
-        def normalized_event(
-            kind: ProviderEventKind,
-            *,
-            approval: ApprovalRequest | None = None,
-            outcome: ProviderTurnOutcome | None = None,
-            failure: ProviderFailure | None = None,
-        ) -> ProviderEvent:
-            return ProviderEvent(
-                event_id=event_id,
-                sequence=sequence,
-                timestamp=timestamp,
-                session_id=state.handle.session_id,
-                turn_id=state.handle.turn_id,
-                kind=kind,
-                summary=summary,
-                input_refs=input_refs,
-                output_refs=output_refs,
-                evidence_refs=evidence_refs,
-                correlation_id=correlation_id,
-                approval=approval,
-                outcome=outcome,
-                failure=failure,
+        if method == "item/agentMessage/delta":
+            item_id = _stable_id(params.get("itemId"), "agentMessage.itemId")
+            self._dedupe(state, "agent-delta", f"{item_id}:{state.sequence + 1}")
+            state.redacted = True
+            return self._event(
+                state,
+                ProviderEventKind.OUTPUT,
+                "Codex agent message delta redacted",
+                redaction_status=RedactionStatus.REDACTED,
             )
-
-        if kind_value == "turn.started":
-            return normalized_event(ProviderEventKind.TURN_STARTED)
-        if kind_value == "message.output":
-            return normalized_event(ProviderEventKind.OUTPUT)
-        if kind_value == "action.started":
-            return normalized_event(ProviderEventKind.ACTION)
-        if kind_value == "approval.required":
-            approval = _object(raw.get("approval"), "event.approval")
-            approval_request = ApprovalRequest(
-                approval_id=_stable_id(approval.get("approval_id"), "approval.approval_id"),
-                action_class=_action_class(
-                    _string(approval.get("action_class"), "approval.action_class")
-                ),
-                summary=_string(approval.get("summary"), "approval.summary"),
-                input_refs=_tuple(approval.get("input_refs", ()), "approval.input_refs"),
-            )
-            state.waiting_approval = approval_request.approval_id
-            return normalized_event(ProviderEventKind.APPROVAL_REQUIRED, approval=approval_request)
-        if kind_value == "turn.completed":
+        if method == "turn/completed":
+            turn = _object(params.get("turn"), "turn/completed.turn")
+            outcome, failure = _turn_outcome(turn)
             state.terminal = True
-            return normalized_event(
-                ProviderEventKind.TURN_TERMINAL, outcome=ProviderTurnOutcome.SUCCEEDED
-            )
-        if kind_value in {"turn.failed", "turn.cancelled", "turn.interrupted"}:
-            state.terminal = True
-            if kind_value == "turn.cancelled":
-                return normalized_event(
-                    ProviderEventKind.TURN_TERMINAL, outcome=ProviderTurnOutcome.CANCELLED
-                )
-            if kind_value == "turn.interrupted":
-                return normalized_event(
-                    ProviderEventKind.TURN_TERMINAL, outcome=ProviderTurnOutcome.INTERRUPTED
-                )
-            failure = _failure(raw.get("failure"), state.handle.turn_id)
-            return normalized_event(
+            return self._event(
+                state,
                 ProviderEventKind.TURN_TERMINAL,
-                outcome=ProviderTurnOutcome.FAILED,
-                failure=failure,
+                "Codex turn terminal",
+                outcome=outcome,
+                failure=failure or state.error_seen,
             )
-        raise _adapter_error(
-            f"unknown mandatory provider event type {kind_value!r}",
-            ProviderErrorCategory.PROTOCOL,
-            retryable=False,
-            correlation_id=state.handle.turn_id,
+        raise _error(f"unknown mandatory notification {method!r}", ProviderErrorCategory.PROTOCOL)
+
+    def _translate_server_request(
+        self, state: _TurnState, message: InboundMessage
+    ) -> ProviderEvent | None:
+        if message.method not in {
+            "item/commandExecution/requestApproval",
+            "item/fileChange/requestApproval",
+        }:
+            raise _error(
+                f"unsupported server request {message.method!r}", ProviderErrorCategory.PROTOCOL
+            )
+        params = _object(message.params, "serverRequest.params")
+        if _string(params.get("turnId"), "approval.turnId") != state.handle.turn_id:
+            return None
+        if _string(params.get("threadId"), "approval.threadId") != state.handle.session_id:
+            raise _error("approval thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
+        request_id = _rpc_id(message.request_id, "approval request id")
+        item_id = _stable_id(params.get("itemId"), "approval.itemId")
+        approval_id = str(params.get("approvalId") or item_id)
+        self._dedupe(state, "server-request", f"{message.method}:{request_id}")
+        action_class = (
+            ActionClass.WRITE
+            if message.method == "item/fileChange/requestApproval"
+            else ActionClass.OTHER_EXTERNAL_WRITE
+        )
+        approval = ApprovalRequest(
+            approval_id=approval_id,
+            action_class=action_class,
+            summary="Codex approval request",
+            input_refs=(f"provider://codex/{state.handle.turn_id}/{item_id}",),
+        )
+        state.pending_approvals[approval.approval_id] = request_id
+        return self._event(
+            state,
+            ProviderEventKind.APPROVAL_REQUIRED,
+            "Codex approval request",
+            approval=approval,
         )
 
-    def _request(self, method: str, params: JSON) -> JSON:
-        self._require_started()
-        try:
-            result = self._transport.request(method, params)
-        except ProviderAdapterError:
-            raise
-        except Exception as exc:
-            raise _adapter_error(str(exc), ProviderErrorCategory.TRANSIENT, retryable=True) from exc
-        self._reject_unknown_mandatory(result)
-        return result
+    def _translate_error(self, state: _TurnState, params: JSON) -> ProviderEvent | None:
+        if _string(params.get("turnId"), "error.turnId") != state.handle.turn_id:
+            return None
+        failure = _failure(_object(params.get("error"), "error.error"), state.handle.turn_id)
+        if bool(params.get("willRetry", False)):
+            state.error_seen = failure
+            return self._event(
+                state, ProviderEventKind.ACTION, "Codex transient error notification"
+            )
+        state.terminal = True
+        return self._event(
+            state,
+            ProviderEventKind.TURN_TERMINAL,
+            "Codex error terminal",
+            outcome=ProviderTurnOutcome.FAILED,
+            failure=failure,
+        )
+
+    def _event(
+        self,
+        state: _TurnState,
+        kind: ProviderEventKind,
+        summary: str,
+        *,
+        redaction_status: RedactionStatus = RedactionStatus.NOT_REQUIRED,
+        approval: ApprovalRequest | None = None,
+        outcome: ProviderTurnOutcome | None = None,
+        failure: ProviderFailure | None = None,
+    ) -> ProviderEvent:
+        state.sequence += 1
+        return ProviderEvent(
+            event_id=f"codex.{state.handle.turn_id}.{state.sequence}",
+            sequence=state.sequence,
+            timestamp=datetime.now(UTC),
+            session_id=state.handle.session_id,
+            turn_id=state.handle.turn_id,
+            kind=kind,
+            summary=summary,
+            evidence_refs=(f"provider://codex/{state.handle.turn_id}/{state.sequence}",),
+            redaction_status=redaction_status,
+            approval=approval,
+            outcome=outcome,
+            failure=failure,
+        )
+
+    def _dedupe(self, state: _TurnState, kind: str, real_id: str) -> None:
+        key = f"{kind}:{real_id}"
+        if key in state.seen_real_ids:
+            raise _error("duplicate provider identity", ProviderErrorCategory.PROTOCOL)
+        state.seen_real_ids.add(key)
 
     def _require_started(self) -> None:
         if not self.started:
-            raise _adapter_error(
-                "adapter is not started", ProviderErrorCategory.STATE, retryable=False
-            )
+            raise _error("adapter is not started", ProviderErrorCategory.STATE, retryable=False)
 
     def _require_ready_run(self, run: Any) -> None:
         self._require_started()
-        if not self._preflighted:
-            raise _adapter_error(
-                "preflight is required", ProviderErrorCategory.STATE, retryable=False
+        if not self._initialized:
+            raise _error(
+                "initialize preflight is required", ProviderErrorCategory.STATE, retryable=False
             )
         if getattr(run, "provider", None) != "codex":
-            raise _adapter_error(
-                "run provider must be codex", ProviderErrorCategory.STATE, retryable=False
-            )
+            raise _error("run provider must be codex", ProviderErrorCategory.STATE, retryable=False)
 
     def _require_session(self, session: SessionHandle) -> None:
         self._require_started()
         if session.provider != "codex" or self._sessions.get(session.session_id) != session:
-            raise _adapter_error(
-                "unknown Codex session", ProviderErrorCategory.STATE, retryable=False
-            )
+            raise _error("unknown Codex session", ProviderErrorCategory.STATE, retryable=False)
 
     def _require_turn(self, turn: TurnHandle) -> _TurnState:
         self._require_started()
         state = self._turns.get(turn.turn_id)
         if state is None or state.handle != turn:
-            raise _adapter_error("unknown Codex turn", ProviderErrorCategory.STATE, retryable=False)
+            raise _error("unknown Codex turn", ProviderErrorCategory.STATE, retryable=False)
         return state
 
-    def _reject_unknown_mandatory(self, raw: JSON) -> None:
-        unknown = raw.get("unknown_mandatory")
-        if unknown not in (None, [], ()):  # forward-compatible optional fields are allowed.
-            raise _adapter_error(
-                "unknown mandatory protocol field", ProviderErrorCategory.PROTOCOL, retryable=False
+
+def _parse_inbound(raw: Any) -> InboundMessage:
+    envelope = _object(raw, "json-rpc envelope")
+    if envelope.get("jsonrpc") != "2.0":
+        raise _error("JSON-RPC envelope must declare version 2.0", ProviderErrorCategory.PROTOCOL)
+    has_id = "id" in envelope
+    has_method = "method" in envelope
+    if has_method:
+        method = _string(envelope.get("method"), "json-rpc method")
+        params = _object(envelope.get("params", {}), "json-rpc params")
+        if has_id:
+            return InboundMessage(
+                kind=InboundKind.SERVER_REQUEST,
+                method=method,
+                params=params,
+                request_id=_rpc_id(envelope.get("id"), "json-rpc id"),
             )
+        return InboundMessage(kind=InboundKind.NOTIFICATION, method=method, params=params)
+    if has_id:
+        request_id = _rpc_id(envelope.get("id"), "json-rpc id")
+        if "error" in envelope:
+            return InboundMessage(
+                kind=InboundKind.RESPONSE,
+                request_id=request_id,
+                error=_object(envelope.get("error"), "json-rpc error"),
+            )
+        return InboundMessage(
+            kind=InboundKind.RESPONSE,
+            request_id=request_id,
+            result=_object(envelope.get("result"), "json-rpc result"),
+        )
+    raise _error(
+        "JSON-RPC envelope is neither response nor method message", ProviderErrorCategory.PROTOCOL
+    )
 
 
-def _adapter_error(
-    message: str,
-    category: ProviderErrorCategory,
-    *,
-    retryable: bool,
-    provider_code: str | None = None,
-    correlation_id: str | None = None,
-) -> ProviderAdapterError:
-    return ProviderAdapterError(
-        message,
-        category=category,
-        retryable=retryable,
-        provider_code=provider_code,
+def _rpc_error(error: JSON) -> ProviderAdapterError:
+    code = str(error.get("code", "json_rpc_error"))
+    message = _string(error.get("message"), "json-rpc error.message")
+    return _error(message, ProviderErrorCategory.PROTOCOL, retryable=False, provider_code=code)
+
+
+def _turn_outcome(turn: JSON) -> tuple[ProviderTurnOutcome, ProviderFailure | None]:
+    status = _string(turn.get("status"), "turn.status")
+    if status == "completed":
+        return ProviderTurnOutcome.SUCCEEDED, None
+    if status == "interrupted":
+        return ProviderTurnOutcome.INTERRUPTED, None
+    if status == "cancelled":
+        return ProviderTurnOutcome.CANCELLED, None
+    if status == "failed":
+        failure = _failure(
+            _object(turn.get("error"), "turn.error"), _string(turn.get("id"), "turn.id")
+        )
+        return ProviderTurnOutcome.FAILED, failure
+    raise _error(f"unknown terminal turn status {status!r}", ProviderErrorCategory.PROTOCOL)
+
+
+def _failure(raw: JSON, correlation_id: str) -> ProviderFailure:
+    return ProviderFailure(
+        category=ProviderErrorCategory.TRANSIENT,
+        message=_string(raw.get("message"), "turn.error.message"),
+        retryable=False,
+        provider_code="codex_turn_error",
         correlation_id=correlation_id,
     )
 
 
+def _bounded_item_summary(item: JSON, phase: str) -> str:
+    item_type = _string(item.get("type"), "item.type")
+    return f"Codex item {phase}: {item_type}"
+
+
+def _selected_workspace(run: Any) -> str | None:
+    _ = run
+    return None
+
+
 def _object(value: Any, location: str) -> JSON:
     if not isinstance(value, Mapping):
-        raise _adapter_error(
-            f"{location} must be an object", ProviderErrorCategory.PROTOCOL, retryable=False
-        )
+        raise _error(f"{location} must be an object", ProviderErrorCategory.PROTOCOL)
     return value
 
 
 def _string(value: Any, location: str) -> str:
     if not isinstance(value, str) or not value or value != value.strip():
-        raise _adapter_error(
-            f"{location} must be a normalized non-empty string",
-            ProviderErrorCategory.PROTOCOL,
-            retryable=False,
+        raise _error(
+            f"{location} must be a normalized non-empty string", ProviderErrorCategory.PROTOCOL
         )
     return value
 
@@ -525,92 +649,41 @@ def _stable_id(value: Any, location: str) -> str:
     return _string(value, location)
 
 
-def _non_empty(value: str, location: str) -> str:
-    return _string(value, location)
-
-
-def _int(value: Any, location: str) -> int:
-    if not isinstance(value, int) or value < 1:
-        raise _adapter_error(
-            f"{location} must be a positive integer",
-            ProviderErrorCategory.PROTOCOL,
-            retryable=False,
-        )
-    return value
-
-
-def _timestamp(value: Any) -> datetime:
-    if value is None:
-        raise _adapter_error(
-            "event.timestamp is required", ProviderErrorCategory.PROTOCOL, retryable=False
-        )
-    try:
-        parsed = datetime.fromisoformat(_string(value, "event.timestamp"))
-    except ValueError as exc:
-        raise _adapter_error(
-            "event.timestamp must be ISO-8601", ProviderErrorCategory.PROTOCOL, retryable=False
-        ) from exc
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise _adapter_error(
-            "event.timestamp must be timezone-aware",
-            ProviderErrorCategory.PROTOCOL,
-            retryable=False,
-        )
-    return parsed.astimezone(UTC)
-
-
-def _tuple(value: Any, location: str) -> tuple[str, ...]:
-    if not isinstance(value, list | tuple):
-        raise _adapter_error(
-            f"{location} must be a list", ProviderErrorCategory.PROTOCOL, retryable=False
-        )
-    items: list[str] = []
-    for index, item in enumerate(value):
-        items.append(_string(item, f"{location}[{index}]"))
-    return tuple(items)
-
-
-def _action_class(value: str) -> ActionClass:
-    try:
-        return ActionClass(value)
-    except ValueError as exc:
-        raise _adapter_error(
-            "unknown approval action class", ProviderErrorCategory.PROTOCOL, retryable=False
-        ) from exc
-
-
-def _failure(value: Any, turn_id: str) -> ProviderFailure:
-    raw = _object(value, "failure")
-    category = _category_from_code(raw.get("category"))
-    if category is ProviderErrorCategory.STATE:
-        category = ProviderErrorCategory.PROTOCOL
-    return ProviderFailure(
-        category=category,
-        message=_string(raw.get("message"), "failure.message"),
-        retryable=bool(raw.get("retryable", False)),
-        provider_code=str(raw.get("code", "provider_failure")),
-        correlation_id=turn_id,
+def _rpc_id(value: Any, location: str) -> RpcId:
+    if isinstance(value, str | int):
+        return value
+    raise _error(
+        f"{location} must be a JSON-RPC string or integer id", ProviderErrorCategory.PROTOCOL
     )
 
 
-def _category_from_code(value: Any) -> ProviderErrorCategory:
-    if value == "compatibility":
-        return ProviderErrorCategory.COMPATIBILITY
-    if value == "protocol":
-        return ProviderErrorCategory.PROTOCOL
-    if value == "transient":
-        return ProviderErrorCategory.TRANSIENT
-    if value == "permanent":
-        return ProviderErrorCategory.PERMANENT
-    if value == "state":
-        return ProviderErrorCategory.STATE
-    return ProviderErrorCategory.PERMANENT
+def _error(
+    message: str,
+    category: ProviderErrorCategory,
+    *,
+    retryable: bool = False,
+    provider_code: str | None = None,
+    details: str = "",
+) -> ProviderAdapterError:
+    safe = message if not details else f"{message}; provider stderr omitted ({len(details)} bytes)"
+    return ProviderAdapterError(
+        safe,
+        category=category,
+        retryable=retryable,
+        provider_code=provider_code,
+    )
 
 
 __all__ = [
+    "APP_SERVER_PROTOCOL_VERSION",
+    "CLIENT_NAME",
+    "CLIENT_VERSION",
     "CodexAppServerAdapter",
     "CodexAppServerTransport",
-    "SubprocessJsonRpcTransport",
+    "InboundKind",
+    "InboundMessage",
     "SCHEMA_REF",
-    "SUPPORTED_PROTOCOL_VERSION",
+    "SubprocessJsonRpcTransport",
 ]
+
+assert issubclass(CodexAppServerAdapter, object)
