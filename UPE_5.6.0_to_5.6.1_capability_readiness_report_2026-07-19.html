@@ -766,7 +766,7 @@
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑409 plus C‑501 are implemented and tested. C‑505 is locally accepted and pending serialized delivery; C‑502 and C‑410 can now start independently alongside W‑211 and W‑212.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑409 plus C‑501 and C‑505 are implemented and tested locally. C‑502 and C‑410 can now start independently alongside W‑211 and W‑212.</li>
           </ol>
         </aside>
       </div>
@@ -1326,20 +1326,20 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-22T17:05:16+02:00",
+  "refreshed_at": "2026-07-22T21:54:08+02:00",
   "repository": {
-    "head": "4d6392bec8bf6ade6e77b5651bd78006576a9180",
-    "branch": "codex/c409-cli-doctor"
+    "head": "5d976c3fb79ac578de85cf926be3d4dddcf2514b",
+    "branch": "codex/c505-cloud-coordinator"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 40,
-    "progress_percent": 70,
+    "completed_delivery": 41,
+    "progress_percent": 72,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 40,
-      "in_development": 1,
+      "complete": 41,
+      "in_development": 0,
       "ready": 4,
       "blocked": 15,
       "optional": 0,
@@ -1347,13 +1347,13 @@
     },
     "model_counts_remaining": {
       "High": 15,
-      "Max": 4,
+      "Max": 3,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 16
+      "Local required": 15
     }
   },
   "tasks": [
@@ -4072,12 +4072,12 @@
       "title": "Implement permissions, approval gates, command policy, and redaction",
       "phase": "6-app-server-recovery-security",
       "phase_label": "App Server + recovery",
-      "status": "in_development",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_max_or_highest_exposed",
       "model_label": "Max",
-      "dependency_mode": "in_progress",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-403",
         "C-405",
@@ -4099,18 +4099,13 @@
           "role": "Canonical task definition"
         },
         {
-          "label": "Observed App Server protocol",
-          "path": "docs/research/app-server-protocol-observations.md",
-          "role": "Accepted design basis"
-        },
-        {
-          "label": "Recovery, evaluation, and operations",
-          "path": "docs/work/RECOVERY_EVALUATION_OPERATIONS.md",
-          "role": "Accepted design basis"
-        },
-        {
           "label": "Security and containment boundary",
           "path": "docs/work/SECURITY_THREAT_BOUNDARY.md",
+          "role": "Accepted design basis"
+        },
+        {
+          "label": "Accepted harness boundary",
+          "path": "docs/architecture/ADR-001-harness-boundary.md",
           "role": "Accepted design basis"
         }
       ],
@@ -4130,9 +4125,9 @@
         "estimate": null,
         "estimate_hours": null,
         "confidence": "not_applicable",
-        "basis": "Locally accepted work is pending serialized repository delivery.",
+        "basis": "Completed work is not assigned a retrospective estimate.",
         "parallelizable_now": false,
-        "parallel_note": "In development; not a fresh-work recommendation.",
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -4157,8 +4152,7 @@
       ],
       "incomplete_dependencies": [
         "C-503",
-        "C-504",
-        "C-505"
+        "C-504"
       ],
       "dependents": [
         "C-601",
@@ -4208,11 +4202,10 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-503, C-504, C-505.",
+        "parallel_note": "Starts after C-503, C-504.",
         "blocked_by": [
           "C-503",
-          "C-504",
-          "C-505"
+          "C-504"
         ]
       }
     },
@@ -4562,7 +4555,6 @@
         "C-603"
       ],
       "incomplete_dependencies": [
-        "C-505",
         "C-602",
         "C-603"
       ],
@@ -4607,9 +4599,8 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Starts after C-505, C-602, C-603.",
+        "parallel_note": "Starts after C-602, C-603.",
         "blocked_by": [
-          "C-505",
           "C-602",
           "C-603"
         ]

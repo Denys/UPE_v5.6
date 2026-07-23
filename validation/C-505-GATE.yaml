@@ -1,0 +1,96 @@
+schema_version: '1.0'
+gate_id: C-505-HOST-APPROVAL-PERMISSION-SECURITY
+generated_at: '2026-07-23T00:59:04+02:00'
+status: PASS
+status_reason: >-
+  Immutable host-owned policy fails closed for consequential approvals,
+  commands, Windows paths, environment, network and redaction. The immediately
+  preceding review head passed 457 repository tests; the seventh-review delta
+  passes all 69 permission tests plus changed-file lint, format and strict typing,
+  with no real credential, process, network or external effect.
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c505-coordinator'
+  branch: codex/c505-cloud-coordinator
+  base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+  integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
+  functional_commit: 5d976c3fb79ac578de85cf926be3d4dddcf2514b
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/18
+  committed_at_gate_write: true
+
+criteria:
+  - id: C-505-APPROVAL-AUTHORITY
+    verdict: PASS
+    evidence:
+      - Every ActionClass has an explicit host classification; unknown and ambiguous values are forbidden.
+      - Consequential actions pause without a durable exact grant, while local WRITE remains subject to the assigned-worktree permission boundary.
+      - A grant is bound to run, action class, target, normalized arguments, content/patch, repository, branch, one effect, expiry, decision identity and dispatch time.
+      - Denial, expiry, revocation, missing/pending authority, future decisions and any scope drift fail closed without an action effect.
+  - id: C-505-COMMAND-ENVIRONMENT
+    verdict: PASS
+    evidence:
+      - Commands require an exact allowlisted executable/argv, assigned cwd, freshly matching C-405 workspace identity, zero observed reparse components, bounded timeout/output and explicitly supplied allowlisted environment.
+      - Shell composition, unresolved variables, extensionless/versioned/arbitrary interpreters, credential-bearing switches and inline credentials are rejected unless a narrow tested interpreter rule exists.
+      - No process environment, credential, subprocess or shell is read or invoked by the policy or tests.
+  - id: C-505-PATH-NETWORK
+    verdict: PASS
+    evidence:
+      - Traversal, sibling, UNC, device namespace, ADS, glob, expansion, control/invalid characters, reserved names, stale workspace identity, reparse observation and cleanup requests are refused.
+      - Cleanup remains behind C-405 ownership/identity revalidation and a separate approval boundary.
+      - Network is default-deny and exact-scope; malformed hosts/IPs, userinfo, fragments, redirects, unsafe separators, credential URLs and destination drift are refused.
+  - id: C-505-REDACTION
+    verdict: PASS
+    evidence:
+      - Success and exception payloads redact synthetic secrets, complete quoted or separator-bearing prefixed assignments, split credential-flag values, quoted serialized credential keys, bearer/basic headers, username-only or password-bearing URI userinfo, command/URL carriers, JWTs, PEM data, emails, phone-like data and bytes before transfer.
+      - Mapping-key leaks, cycles, excess depth and unsupported types produce deterministic redaction markers.
+      - Useful non-secret error type and correlation context remain available.
+  - id: C-505-STRICT-BOUNDARY
+    verdict: PASS
+    evidence:
+      - Public records and decisions are frozen and runtime validated.
+      - Functional code and tests remain confined to the four canonical C-505 paths.
+      - Tests use deterministic records and canaries only; no real credentials, Codex process, shell, DNS, network, cleanup or external system is used.
+  - id: C-505-REGRESSION
+    verdict: PASS
+    evidence:
+      - Ninety-five cumulative focused C-505 tests pass: 26 approval tests from the unchanged module and all 69 permission tests on the current head. The immediately preceding review head passed all 457 post-C-409 repository tests on Windows; accepted pre-integration evidence includes 188 dependency regressions and 380 unit tests.
+      - Current changed-file Ruff lint/format and strict mypy pass; the immediately preceding head also passed lock, import, full Ruff, full strict mypy, work-specification, reference, schema, report-freshness and static secret-literal gates.
+      - The incomplete Cloud draft was adversarially reconstructed and locally repaired with regressions for every reproduced defect and seven rounds of substantive PR review findings.
+  - id: C-505-SCOPE-AND-PRESERVATION
+    verdict: PASS
+    evidence:
+      - The dirty primary checkout and every other linked worktree remain untouched.
+      - The explicitly authorized commit, push, PR creation and review occurred; seven review rounds are repaired, final re-review and merge remain pending, and no release, deployment, visibility change, purchase, production mutation or destructive cleanup occurred.
+  - id: C-505-REPORT-INTEGRATION
+    verdict: PASS
+    evidence:
+      - Nine frontier tests pass and the generator reports current state with 40 of 57 critical-path tasks complete and C-409/W-211/W-212 ready.
+      - Headless installed Chrome rendered the actual local report at 1440x1000 desktop and 390x844 mobile viewports without a blank/error overlay, clipping or horizontal layout failure in visual inspection.
+      - The visible narrative distinguishes locally tested C-505 policy from still-unproved C-506 cross-module integration and delivery adoption.
+
+commands:
+  - uv lock --check
+  - uv run python -c "import harness; print(harness.__version__)"
+  - uv run pytest -q tests/unit/test_approvals.py tests/unit/test_permissions.py
+  - uv run pytest -q tests/unit/test_state.py tests/unit/test_workspace.py tests/unit/test_retry_policy.py tests/unit/test_fake_adapter.py tests/unit/test_codex_adapter.py tests/unit/test_approvals.py tests/unit/test_permissions.py
+  - uv run pytest -q tests/unit
+  - uv run pytest -q
+  - uv run ruff check .
+  - uv run ruff format --check .
+  - uv run mypy --strict src tests
+  - uv run python scripts/validate_work_specifications.py
+  - uv run python scripts/validate_references.py
+  - uv run python scripts/validate_schema.py
+  - uv run pytest -q tests/test_capability_readiness_report.py
+  - uv run python scripts/update_capability_readiness_report.py --check
+  - git diff --check
+
+known_limits:
+  - Policy integration with orchestration, persistence, recovery, CLI and provider dispatch remains C-506.
+  - Filesystem and DNS observations are trusted-host inputs; these pure modules perform no I/O.
+  - Python 3.12 and 3.13 remain unverified.
+
+next_action: >-
+  Request PR #18 re-review of the repaired head, confirm no unresolved finding,
+  and merge only from a passing state under the explicit C-505 authorization.

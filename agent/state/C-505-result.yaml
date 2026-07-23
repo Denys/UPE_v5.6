@@ -1,0 +1,141 @@
+schema_version: '1.0'
+record_id: C-505-RESULT
+generated_at: '2026-07-23T00:59:04+02:00'
+status: TESTED_LOCALLY_PR_18_SEVENTH_REVIEW_REPAIRED
+
+task:
+  id: C-505
+  title: Implement permissions, approval gates, command policy, and redaction
+  verdict: PASS
+  gate: validation/C-505-GATE.yaml
+
+repository:
+  identity: Denys/UPE_v5.6
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c505-coordinator'
+  branch: codex/c505-cloud-coordinator
+  base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
+  integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
+  functional_commit: 5d976c3fb79ac578de85cf926be3d4dddcf2514b
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/18
+  committed_at_result_write: true
+
+cloud_source:
+  implementation_lane: bounded_single_C505_lane
+  initial_generation_result: INCOMPLETE_DRAFT
+  recovery_generation_result: INCOMPLETE_DRAFT
+  materialized_cloud_artifacts:
+    - partial approvals module captured before worker termination
+    - permissions module retained for local review
+  local_review_verdict: RECONSTRUCTION_AND_REPAIR_REQUIRED_THEN_PASS
+
+files_created:
+  - src/harness/approvals.py
+  - src/harness/permissions.py
+  - tests/unit/test_approvals.py
+  - tests/unit/test_permissions.py
+  - agent/state/C-505-result.yaml
+  - validation/C-505-GATE.yaml
+
+coordinator_files_modified:
+  - docs/research/research-state.yaml
+  - scripts/update_capability_readiness_report.py
+  - tests/test_capability_readiness_report.py
+  - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+
+implemented:
+  approvals:
+    - immutable exact-scope approval record and dispatch check with stable audit reasons
+    - exhaustive ActionClass taxonomy with local non-consequential actions distinct from consequential effects
+    - GRANTED-only authorization bound to run, class, target, argument/content digests, repository, branch, effect count, decision identity, expiry, and dispatch time
+    - denied, expired, revoked, pending, missing, malformed, future, unknown, ambiguous, and scope-drift cases fail closed
+  command_and_environment_policy:
+    - exact executable and argument-vector allowlists with assigned-cwd enforcement
+    - bounded arguments, timeout, output and environment values
+    - shell composition, variable expansion, inline credentials and non-explicit interpreters rejected
+    - environment built only from an explicitly supplied mapping and non-credential key allowlist
+  path_and_network_policy:
+    - Windows drive-local lexical containment rejects traversal, sibling, UNC, device, ADS, glob, expansion and reserved-name forms
+    - observed reparse components and cleanup are refused pending C-405 WorkspaceManager revalidation and separate authority
+    - network denied by default and bound to exact scheme, host, port, purpose and caller-observed resolved destination
+    - userinfo, fragments, redirects, malformed hosts/IPs, destination drift, unsafe separators and credential-bearing URLs are refused
+  redaction:
+    - recursive deterministic strings, bytes, mappings, sequences and exception normalization
+    - secret-bearing keys/values, canaries, credentials, tokens, JWTs, PEM keys, URL userinfo, email and phone-like data redacted before transfer
+    - cycles, excess depth and unsupported types fail closed to redaction markers
+  boundary:
+    - provider-neutral standard-library policy records are frozen and side-effect free
+    - modules do not read the process environment, filesystem, credentials, DNS, network, provider, database or shell
+
+local_review_repairs:
+  - bound evaluate_action to the actual action boundary instead of trusting a matching record/check pair for another class
+  - accepted normal WindowsPath subclasses while retaining strict absolute Windows lexical validation
+  - added cycle/depth guards to recursive redaction
+  - rejected inline credentials in command arguments, environment values and URLs
+  - detected versioned interpreter names such as python3.14.exe
+  - bounded argument counts/lengths, rule vectors and environment values
+  - redacted mapping-key PII plus JWT and PEM payloads
+  - tightened hostname labels, IP validation, resolved-destination normalization and unsafe URL separators
+  - repaired PR review finding so prefixed credential assignments such as MY_PASSWORD and AWS_SECRET_ACCESS_KEY are redacted from flat text
+  - repaired PR review finding so malformed request workspaces return a structured FORBIDDEN decision instead of raising
+  - repaired second PR review finding by redacting bearer/basic headers before assignment-style secrets so opaque authorization values cannot survive ordering
+  - repaired second PR review finding by requiring fresh workspace identity and zero observed reparse components for every allowed command request
+  - repaired third PR review finding by requiring fresh workspace identity for every allowed file path request
+  - repaired third PR review finding by consuming a complete sensitive assignment value up to the next structured assignment or line boundary
+  - repaired fourth PR review finding by redacting username-only userinfo for any URI scheme, not only colon-separated HTTP credentials
+  - repaired fourth PR review finding by rejecting control and invalid characters across Windows paths and other host policy text surfaces
+  - repaired fifth PR review finding by recognizing quoted credential keys in serialized JSON and YAML text while retaining later safe fields
+  - repaired fifth PR review finding by converting malformed recovered command workspace identities into structured FORBIDDEN decisions
+  - repaired sixth PR review finding by classifying extensionless and executable/script-suffixed Windows interpreter names
+  - repaired sixth PR review finding by rejecting credential-bearing argv switches before a command rule can retain a split secret
+  - repaired seventh PR review finding by redacting split credential-flag values in flat command, exception and tool-output text
+
+verification:
+  result: PASS
+  targeted_C505: 95_passed_cumulative_26_approval_plus_69_permission
+  dependency_regression: 188_passed
+  complete_unit_tests: 429_passed_on_immediately_preceding_review_head
+  complete_repository_tests: 457_passed_on_immediately_preceding_review_head
+  uv_lock: PASS_33_PACKAGES
+  package_import: PASS_VERSION_0_1_0
+  ruff_lint: PASS_FULL_PREVIOUS_HEAD_AND_TWO_CHANGED_FILES_CURRENT_HEAD
+  ruff_format: PASS_47_FILES_PREVIOUS_HEAD_AND_TWO_CHANGED_FILES_CURRENT_HEAD
+  strict_mypy: PASS_40_SOURCE_FILES_PREVIOUS_HEAD_AND_CHANGED_MODULE_CURRENT_HEAD
+  work_specification_validator: PASS_16_CASES
+  reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+  schema_validator: PASS_6_INSTANCES
+  capability_report_frontier_tests_before_evidence: PASS_9_TESTS
+  capability_report_frontier_tests_after_evidence: PASS_9_TESTS
+  capability_report_after_evidence: PASS_CURRENT_40_OF_57_CRITICAL_COMPLETE_3_READY
+  capability_report_render: PASS_HEADLESS_CHROME_DESKTOP_1440X1000_MOBILE_390X844
+  static_secret_literal_scan: PASS
+  changed_path_containment_before_coordinator_evidence: PASS_FOUR_FUNCTIONAL_PATHS
+  changed_path_containment_after_coordinator_evidence: PASS_TEN_C505_PATHS
+
+evidence_hashes_sha256:
+  src/harness/approvals.py: 21dc9c5d4e38639f3e6f9e4b2dc61217f3ef1c14383f112c18d9cf8bb234b9ab
+  src/harness/permissions.py: ffbda4f0bbaa7bdacac10bab7d84ede97a80db5211df5c6fef38c0c1059f1a9b
+  tests/unit/test_approvals.py: 8d80d97b058c56db0d8c39c55e1523d7db8c99c1abf468ab2cc41a2512b30bfc
+  tests/unit/test_permissions.py: c6e25bafcb559499b8da1532bf878ff08f2244d7c10b3382e806e55ef528312a
+  docs/research/research-state.yaml: 5f1a4e8a4adb4a5644b252e3875ee7f13cbda7615b4c74114e7942ba7d1b3fe4
+  scripts/update_capability_readiness_report.py: e1cd78f9101ee743c57086c7f514ebfbe9b06054ec01566db9f2d429f4cd119e
+  tests/test_capability_readiness_report.py: bb5f96f1e2536e52563e3bb581f189d45ffe895ca12b4f19339e3a29cedb0be1
+  UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html: dcb1a537d6cd81f703931ce94d1c632fda755fbc2353fad6fbf3117c5123af1c
+
+preserved_state:
+  primary_checkout_user_artifacts: preserved_unmodified
+  real_credentials_read: false
+  real_codex_shell_network_or_external_action_from_tests: false
+  authorized_commit_push_pr: performed
+  review_findings: seven_cycles_repaired_pending_final_rereview
+  accept_merge: pending
+  release_deploy: not_performed
+
+known_limits:
+  - C-505 supplies pure host policy and is not wired into orchestration, persistence, CLI or provider dispatch; that integration remains C-506.
+  - Path decisions consume a trusted host observation of reparse components; actual filesystem identity and cleanup revalidation remain in C-405 WorkspaceManager.
+  - Network decisions consume a trusted host resolved destination; they perform no DNS or socket operation.
+  - Python 3.12 and 3.13 remain unverified; the observed Windows runtime is Python 3.14.3.
+
+next_action: >-
+  Request PR #18 re-review of the repaired head, confirm no unresolved finding,
+  and merge only from a passing state under the explicit C-505 authorization.

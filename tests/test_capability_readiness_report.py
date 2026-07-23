@@ -108,16 +108,15 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-502"]["status"] == "ready"
     assert tasks["C-502"]["dependency_mode"] == "independent_now"
     assert tasks["C-502"]["incomplete_dependencies"] == []
-    assert tasks["C-505"]["status"] == "in_development"
-    assert tasks["C-505"]["dependency_mode"] == "in_progress"
+    assert tasks["C-505"]["status"] == "complete"
+    assert tasks["C-505"]["dependency_mode"] == "satisfied"
     assert tasks["C-505"]["incomplete_dependencies"] == []
 
 
 def test_visible_report_narrative_matches_current_frontier() -> None:
     html = REPORT.read_text(encoding="utf-8")
 
-    assert "C‑301…C‑409 plus C‑501 are implemented and tested" in html
-    assert "C‑505 is locally accepted and pending serialized delivery" in html
+    assert "C‑301…C‑409 plus C‑501 and C‑505 are implemented and tested locally" in html
     assert "C‑502 and C‑410 can now start independently" in html
     assert "C‑501 schema-bound Codex App Server adapter" in html
     assert "C‑301…C‑404 are implemented and tested" not in html
