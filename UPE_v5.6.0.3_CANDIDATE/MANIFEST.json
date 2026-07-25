@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "candidate_version": "5.6.0.3",
+  "status": "CANDIDATE_ONLY",
+  "generated_at": "2026-07-26",
+  "files": [
+    {
+      "path": "01_ARCHITECTURE_AND_USE.md",
+      "sha256": "baa6109e71330d1f96abdfbb7dcdca4c7cfd57684b03492dd1a7883f0fe15f56",
+      "bytes": 5988
+    },
+    {
+      "path": "README.md",
+      "sha256": "2095b02632ac228923121b19bc2ca7a3cc8ac287ddd292d29205e71caf65c8a2",
+      "bytes": 2969
+    },
+    {
+      "path": "mcp/.env.example",
+      "sha256": "e6fda208e2e14f5b1ae96b38c916be2f6f98f45971f2b64178b553eacd52c0de",
+      "bytes": 333
+    },
+    {
+      "path": "mcp/Dockerfile",
+      "sha256": "c704dc80df9706c2b215ce8123b941b249c7280a20fe2382a0b1b56990b3f025",
+      "bytes": 366
+    },
+    {
+      "path": "mcp/README.md",
+      "sha256": "30380225441606e89dc7cdeb87b2203ca809942e09d6682d26c51a6fab39a87a",
+      "bytes": 1783
+    },
+    {
+      "path": "mcp/pyproject.toml",
+      "sha256": "5699d33f80494a2679026a99dd8316614f3898fbc3f71c275fa7fc0bbc276cba",
+      "bytes": 881
+    },
+    {
+      "path": "mcp/src/upe_review_mcp/__init__.py",
+      "sha256": "4eb35d822b3297a5bc832275e8bc692ea7082be0fcfc65687cf89fe6070f1119",
+      "bytes": 78
+    },
+    {
+      "path": "mcp/src/upe_review_mcp/app.py",
+      "sha256": "045988c74a8d7db9f0356ea79d601a60e7171d3f2fbf465e42d6272895d4eea4",
+      "bytes": 13238
+    },
+    {
+      "path": "mcp/src/upe_review_mcp/policy.py",
+      "sha256": "5d3768c7ebd3c25acb91de8b2566700321c871f16461e496d749400a1ca17f41",
+      "bytes": 3970
+    },
+    {
+      "path": "mcp/tests/test_policy.py",
+      "sha256": "96670432609e732e0f3a6efea49dcecd0866886ba59832246cbb4e6a07e173b8",
+      "bytes": 2456
+    },
+    {
+      "path": "validation/STATIC_VALIDATION.md",
+      "sha256": "2da0a04d05bbb2cf343b85328bff48023e2976a28c812496d66445ccf38e4520",
+      "bytes": 1295
+    }
+  ]
+}
