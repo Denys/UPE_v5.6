@@ -1,0 +1,22 @@
+upe_state:
+  version: 5.6.1
+  updated_at:
+  goal:
+  must_status:
+    complete: []
+    pending: []
+    blocked: []
+  authoritative_inputs: []
+  confirmed_findings: []
+  assumptions: []
+  decisions: []
+  completed_stages_or_branches: []
+  pending: []
+  unresolved: []
+  verification:
+    contract: PASS | FAIL | UNKNOWN
+    evidence_integrity: PASS | FAIL | UNKNOWN
+    feasibility_safety_delivery: PASS | FAIL | UNKNOWN
+  external_state_changes: []
+  recovery: []
+  next_action:
