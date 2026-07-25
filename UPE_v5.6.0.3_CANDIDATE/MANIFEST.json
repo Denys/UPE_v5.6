@@ -41,8 +41,8 @@
     },
     {
       "path": "mcp/src/upe_review_mcp/app.py",
-      "sha256": "045988c74a8d7db9f0356ea79d601a60e7171d3f2fbf465e42d6272895d4eea4",
-      "bytes": 13238
+      "sha256": "ed6b3a8f760fdcdca64a2e8779711da3052d413cd21c7ee85365830b633a5eb3",
+      "bytes": 13554
     },
     {
       "path": "mcp/src/upe_review_mcp/policy.py",
