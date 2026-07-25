@@ -1,0 +1,31 @@
+gate_id: UPE-5.6.0.1-TERMINAL-INDEPENDENT-FRAMEWORK-AUDIT
+status: PASS
+date: "2026-07-25"
+candidate_state: FROZEN
+codex_blocked_version: "5.6.1"
+scope: >-
+  Complete UPE v5.6.0.1 release package, terminal independent auditor/improver,
+  self-contained upe-v5-6 skill, deterministic manifests, and coordinator
+  integration evidence.
+evidence:
+  - UPE_v5.6.0.1_RELEASE/11_VALIDATION_REPORT.md
+  - UPE_v5.6.0.1_RELEASE/MANIFEST.json
+  - validation/UPE-5.6.0.1-INDEPENDENT-AUDIT.md
+  - validation/UPE-5.6.0.1-COORDINATOR-DISPOSITION.yaml
+checks:
+  contract: PASS
+  evidence_integrity: PASS
+  feasibility_safety_delivery: PASS
+  independent_route: PASS
+  package_validation: PASS
+  skill_validation: PASS
+  behavioral_gain: PROJECTED
+limits:
+  - Representative model-route behavioral evals were not executed.
+  - The projected 43–48/50 revision range is not an empirical production metric.
+  - >-
+    The Linux runner passed Ruff and lock checks, but strict mypy reported five
+    Windows-only stat attribute errors and pytest passed 423 tests while failing
+    37 Windows-native fixture/path/worktree tests. Rerun mypy and the complete
+    suite on Windows before claiming repository-wide runtime regression PASS.
+decision: ACCEPT

@@ -1,0 +1,6 @@
+interface:
+  display_name: "UPE v5.6"
+  short_description: "Audit and build deployable prompt systems"
+  default_prompt: "Use $upe-v5-6 to audit and improve this reusable framework, including its terminal independent review gate."
+policy:
+  allow_implicit_invocation: true

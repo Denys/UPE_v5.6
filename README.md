@@ -48,6 +48,20 @@ uv run ruff format --check .
 uv run mypy --strict src tests
 ```
 
+## UPE framework release packs
+
+- [`UPE_v5.6.0_RELEASE/`](UPE_v5.6.0_RELEASE/) preserves the original GPT-5.6-aligned release.
+- [`UPE_v5.6.0.1_RELEASE/`](UPE_v5.6.0.1_RELEASE/) adds `CORE_CHANGE CC-5.6.0.1-01`: a terminal independent, read-only framework auditor/improver with quantified baseline, headroom, projected/empirical delta separation, complete revision, and version decision.
+- [`validation/UPE-5.6.0.1-INDEPENDENT-AUDIT.md`](validation/UPE-5.6.0.1-INDEPENDENT-AUDIT.md) and [`validation/UPE-5.6.0.1-COORDINATOR-DISPOSITION.yaml`](validation/UPE-5.6.0.1-COORDINATOR-DISPOSITION.yaml) preserve the first execution of that gate.
+- PR #19 is relabeled to v5.6.0.1 and remains frozen. The `5.6.1` identifier is blocked from Codex use unless explicitly authorized by the user.
+
+Validate v5.6.0.1 with:
+
+```powershell
+uv run python UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/scripts/validate_package.py UPE_v5.6.0.1_RELEASE
+uv run python scripts/validate_release.py UPE_v5.6.0.1_RELEASE --manifest UPE_v5.6.0.1_RELEASE/MANIFEST.json --normalize-text-eol
+```
+
 The package root still exports only `harness.__version__`. C-401 contracts are
 imported explicitly from `harness.state` and `harness.config`; C-402 contracts
 and the fake are imported from `harness.adapters`; C-403 sequencing is imported
