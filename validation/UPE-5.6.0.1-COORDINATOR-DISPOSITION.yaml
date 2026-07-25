@@ -1,0 +1,150 @@
+coordinator_disposition:
+  review_id: UPE-5.6.0.1-IW-001
+  current_candidate_state: FROZEN
+  codex_blocked_version: "5.6.1"
+  reviewed_candidate:
+    version: "5.6.0.1"
+    published: false
+    immutable_package_id: 4834a2635dfb8cc025f6d4b1ea92d47b0c2c057198911a513b2bf1ac09056bad
+    declared_file_hashes_verified: "8/8"
+  independent_route:
+    qualifies: true
+    evidence:
+      candidate_authorship: none
+      context_isolation: fresh_no_conversation_fork
+      candidate_access: read_only
+      hidden_author_reasoning_received: false
+      external_side_effect_authority: none
+      proposed_output_isolation: independent_worker_output
+  findings:
+    - id: CB-01
+      decision: ACCEPT
+      evidence: The candidate referenced portable, skill, eval, and validator artifacts it did not ship.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/03_UPE_v5.6.0.1_PORTABLE_KERNEL.md
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/
+        - UPE_v5.6.0.1_RELEASE/MANIFEST.json
+      affected_tests:
+        - required_release_paths
+        - required_skill_paths
+        - release_manifest_file_set
+      result: PASS
+    - id: CB-02
+      decision: ACCEPT
+      evidence: The full-reference and standalone required audit schemas differed.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/01_UPE_v5.6.0.1_FULL_REFERENCE.md
+        - UPE_v5.6.0.1_RELEASE/12_INDEPENDENT_FRAMEWORK_AUDITOR_IMPROVER.md
+      affected_tests:
+        - audit_schema_key_path_parity
+      result: PASS
+    - id: F-03
+      decision: ACCEPT
+      evidence: The frozen candidate package ID lacked a reproducible canonicalization algorithm.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/MANIFEST.json
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/scripts/validate_package.py
+      affected_tests:
+        - per_file_sha256
+        - canonical_package_sha256
+        - extra_missing_unsafe_path_rejection
+      result: PASS
+    - id: F-04
+      decision: ACCEPT
+      evidence: The 0–5 dimensions lacked common anchors and a no-behavioral-eval ceiling.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/01_UPE_v5.6.0.1_FULL_REFERENCE.md
+        - UPE_v5.6.0.1_RELEASE/12_INDEPENDENT_FRAMEWORK_AUDITOR_IMPROVER.md
+      affected_tests:
+        - score_anchor_presence
+        - projected_empirical_separation
+        - verification_ceiling
+      result: PASS
+    - id: F-05
+      decision: ACCEPT
+      evidence: Materiality was not defined by observable contract changes.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/02_UPE_v5.6.0.1_PROJECT_INSTRUCTIONS_KERNEL.md
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/evals/terminal_audit_trigger_cases.csv
+      affected_tests:
+        - positive_negative_pending_trigger_cases
+      result: PASS
+    - id: F-06
+      decision: ACCEPT
+      evidence: The candidate contained an accidental unstable skill path.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/
+      affected_tests:
+        - stable_skill_path
+        - obsolete_path_absence
+      result: PASS
+    - id: F-07
+      decision: ACCEPT
+      evidence: Independence qualification relied on unstructured prose.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/09_CAPABILITY_REGISTRY_TEMPLATE.yaml
+        - UPE_v5.6.0.1_RELEASE/12_INDEPENDENT_FRAMEWORK_AUDITOR_IMPROVER.md
+      affected_tests:
+        - unknown_shared_write_independence_rejection
+      result: PASS
+    - id: F-08
+      decision: ACCEPT
+      evidence: Integration had no one-disposition-per-change record.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/01_UPE_v5.6.0.1_FULL_REFERENCE.md
+        - validation/UPE-5.6.0.1-COORDINATOR-DISPOSITION.yaml
+      affected_tests:
+        - missing_duplicate_disposition_rejection
+      result: PASS
+    - id: SC-01
+      decision: MODIFY
+      evidence: >-
+        The packaged SKILL.md needed standards-compliant front matter and UI
+        metadata, but icon fields are optional and no icon was supplied or
+        requested by the user.
+      accepted_locations:
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/SKILL.md
+        - UPE_v5.6.0.1_RELEASE/skill/upe-v5-6/agents/openai.yaml
+      affected_tests:
+        - skill_quick_validate
+        - skill_frontmatter_exact_keys
+        - package_manifest_file_set
+      result: PASS
+  version:
+    reviewer_proposal: "5.6.0.2"
+    coordinator_decision: MODIFY
+    final_version: "5.6.0.1"
+    rationale: >-
+      The last published release is 5.6.0. The reviewed 5.6.0.1 object was an
+      immutable pre-release candidate, not a published release. Its compatible
+      repairs are integrated before first publication while review identity and
+      hashes preserve the audit chain. Release numbers identify redistributed
+      artifacts, not internal review iterations.
+    why_not_major: >-
+      The revision does not break purpose, authority, supported inputs/outputs,
+      action boundaries, or compatibility.
+    why_not_5_6_0_2: >-
+      No different artifact was published as 5.6.0.1, so consuming another patch
+      would encode an internal iteration as a public release and create avoidable
+      version churn.
+  acceptance:
+    contract: PASS
+    evidence_integrity: PASS
+    feasibility_safety_delivery: PASS
+    independent_framework_audit: PASS
+    behavioral_gain_status: PROJECTED
+    deterministic_validation:
+      kernel_characters: 7916
+      portable_kernel_characters: 5568
+      audit_schema_key_paths: "67/67"
+      payload_files: 32
+      package_sha256: d9a52c78909097cd961ec22f6984c86365ae8421de7adbda1c79f8a5431ceea6
+      package_validator: PASS
+      repository_release_validator: PASS
+      skill_only_validator: PASS
+      skill_quick_validate: PASS
+      validator_ruff: PASS
+      repository_ruff_and_lock: PASS
+      repository_mypy: ENVIRONMENT_BLOCKED_5_WINDOWS_ONLY_STAT_ATTRIBUTE_ERRORS
+      repository_pytest: ENVIRONMENT_BLOCKED_423_PASS_37_WINDOWS_NATIVE_FAILURES
+    release_decision: ACCEPT
