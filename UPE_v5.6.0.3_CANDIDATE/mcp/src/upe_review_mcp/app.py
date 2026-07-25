@@ -8,6 +8,7 @@ from typing import Literal
 
 from agents import Agent, RunConfig, Runner
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from upe_review_mcp.policy import (
@@ -332,7 +333,15 @@ async def run_review_loop(
     )
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="Review and rework UPE candidate",
+        readOnlyHint=False,
+        destructiveHint=False,
+        idempotentHint=False,
+        openWorldHint=True,
+    )
+)
 async def upe_review_and_rework(
     original_request: str,
     acceptance_contract: str,
@@ -347,7 +356,8 @@ async def upe_review_and_rework(
     Use this when a complete UPE candidate must be independently reviewed before publication.
     The server verifies the frozen candidate hash, invokes a fresh tool-less reviewer, conditionally
     invokes a separate tool-less rewriter, and repeats with a new reviewer for at most three rounds.
-    This tool changes no external state, but it sends supplied text to paid OpenAI API models.
+    This tool does not mutate candidate files or publish anything, but it incurs paid OpenAI
+    API usage and may create provider-side billing and telemetry records.
     """
     if "OPENAI_API_KEY" not in os.environ:
         raise RuntimeError("OPENAI_API_KEY is required")
