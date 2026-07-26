@@ -1,0 +1,40 @@
+upe_state:
+  version: 5.6.0.2
+  updated_at:
+  goal:
+  must_status:
+    complete: []
+    pending: []
+    blocked: []
+  authoritative_inputs: []
+  confirmed_findings: []
+  assumptions: []
+  decisions: []
+  completed_stages_or_branches: []
+  pending: []
+  unresolved: []
+  verification:
+    contract: PASS | FAIL | UNKNOWN
+    evidence_integrity: PASS | FAIL | UNKNOWN
+    feasibility_safety_delivery: PASS | FAIL | UNKNOWN
+    independent_audit: NOT_REQUIRED | PENDING | PASS | FAIL | UNKNOWN
+  web_work_review:
+    route: web_work_native_subagent | other | unavailable
+    mode: standard | fast
+    stage: NOT_STARTED | UPE_V1 | REVIEW_1 | UPE_V2 | REVIEW_2 | UPE_REPAIR | FINAL_REVIEW | ACCEPT | USER_CHOICE | BLOCKED
+    candidate_iteration:
+    candidate_sha256:
+    reviewer_payload_sha256:
+    surfaced_review_payload_sha256:
+    rework_input_review_payload_sha256:
+    reviewer_payload_reused_unchanged: true | false | unknown
+    dispositions_complete: true | false | unknown
+    cognitive_independence: true | false | unknown
+    technical_isolation: proven | not_proven | unknown
+    review_history: []
+    review_rounds_used: 0
+    automatic_rework_rounds_used: 0
+    next_transition:
+  external_state_changes: []
+  recovery: []
+  next_action:

@@ -1,0 +1,234 @@
+{
+  "name": "UPE v5.6.0.2 Web Work Native-Subagent Draft",
+  "version": "5.6.0.2",
+  "profile_date": "2026-07-26",
+  "draft_date": "2026-07-26",
+  "versioning": "GPT family major.minor + UPE line + UPE patch",
+  "candidate_state": "DRAFT",
+  "frozen_baseline": "5.6.0.1",
+  "codex_blocked_version": "5.6.1",
+  "surface_adapter": "web_work_native_subagent",
+  "behavioral_evals": "NOT_RUN",
+  "kernel_characters": 7997,
+  "portable_kernel_characters": 5996,
+  "manifest_excluded": "MANIFEST.json",
+  "package_sha256": "50298f6e132bfd1aa6693ce9baa9a8f224c9dcf0cd482bac73d17cdf19374beb",
+  "files": [
+    {
+      "path": "01_UPE_v5.6.0.2_FULL_REFERENCE.md",
+      "bytes": 65583,
+      "sha256": "d6712fb22c149ea0c87f8c28bd48b8b9502d12387b43604364ee86b1015b2a84",
+      "characters": 65507
+    },
+    {
+      "path": "02_UPE_v5.6.0.2_PROJECT_INSTRUCTIONS_KERNEL.md",
+      "bytes": 8005,
+      "sha256": "2ed9e202a0215db611add6c5c7fa4ce89a37da179e842203f5d99f66b47d37a0",
+      "characters": 7997
+    },
+    {
+      "path": "03_UPE_v5.6.0.2_PORTABLE_KERNEL.md",
+      "bytes": 6002,
+      "sha256": "46f21ca492d83cddc3e1fea37bd9bc5b48023f9f4643c707c755271d9ebe0bed",
+      "characters": 5996
+    },
+    {
+      "path": "04_GPT_5.6_RUNTIME_PROFILE.md",
+      "bytes": 12944,
+      "sha256": "c8ab17f023a76018ac10d5f622ca92ebb9579ec6ca2f304e5392c5ca78f9eded",
+      "characters": 12928
+    },
+    {
+      "path": "05_CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md",
+      "bytes": 8724,
+      "sha256": "ec105d613d76c2729af45727733f4a310e7d709c8ec0dcd615f1903b6663b281",
+      "characters": 8710
+    },
+    {
+      "path": "06_SOURCE_MAP.md",
+      "bytes": 4673,
+      "sha256": "12aa6557f75c355ab05168fbb2f6539db12870895210e65c5ef31ce36059b492",
+      "characters": 4667
+    },
+    {
+      "path": "07_CHANGELOG_AND_MIGRATION.md",
+      "bytes": 5640,
+      "sha256": "cd644d148006cbbad9b24ce78bf538ff12e1c0d78d0e42f58a57ccceb5bd5c84",
+      "characters": 5614
+    },
+    {
+      "path": "08_EVAL_SUITE.md",
+      "bytes": 3281,
+      "sha256": "dfc371214ab4f707a253ec83958c88f56739fdd0e283239dd01caffc0fe4ade4",
+      "characters": 3279
+    },
+    {
+      "path": "09_CAPABILITY_REGISTRY_TEMPLATE.yaml",
+      "bytes": 4307,
+      "sha256": "9a772acdb70955a01795f39ca8bab76bf80fdc26293772da8070a146197a5497",
+      "characters": 4307
+    },
+    {
+      "path": "10_UPE_STATE_TEMPLATE.yaml",
+      "bytes": 1253,
+      "sha256": "174eb53a1e8644be5880bc1bf9f128caa27c366b7d08d766f694cb2993370f76",
+      "characters": 1253
+    },
+    {
+      "path": "11_VALIDATION_REPORT.md",
+      "bytes": 4938,
+      "sha256": "5c1fd81f670f16814294214cf8578a91bfeddc40f5cf5ebd01433a408bcd8a75",
+      "characters": 4912
+    },
+    {
+      "path": "12_INDEPENDENT_FRAMEWORK_AUDITOR_IMPROVER.md",
+      "bytes": 10853,
+      "sha256": "62d870a3987acc4d82cb51e393f3c2e2e1c67533c70c431e66e40ded4281dd0e",
+      "characters": 10843
+    },
+    {
+      "path": "13_WEB_WORK_NATIVE_SUBAGENT_ADAPTER.md",
+      "bytes": 15910,
+      "sha256": "eb61ae335146d136c29e6d20c60d40ca2c67edd37e9791f655199b37ee2f4ef1",
+      "characters": 15862
+    },
+    {
+      "path": "README.md",
+      "bytes": 3894,
+      "sha256": "65d9df542bba89d90cffcdf3e08b25661d2f8893bd39ca133817855d4d8886b5",
+      "characters": 3882
+    },
+    {
+      "path": "evals/acceptance_cases.yaml",
+      "bytes": 4623,
+      "sha256": "3f892c4e979e2101f78c2f86bd863452fb0599bb132c0f97d157ab2791fec666",
+      "characters": 4623
+    },
+    {
+      "path": "evals/terminal_audit_cases.yaml",
+      "bytes": 3668,
+      "sha256": "61d670ab25719138e356e04cf9d82e7589cb91fdcf14ac7a56764fae0ae3d51f",
+      "characters": 3668
+    },
+    {
+      "path": "evals/web_work_native_subagent_cases.yaml",
+      "bytes": 5859,
+      "sha256": "1a5ffcac0e71077051cc8de622c24b6b465c38b628d3d25627b051825cb186fc",
+      "characters": 5859
+    },
+    {
+      "path": "skill/upe-v5-6/SKILL.md",
+      "bytes": 4529,
+      "sha256": "d083aa306f36e43e1b6fa347988f64df4adcdb7608b256aca9dfe5f7f428e176",
+      "characters": 4521
+    },
+    {
+      "path": "skill/upe-v5-6/agents/openai.yaml",
+      "bytes": 315,
+      "sha256": "0372f5b275c372fbc32eec355a57db9a3fc021f72ef1bdc8c14ec16e188f7b43",
+      "characters": 315
+    },
+    {
+      "path": "skill/upe-v5-6/assets/capability_registry_template.yaml",
+      "bytes": 4307,
+      "sha256": "9a772acdb70955a01795f39ca8bab76bf80fdc26293772da8070a146197a5497",
+      "characters": 4307
+    },
+    {
+      "path": "skill/upe-v5-6/assets/evaluation_report_template.md",
+      "bytes": 1279,
+      "sha256": "3fd20ca3d93f5d19811cf442d89b5cdf2f2b4fe0558c5b113a8b4ed52c2e0d64",
+      "characters": 1279
+    },
+    {
+      "path": "skill/upe-v5-6/assets/upe_state_template.yaml",
+      "bytes": 1253,
+      "sha256": "174eb53a1e8644be5880bc1bf9f128caa27c366b7d08d766f694cb2993370f76",
+      "characters": 1253
+    },
+    {
+      "path": "skill/upe-v5-6/evals/acceptance_cases.yaml",
+      "bytes": 4623,
+      "sha256": "3f892c4e979e2101f78c2f86bd863452fb0599bb132c0f97d157ab2791fec666",
+      "characters": 4623
+    },
+    {
+      "path": "skill/upe-v5-6/evals/terminal_audit_cases.yaml",
+      "bytes": 3668,
+      "sha256": "61d670ab25719138e356e04cf9d82e7589cb91fdcf14ac7a56764fae0ae3d51f",
+      "characters": 3668
+    },
+    {
+      "path": "skill/upe-v5-6/evals/terminal_audit_trigger_cases.csv",
+      "bytes": 1099,
+      "sha256": "983fe87fb82b16c00c7b80a0c89fa58e61c0c3b361a47bbe8dc9f75149bd7798",
+      "characters": 1099
+    },
+    {
+      "path": "skill/upe-v5-6/evals/trigger_cases.csv",
+      "bytes": 1004,
+      "sha256": "6fc3103a49e350e5e8310820dbe1ef98c48d8eadb8f28de5ab11836ff3abe9f6",
+      "characters": 1004
+    },
+    {
+      "path": "skill/upe-v5-6/evals/web_work_native_subagent_cases.yaml",
+      "bytes": 5859,
+      "sha256": "1a5ffcac0e71077051cc8de622c24b6b465c38b628d3d25627b051825cb186fc",
+      "characters": 5859
+    },
+    {
+      "path": "skill/upe-v5-6/references/CAPABILITY_PLUGIN_OPPORTUNITY_SCAN.md",
+      "bytes": 8724,
+      "sha256": "ec105d613d76c2729af45727733f4a310e7d709c8ec0dcd615f1903b6663b281",
+      "characters": 8710
+    },
+    {
+      "path": "skill/upe-v5-6/references/GPT_5.6_RUNTIME_PROFILE.md",
+      "bytes": 12944,
+      "sha256": "c8ab17f023a76018ac10d5f622ca92ebb9579ec6ca2f304e5392c5ca78f9eded",
+      "characters": 12928
+    },
+    {
+      "path": "skill/upe-v5-6/references/INDEPENDENT_FRAMEWORK_AUDITOR_IMPROVER.md",
+      "bytes": 10853,
+      "sha256": "62d870a3987acc4d82cb51e393f3c2e2e1c67533c70c431e66e40ded4281dd0e",
+      "characters": 10843
+    },
+    {
+      "path": "skill/upe-v5-6/references/SOURCE_MAP.md",
+      "bytes": 4673,
+      "sha256": "12aa6557f75c355ab05168fbb2f6539db12870895210e65c5ef31ce36059b492",
+      "characters": 4667
+    },
+    {
+      "path": "skill/upe-v5-6/references/UPE_v5.6.0.2_FULL_REFERENCE.md",
+      "bytes": 65583,
+      "sha256": "d6712fb22c149ea0c87f8c28bd48b8b9502d12387b43604364ee86b1015b2a84",
+      "characters": 65507
+    },
+    {
+      "path": "skill/upe-v5-6/references/UPE_v5.6.0.2_PORTABLE_KERNEL.md",
+      "bytes": 6002,
+      "sha256": "46f21ca492d83cddc3e1fea37bd9bc5b48023f9f4643c707c755271d9ebe0bed",
+      "characters": 5996
+    },
+    {
+      "path": "skill/upe-v5-6/references/UPE_v5.6.0.2_PROJECT_INSTRUCTIONS_KERNEL.md",
+      "bytes": 8005,
+      "sha256": "2ed9e202a0215db611add6c5c7fa4ce89a37da179e842203f5d99f66b47d37a0",
+      "characters": 7997
+    },
+    {
+      "path": "skill/upe-v5-6/references/WEB_WORK_NATIVE_SUBAGENT_ADAPTER.md",
+      "bytes": 15910,
+      "sha256": "eb61ae335146d136c29e6d20c60d40ca2c67edd37e9791f655199b37ee2f4ef1",
+      "characters": 15862
+    },
+    {
+      "path": "skill/upe-v5-6/scripts/validate_package.py",
+      "bytes": 16769,
+      "sha256": "bbe9920804998e745ac267880c3d672fb1a9c24c8258fd4cc9c0eb00e6775934",
+      "characters": 16769
+    }
+  ]
+}

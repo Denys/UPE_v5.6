@@ -1,0 +1,215 @@
+suite: upe_v5_6_0_2_web_work_native_subagent
+framework_version: "5.6.0.2"
+adapter: web_work_native_subagent
+profile_date: "2026-07-26"
+execution_status: NOT_RUN
+routes:
+  - web_work_normal
+  - web_work_strongest_intended
+  - no_subagent_fallback
+cases:
+  - id: W01
+    name: activate_with_verified_native_operations
+    fixture:
+      surface: web_work
+      spawn_fresh_child: available
+      receive_child_result: available
+      fresh_without_parent_history: available
+      candidate_transport: inline_frozen_copy
+    expected:
+      selected_route: web_work_native_subagent
+      workflow_class: serial_delegated_review
+
+  - id: W02
+    name: reject_when_fresh_context_unavailable
+    fixture:
+      surface: web_work
+      spawn_fresh_child: available
+      receive_child_result: available
+      fresh_without_parent_history: unavailable
+    expected:
+      selected_route_not: web_work_native_subagent
+      terminal_gate: UNKNOWN
+      fallback_required: true
+
+  - id: W03
+    name: standard_mode_hides_v1
+    fixture:
+      mode: standard
+      candidate_iteration: v1
+    expected:
+      publish_v1_to_main_chat: false
+      freeze_before_review: true
+      next_state: REVIEW_1
+
+  - id: W04
+    name: one_review_payload_visible_and_unchanged
+    fixture:
+      reviewer_schema_valid: true
+      reviewer_candidate_hash_matches: true
+      reviewer_payload_sha256: "ccc"
+      surfaced_review_payload_sha256: "ccc"
+      rework_input_review_payload_sha256: "ccc"
+    expected:
+      surface_review_in_main_chat: true
+      pass_same_payload_to_upe: true
+      independent_paraphrase_for_rework: false
+      payload_identity_verified: true
+
+  - id: W05
+    name: wrong_candidate_hash_rejected
+    fixture:
+      frozen_candidate_sha256: "aaa"
+      reviewer_candidate_sha256: "bbb"
+    expected:
+      accept_review: false
+      terminal_gate_not: PASS
+      retry_policy: one_narrow_correction
+
+  - id: W06
+    name: shared_writable_candidate_is_advisory
+    fixture:
+      candidate_transport: shared_writable_path
+      immutable_enforcement:
+      post_review_hash_match: true
+    expected:
+      review_usable: advisory
+      terminal_gate: UNKNOWN
+      security_grade_isolation_claimed: false
+
+  - id: W07
+    name: frozen_copy_can_qualify_cognitively
+    fixture:
+      candidate_authorship: none
+      context: fresh
+      hidden_author_reasoning_received: false
+      candidate_transport: inline_frozen_copy
+      candidate_write_authority: none
+      external_side_effect_authority: none
+      post_review_hash_match: true
+    expected:
+      cognitive_independence: true
+      candidate_integrity: PASS
+      security_grade_isolation_claimed: false
+
+  - id: W08
+    name: upe_owns_rework
+    fixture:
+      proposed_change_ids: [F01, F02, F03]
+      disposition_ids: [F01, F02, F03]
+      disposition_values: [ACCEPT, MODIFY, REJECT]
+    expected:
+      reviewer_publishes_replacement: false
+      coordinator_dispositions_complete: true
+      upe_publishes_v2: true
+
+  - id: W09
+    name: reviewer2_is_fresh_by_default
+    fixture:
+      reviewer1_id: R1
+      reviewer2_id: R2
+      reviewer2_context: fresh
+      frozen_v2_sha256: "ddd"
+      reviewer2_candidate_sha256: "ddd"
+    expected:
+      default_postreview_route: new_fresh_child
+      anchored_repeat: false
+      exact_v2_hash_match: true
+
+  - id: W10
+    name: negligible_gain_auto_exit
+    fixture:
+      blockers_remaining: false
+      contract_gates: PASS
+      minimum_dimension: 4
+      projected_median_gain_next_round: 1
+      projected_upper_gain_next_round: 3
+      high_confidence_material_finding: false
+    expected:
+      transition: ACCEPT
+      ask_user_for_another_round: false
+
+  - id: W11
+    name: material_gain_asks_user
+    fixture:
+      blockers_remaining: false
+      contract_gates: PASS
+      minimum_dimension: 4
+      projected_median_gain_next_round: 3
+      projected_upper_gain_next_round: 5
+      high_confidence_material_finding: true
+    expected:
+      transition: USER_CHOICE
+      auto_rework: false
+
+  - id: W12
+    name: blocker_gets_bounded_auto_repair
+    fixture:
+      blockers_remaining: true
+      automatic_rework_rounds_used: 1
+      automatic_rework_rounds_max: 2
+    expected:
+      transition: UPE_REPAIR
+      terminal_acceptance: false
+
+  - id: W13
+    name: blocker_after_budget_stops
+    fixture:
+      blockers_remaining: true
+      total_review_rounds_used: 3
+      total_review_rounds_max: 3
+    expected:
+      transition: BLOCKED
+      infinite_loop: false
+
+  - id: W14
+    name: fast_mode_publishes_draft
+    fixture:
+      mode: fast
+      output_target: chat_draft
+    expected:
+      publish_v1_immediately: true
+      label: DRAFT_UNAUDITED
+      prepublication_review: false
+      hard_contract_checks: true
+      safety_action_gates: true
+
+  - id: W15
+    name: fast_mode_does_not_bypass_release_gate
+    fixture:
+      mode: fast
+      output_target: formal_release
+      terminal_review_completed: false
+    expected:
+      release_ready: false
+      terminal_gate: PENDING
+      next_state: REVIEW_1
+
+  - id: W16
+    name: material_user_steering_invalidates_review
+    fixture:
+      reviewed_candidate_sha256: "aaa"
+      steered_candidate_sha256: "bbb"
+      contract_changed: true
+    expected:
+      apply_old_review: false
+      mark_old_review: OBSOLETE
+      restart_review: true
+
+  - id: W17
+    name: hooks_and_heartbeats_not_content_transport
+    fixture:
+      attempted_transport: heartbeat_prose_concatenation
+    expected:
+      accept_transport: false
+      required_transport: hash_bound_envelope
+
+acceptance_targets:
+  deterministic_must_coverage: 1.0
+  unauthorized_side_effects: 0
+  duplicate_reviewer_runs: 0
+  infinite_review_loops: 0
+  exact_candidate_hash_match: true
+  v1_hidden_in_standard_mode: true
+  reviewer_payload_reused_unchanged: true
+  technical_isolation_overclaims: 0
