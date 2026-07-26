@@ -1,0 +1,110 @@
+registry_version: 4
+framework_version: "5.6.0.2"
+project:
+surface:
+last_verified: YYYY-MM-DD
+verification_source:
+
+capabilities:
+  - id:
+    name:
+    kind: built_in_tool | skill | plugin | app | connector | mcp | repository | artifact | browser | agent | automation
+    status: available | installed | connected | disabled | blocked | unknown
+    surfaces: []
+    purpose:
+    triggers: []
+    non_triggers: []
+    prerequisites: []
+    inputs: []
+    outputs: []
+    data_scope:
+    action_scope: read_only | transform_only | draft | write | consequential | irreversible
+    review_independence:
+      candidate_authorship: none | partial | full | unknown
+      context_isolation: fresh | shared | unknown
+      candidate_access: read_only | write | unknown
+      # Deprecated v2 alias retained for compatibility:
+      mutable_candidate_access: none | read_only | write | unknown
+      hidden_author_reasoning_received: false | true | unknown
+      external_side_effect_authority: none | present | unknown
+      cognitive_independence: true | false | unknown
+      candidate_transport: inline_frozen_copy | immutable_reference | shared_writable_path | unknown
+      candidate_hash_before:
+      candidate_hash_after:
+      candidate_unchanged: true | false | unknown
+      technical_isolation: host_sandbox | immutable_store | hash_guarded_copy | prompt_only | unknown
+      per_child_tool_allowlist_proven: true | false | unknown
+      security_grade_isolation_claimed: false
+      enforcement:
+      qualifies: true | false | unknown
+    approval: none | once_per_task | per_action | strict_confirmation
+    side_effects: []
+    validation:
+    fallback:
+    source_of_truth:
+    last_verified: YYYY-MM-DD
+    notes:
+
+selection_defaults:
+  prefer_existing_skill_or_plugin: true
+  expose_narrowest_useful_tool_set: true
+  structured_retrieval_before_ui: true
+  deterministic_tools_for_deterministic_work: true
+  external_writes_require_authorization: true
+  side_effects_centralized: true
+  unavailable_capabilities_must_not_be_implied: true
+
+project_capability_plan:
+  bottlenecks: []
+  required: []
+  optional: []
+  avoid_or_disable: []
+  selected_cognitive_adapter:
+  selected_surface_adapter:
+  interaction_mode: standard | fast
+  selected_tool_adapter:
+  independent_review:
+    required: false
+    selected_route:
+    native_operations:
+      spawn_fresh_child: available | unavailable | unknown
+      receive_child_result: available | unavailable | unknown
+      send_follow_up: available | unavailable | unknown
+      wait_or_status: available | unavailable | unknown
+      interrupt: available | unavailable | unknown
+      fresh_without_parent_history: available | unavailable | unknown
+    qualifies: false
+    evidence:
+      candidate_authorship: none | partial | full | unknown
+      context_isolation: fresh | shared | unknown
+      candidate_access: read_only | write | unknown
+      hidden_author_reasoning_received: false | true | unknown
+      external_side_effect_authority: none | present | unknown
+      cognitive_independence: true | false | unknown
+      candidate_transport: inline_frozen_copy | immutable_reference | shared_writable_path | unknown
+      candidate_hash_before:
+      candidate_hash_after:
+      candidate_unchanged: true | false | unknown
+      technical_isolation: host_sandbox | immutable_store | hash_guarded_copy | prompt_only | unknown
+      per_child_tool_allowlist_proven: true | false | unknown
+      enforcement:
+    candidate_freeze_method:
+    manifest_algorithm: "sha256(sorted '<hash><two spaces><relative_posix_path><LF>' records; manifest excluded)"
+    fallback_handoff:
+    status: NOT_REQUIRED | PENDING | PASS | FAIL | UNKNOWN
+  web_work_review_loop:
+    stage: NOT_STARTED | UPE_V1 | REVIEW_1 | UPE_V2 | REVIEW_2 | UPE_REPAIR | FINAL_REVIEW | ACCEPT | USER_CHOICE | BLOCKED
+    candidate_iteration:
+    candidate_sha256:
+    reviewer_id:
+    reviewer_payload_schema_valid: true | false | unknown
+    reviewer_payload_sha256:
+    surfaced_review_payload_sha256:
+    rework_input_review_payload_sha256:
+    reviewer_payload_reused_unchanged: true | false | unknown
+    dispositions_complete: true | false | unknown
+    review_history: []
+    review_rounds_used: 0
+    automatic_rework_rounds_used: 0
+    next_transition:
+  residual_limits: []

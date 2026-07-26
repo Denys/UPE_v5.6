@@ -1,0 +1,12 @@
+class,prompt,expected
+positive,"Evaluate and rewrite these Project Instructions for GPT-5.6, then create an eval suite.",trigger
+positive,Turn this repeated research procedure into an Agent Skill with scripts and references.,trigger
+positive,"Audit this Custom GPT and check which plugins, connectors, or tools should be enabled.",trigger
+positive,"Compress this system prompt below 8,000 characters without losing MUST constraints.",trigger
+positive,"Design an agent workflow with tool routing, state, action gates, and serial fallback.",trigger
+positive,"Integrate the Web Work native subagent as the terminal reviewer for this reusable framework.",trigger
+negative,Write a birthday card for my sister.,do_not_trigger
+negative,Translate 'good morning' into Italian.,do_not_trigger
+negative,Summarize this paragraph in three sentences.,do_not_trigger
+negative,What is the capital of Portugal?,do_not_trigger
+negative,Fix the grammar in this single email.,do_not_trigger_unless_reusable_system_requested

@@ -1,0 +1,11 @@
+id,input,expected,reason
+T01,"Create reusable Project Instructions for a research team.",TRIGGER,"Material reusable framework creation."
+T02,"Revise this agent so it may publish without approval.",TRIGGER,"Changes an action boundary."
+T03,"Add a required JSON field to this reusable extraction workflow.",TRIGGER,"Changes required output schema."
+T04,"Replace the tool route and fallback in this skill.",TRIGGER,"Changes capability routing."
+T05,"Correct a typo in this framework without changing meaning.",NO_TRIGGER,"Semantic-preserving mechanical edit."
+T06,"Translate this paragraph into French.",NO_TRIGGER,"Atomic translation."
+T07,"Critique this prompt but do not create or revise it.",NO_TRIGGER,"Critique-only request."
+T08,"Summarize this workflow for an email.",NO_TRIGGER,"One-off summary, not framework work."
+T09,"Rename a file and update all internal links without semantic change.",NO_TRIGGER,"Mechanical path-preserving edit."
+T10,"The diff may change recovery behavior but evidence is incomplete.",PENDING_TRIGGER,"Materiality is uncertain; apply the gate pending classification."
