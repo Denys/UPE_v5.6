@@ -1,17 +1,19 @@
 schema_version: '1.0'
 gate_id: C-501-CODEX-APP-SERVER-ADAPTER
-generated_at: '2026-07-22T03:30:00+02:00'
+generated_at: '2026-07-26T20:01:07+02:00'
 status: PASS
 status_reason: >-
   The schema-pinned synchronous adapter confines raw Codex App Server JSON-RPC
-  to its boundary and passes 340 repository tests plus strict Windows static,
+  to its boundary, correlates schema-valid terminal notifications through
+  params.turn.id, and passes 468 repository tests plus strict Windows static,
   reference, schema and report gates without starting a real provider process.
 
 repository:
   identity: Denys/UPE_v5.6
-  base_commit: 356b5b2ed53289bc6752c466d2cd8a436abe0bc4
-  functional_head: ec04ed06498dfce466e062b9d0f7e2577211a6f3
-  pull_request: https://github.com/Denys/UPE_v5.6/pull/16
+  base_commit: 92858f79f00849c58c7edc3d8e5642bdc414bd78
+  working_tree_head: 92858f79f00849c58c7edc3d8e5642bdc414bd78
+  branch: codex/c501-terminal-shape-correction-20260726
+  original_pull_request: https://github.com/Denys/UPE_v5.6/pull/16
 
 criteria:
   - id: C-501-SCHEMA-COMPATIBILITY
@@ -35,9 +37,11 @@ criteria:
   - id: C-501-STREAM-TERMINAL
     verdict: PASS
     evidence:
-      - Real nested turn, item, delta, error and approval messages translate to provider-neutral events with contiguous local ordering.
+      - Generated-schema-validated turn/started and turn/completed fixtures contain params.threadId and params.turn, with correlation through params.turn.id and no fabricated top-level turnId.
+      - Item, delta and error notifications retain schema-defined top-level turnId correlation.
+      - Mismatched, missing, malformed and conflicting identifiers fail closed; unrelated notifications without a turn identifier are ignored.
       - Output deltas and provider payloads are redacted into bounded reference-only summaries.
-      - Success, failure, interruption and host-requested cancellation emit one terminal and return without waiting for another message.
+      - Success, failure, interruption and host-requested cancellation emit one terminal and return without waiting; duplicate terminal translation fails as post-terminal protocol input.
   - id: C-501-APPROVAL-INTERRUPT
     verdict: PASS
     evidence:
@@ -46,34 +50,36 @@ criteria:
   - id: C-501-REGRESSION
     verdict: PASS
     evidence:
-      - Nineteen focused C-501, 312 unit and 340 complete repository tests pass on Windows.
+      - Twenty-seven focused C-501, 440 unit and 468 complete repository tests pass on Windows.
       - Lock, Ruff lint/format, strict mypy, work-specification, reference, schema, report freshness and diff checks pass.
-      - Two Cloud review cycles were independently checked; wire-schema and runtime defects were reproduced and repaired locally before acceptance.
+      - The schema-valid fixture red run reproduced 7 failures and 12 passes before the adapter correction.
+      - The first full-suite attempt had one environment-only failure because Git Bash lacked dirname and cygpath on PATH; the clean rerun with Git for Windows tool paths passed all 468 tests.
   - id: C-501-SCOPE-AND-LIMITS
     verdict: PASS
     evidence:
-      - Functional code remains confined to the two canonical C-501 paths; coordinator evidence/state/report paths are serialized separately.
+      - Functional code remains confined to the two canonical C-501 paths; only C-501-specific result and gate evidence also changed.
       - Unit tests use fake/in-memory transports and start no real Codex process, shell, model, network or external action.
-      - C-502 live smoke, C-503 recovery, C-409 CLI wiring and C-505/C-506 security integration remain explicitly unclaimed.
+      - C-502 live smoke remains unverified and is not claimed unblocked; C-503 recovery and C-505/C-506 security integration remain explicitly unclaimed.
 
 commands:
-  - uv lock --check
-  - uv run pytest -q tests/unit/test_codex_adapter.py
-  - uv run pytest -q tests/unit
-  - uv run pytest -q
-  - uv run ruff check .
-  - uv run ruff format --check .
-  - uv run mypy --strict src tests
-  - uv run python scripts/validate_work_specifications.py
-  - uv run python scripts/validate_references.py
-  - uv run python scripts/validate_schema.py
-  - uv run pytest -q tests/test_capability_readiness_report.py
-  - uv run python scripts/update_capability_readiness_report.py --check
+  - py -3 -m uv lock --check
+  - py -3 -m uv run pytest -q tests/unit/test_codex_adapter.py
+  - py -3 -m uv run pytest -q tests/unit
+  - py -3 -m uv run pytest -q
+  - py -3 -m uv run ruff check .
+  - py -3 -m uv run ruff format --check .
+  - py -3 -m uv run mypy --strict src tests
+  - py -3 -m uv run python scripts/validate_work_specifications.py
+  - py -3 -m uv run python scripts/validate_references.py
+  - py -3 -m uv run python scripts/validate_schema.py
+  - py -3 -m uv run pytest -q tests/test_capability_readiness_report.py
+  - py -3 -m uv run python scripts/update_capability_readiness_report.py --check
   - git diff --check
 
 known_limits:
   - Static/generated-schema conformance is accepted; live App Server behavior remains C-502.
+  - This correction does not claim that C-502 is unblocked.
   - Restart/reconnect recovery, CLI integration and host security policy are later work packages.
   - Python 3.12 and 3.13 remain unverified.
 
-next_action: Merge PR #16 and run post-merge Git, report freshness and rendered-report verification.
+next_action: Obtain separate approval to commit; push, PR and merge remain later approval stages.

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import pytest
+from jsonschema import Draft7Validator
 
 from harness.adapters.base import (
     ApprovalResponse,
@@ -42,6 +45,16 @@ from harness.state import (
 )
 
 NOW = datetime(2026, 7, 22, 12, 0, tzinfo=UTC)
+SCHEMA_DIRECTORY = (
+    Path(__file__).resolve().parents[2]
+    / "docs"
+    / "research"
+    / "generated-app-server-schema"
+    / "codex-cli-0.144.3"
+    / "experimental"
+    / "json-schema"
+    / "v2"
+)
 
 
 def budget_state() -> BudgetState:
@@ -129,17 +142,18 @@ def thread(thread_id: str = "thread.c501.001") -> Mapping[str, Any]:
 
 
 def turn(turn_id: str = "turn.c501.001", status: str = "inProgress") -> Mapping[str, Any]:
+    terminal = status != "inProgress"
     return {
         "id": turn_id,
         "items": [],
-        "itemsView": "complete",
+        "itemsView": "full",
         "status": status,
         "error": {"message": "failed", "codexErrorInfo": None, "additionalDetails": None}
         if status == "failed"
         else None,
         "startedAt": 1,
-        "completedAt": 2 if status != "running" else None,
-        "durationMs": 1000 if status != "running" else None,
+        "completedAt": 2 if terminal else None,
+        "durationMs": 1000 if terminal else None,
     }
 
 
@@ -198,6 +212,28 @@ def ready_replies() -> dict[str, list[Mapping[str, Any]]]:
 
 def note(method: str, params: Mapping[str, Any]) -> InboundMessage:
     return InboundMessage(kind=InboundKind.NOTIFICATION, method=method, params=params)
+
+
+def turn_note(
+    method: str,
+    *,
+    thread_id: str = "thread.c501.001",
+    turn_id: str = "turn.c501.001",
+    status: str = "inProgress",
+) -> InboundMessage:
+    schema_name = {
+        "turn/started": "TurnStartedNotification.json",
+        "turn/completed": "TurnCompletedNotification.json",
+    }[method]
+    params = {
+        "threadId": thread_id,
+        "turn": turn(turn_id=turn_id, status=status),
+    }
+    schema = json.loads((SCHEMA_DIRECTORY / schema_name).read_text(encoding="utf-8"))
+    Draft7Validator.check_schema(schema)
+    Draft7Validator(schema).validate(params)
+    assert "turnId" not in params
+    return note(method, params)
 
 
 def approval_request(
@@ -339,10 +375,7 @@ def test_stream_translates_real_notifications_with_bounded_redacted_output() -> 
     adapter, _, _, handle = prepared_adapter(
         [
             note("thread/status/changed", {"threadId": "thread.other"}),
-            note(
-                "turn/started",
-                {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
-            ),
+            turn_note("turn/started"),
             note(
                 "item/started",
                 {
@@ -361,14 +394,7 @@ def test_stream_translates_real_notifications_with_bounded_redacted_output() -> 
                     "delta": "secret prompt payload",
                 },
             ),
-            note(
-                "turn/completed",
-                {
-                    "threadId": handle_session(),
-                    "turnId": "turn.c501.001",
-                    "turn": turn(status="completed"),
-                },
-            ),
+            turn_note("turn/completed", status="completed"),
         ]
     )
 
@@ -391,6 +417,92 @@ def handle_session() -> str:
 
 
 @pytest.mark.parametrize(
+    ("notification", "message"),
+    [
+        (
+            turn_note("turn/completed", turn_id="turn.other", status="completed"),
+            "turn identifier mismatch",
+        ),
+        (
+            turn_note("turn/completed", thread_id="thread.other", status="completed"),
+            "thread/turn mismatch",
+        ),
+    ],
+)
+def test_schema_valid_completion_identifier_mismatches_fail_closed(
+    notification: InboundMessage, message: str
+) -> None:
+    adapter, _, _, handle = prepared_adapter([notification])
+
+    with pytest.raises(ProviderAdapterError, match=message):
+        tuple(adapter.stream_events(turn=handle))
+
+
+@pytest.mark.parametrize(
+    ("params", "message"),
+    [
+        ({"threadId": "thread.c501.001"}, "turn/completed.turn must be an object"),
+        (
+            {"threadId": "thread.c501.001", "turn": "malformed"},
+            "turn/completed.turn must be an object",
+        ),
+        (
+            {
+                "threadId": "thread.c501.001",
+                "turn": {"items": [], "status": "completed"},
+            },
+            "turn/completed.turn.id",
+        ),
+    ],
+)
+def test_completion_missing_or_malformed_nested_turn_fails_closed(
+    params: Mapping[str, Any], message: str
+) -> None:
+    adapter, _, _, handle = prepared_adapter([note("turn/completed", params)])
+
+    with pytest.raises(ProviderAdapterError, match=message):
+        tuple(adapter.stream_events(turn=handle))
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {
+            "threadId": "thread.c501.001",
+            "item": {"type": "commandExecution", "id": "item.command.1"},
+            "startedAtMs": 1,
+        },
+        {
+            "threadId": "thread.c501.001",
+            "turnId": "turn.other",
+            "item": {"type": "commandExecution", "id": "item.command.1"},
+            "startedAtMs": 1,
+        },
+    ],
+)
+def test_top_level_turn_id_notification_missing_or_mismatch_fails_closed(
+    params: Mapping[str, Any],
+) -> None:
+    adapter, _, _, handle = prepared_adapter([note("item/started", params)])
+
+    with pytest.raises(ProviderAdapterError, match="turn identifier"):
+        tuple(adapter.stream_events(turn=handle))
+
+
+def test_unrelated_notification_without_turn_identifier_is_ignored() -> None:
+    adapter, _, _, handle = prepared_adapter(
+        [
+            note("thread/status/changed", {"threadId": "thread.other"}),
+            turn_note("turn/completed", status="completed"),
+        ]
+    )
+
+    events = tuple(adapter.stream_events(turn=handle))
+    assert [event.kind for event in events] == [ProviderEventKind.TURN_TERMINAL]
+    assert events[0].outcome is ProviderTurnOutcome.SUCCEEDED
+
+
+@pytest.mark.parametrize(
     "status,outcome",
     [
         ("failed", ProviderTurnOutcome.FAILED),
@@ -402,18 +514,8 @@ def test_failure_interrupted_and_cancelled_terminal_statuses_are_normalized(
 ) -> None:
     adapter, _, _, handle = prepared_adapter(
         [
-            note(
-                "turn/started",
-                {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
-            ),
-            note(
-                "turn/completed",
-                {
-                    "threadId": handle_session(),
-                    "turnId": "turn.c501.001",
-                    "turn": turn(status=status),
-                },
-            ),
+            turn_note("turn/started"),
+            turn_note("turn/completed", status=status),
         ]
     )
     events = tuple(adapter.stream_events(turn=handle))
@@ -423,16 +525,7 @@ def test_failure_interrupted_and_cancelled_terminal_statuses_are_normalized(
 
 
 def test_session_cancel_uses_turn_interrupt_and_normalizes_terminal_as_cancelled() -> None:
-    inbound = [
-        note(
-            "turn/completed",
-            {
-                "threadId": handle_session(),
-                "turnId": "turn.c501.001",
-                "turn": turn(status="interrupted"),
-            },
-        )
-    ]
+    inbound = [turn_note("turn/completed", status="interrupted")]
     adapter, transport, session, handle = prepared_adapter(inbound)
     adapter.cancel(session=session, reason="operator cancelled the session")
     terminal = tuple(adapter.stream_events(turn=handle))[-1]
@@ -480,14 +573,8 @@ def test_approval_allow_and_deny_reply_to_original_server_request_ids() -> None:
         ),
         (
             [
-                note(
-                    "turn/started",
-                    {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
-                ),
-                note(
-                    "turn/started",
-                    {"threadId": handle_session(), "turnId": "turn.c501.001", "turn": turn()},
-                ),
+                turn_note("turn/started"),
+                turn_note("turn/started"),
             ],
             "duplicate",
         ),
@@ -512,32 +599,17 @@ def test_unknown_duplicate_post_terminal_and_unsupported_messages_fail_closed(
         tuple(adapter.stream_events(turn=handle))
 
 
-def test_terminal_returns_without_waiting_and_post_terminal_translation_fails_closed() -> None:
-    post_terminal = note(
-        "item/started",
-        {
-            "threadId": handle_session(),
-            "turnId": "turn.c501.001",
-            "item": {"type": "agentMessage", "id": "item.after"},
-            "startedAtMs": 1,
-        },
-    )
+def test_terminal_returns_without_waiting_and_duplicate_terminal_fails_closed() -> None:
+    duplicate_terminal = turn_note("turn/completed", status="completed")
     adapter, transport, _, handle = prepared_adapter(
         [
-            note(
-                "turn/completed",
-                {
-                    "threadId": handle_session(),
-                    "turnId": "turn.c501.001",
-                    "turn": turn(status="completed"),
-                },
-            ),
-            post_terminal,
+            turn_note("turn/completed", status="completed"),
+            duplicate_terminal,
         ]
     )
 
     assert tuple(adapter.stream_events(turn=handle))[-1].outcome is ProviderTurnOutcome.SUCCEEDED
-    assert transport.inbound == [post_terminal]
+    assert transport.inbound == [duplicate_terminal]
     state = adapter._turns[handle.turn_id]
     with pytest.raises(ProviderAdapterError, match="post-terminal"):
         adapter._translate_message(state, transport.inbound.pop(0))
@@ -591,14 +663,7 @@ def test_retried_error_does_not_poison_a_successful_terminal() -> None:
                     },
                 },
             ),
-            note(
-                "turn/completed",
-                {
-                    "threadId": handle_session(),
-                    "turnId": "turn.c501.001",
-                    "turn": turn(status="completed"),
-                },
-            ),
+            turn_note("turn/completed", status="completed"),
         ]
     )
 

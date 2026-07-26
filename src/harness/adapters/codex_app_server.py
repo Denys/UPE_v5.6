@@ -42,6 +42,15 @@ CLIENT_VERSION = "0.1.0"
 JSON = Mapping[str, Any]
 RpcId = str | int
 _STABLE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+_NESTED_TURN_NOTIFICATION_METHODS = frozenset({"turn/started", "turn/completed"})
+_TOP_LEVEL_TURN_NOTIFICATION_METHODS = frozenset(
+    {
+        "error",
+        "item/agentMessage/delta",
+        "item/completed",
+        "item/started",
+    }
+)
 
 
 class InboundKind(StrEnum):
@@ -420,19 +429,21 @@ class CodexAppServerAdapter:
             return self._translate_server_request(state, message)
         if message.method is None or message.params is None:
             raise _error("malformed notification", ProviderErrorCategory.PROTOCOL)
-        if message.method == "error":
-            return self._translate_error(state, message.params)
         method = message.method
         params = message.params
-        if "turnId" not in params:
+        identity = _notification_turn_identity(method, params)
+        if identity is None:
             return None
-        if _string(params.get("turnId"), f"{method}.turnId") != state.handle.turn_id:
-            return None
+        notification_turn_id, nested_turn = identity
+        if notification_turn_id != state.handle.turn_id:
+            raise _error(f"{method} turn identifier mismatch", ProviderErrorCategory.PROTOCOL)
         if _string(params.get("threadId"), f"{method}.threadId") != state.handle.session_id:
             raise _error("thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
+        if method == "error":
+            return self._translate_error(state, params)
         if method == "turn/started":
-            turn = _object(params.get("turn"), "turn/started.turn")
-            self._dedupe(state, "turn", _stable_id(turn.get("id"), "turn.id"))
+            _object(nested_turn, "turn/started.turn")
+            self._dedupe(state, "turn", notification_turn_id)
             return self._event(state, ProviderEventKind.TURN_STARTED, "Codex turn started")
         if method == "item/started":
             item = _object(params.get("item"), "item/started.item")
@@ -459,7 +470,7 @@ class CodexAppServerAdapter:
                 redaction_status=RedactionStatus.REDACTED,
             )
         if method == "turn/completed":
-            turn = _object(params.get("turn"), "turn/completed.turn")
+            turn = _object(nested_turn, "turn/completed.turn")
             outcome, failure = _turn_outcome(
                 turn, cancellation_requested=state.cancellation_requested
             )
@@ -512,10 +523,6 @@ class CodexAppServerAdapter:
         )
 
     def _translate_error(self, state: _TurnState, params: JSON) -> ProviderEvent | None:
-        if _string(params.get("turnId"), "error.turnId") != state.handle.turn_id:
-            return None
-        if _string(params.get("threadId"), "error.threadId") != state.handle.session_id:
-            raise _error("error thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
         will_retry = params.get("willRetry")
         if type(will_retry) is not bool:
             raise _error("error.willRetry must be a boolean", ProviderErrorCategory.PROTOCOL)
@@ -594,6 +601,25 @@ class CodexAppServerAdapter:
         if state is None or state.handle != turn:
             raise _error("unknown Codex turn", ProviderErrorCategory.STATE, retryable=False)
         return state
+
+
+def _notification_turn_identity(method: str, params: JSON) -> tuple[str, JSON | None] | None:
+    if method in _NESTED_TURN_NOTIFICATION_METHODS:
+        nested_turn = _object(params.get("turn"), f"{method}.turn")
+        nested_turn_id = _stable_id(nested_turn.get("id"), f"{method}.turn.id")
+        if "turnId" in params:
+            top_level_turn_id = _stable_id(params.get("turnId"), f"{method}.turnId")
+            if top_level_turn_id != nested_turn_id:
+                raise _error(
+                    f"{method} contains conflicting turn identifiers",
+                    ProviderErrorCategory.PROTOCOL,
+                )
+        return nested_turn_id, nested_turn
+    if method in _TOP_LEVEL_TURN_NOTIFICATION_METHODS or "turnId" in params:
+        if "turnId" not in params:
+            raise _error(f"{method} turn identifier is missing", ProviderErrorCategory.PROTOCOL)
+        return _stable_id(params.get("turnId"), f"{method}.turnId"), None
+    return None
 
 
 def _parse_inbound(raw: Any) -> InboundMessage:
