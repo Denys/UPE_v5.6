@@ -1,15 +1,15 @@
 upe_state:
   goal: >-
-    Deliver the locally accepted C-505 host approval and permission policy on
-    merged C-409, refresh the mandatory report, and keep C-506 integration and
-    all release or deployment actions separate.
+    Correct the reopened C-501 App Server envelope framing against the generated
+    stable codex-cli 0.144.3 protocol, preserve the failed C-502 evidence, and
+    keep any new live smoke, C-503 and unrelated implementation separate.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
-    observed_main_commit_role: accepted_C409_merge_PR_17
+    observed_main_commit: 293b328d436a27a848df2b7bf1858b840840058f
+    observed_main_commit_role: accepted_C410_merge_PR_24
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -121,6 +121,17 @@ upe_state:
       merge_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
       result: agent/state/C-501-result.yaml
       gate: validation/C-501-GATE.yaml
+    C_501_nested_terminal_correction_pr_22:
+      state: MERGED
+      head_commit: 80802a4d0599fe15580776aabffd98339a1c5e50
+      merge_commit: b1d1a9be9669eb16f6d86e906c4b42b75a2e99e6
+    C_501_unversioned_framing_correction:
+      state: TESTED_LOCALLY_CANDIDATE_REVIEW_PENDING
+      branch: codex/c501-schema-framing-correction-20260727
+      base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+      result: agent/state/C-501-result.yaml
+      gate: validation/C-501-GATE.yaml
+      retained_C502_status: FAIL_NOT_CLOSED
     C_409_local_slice:
       state: MERGED_PR_17
       branch: codex/c409-cli-doctor
@@ -140,12 +151,16 @@ upe_state:
       gate: validation/C-505-GATE.yaml
 
   active_development:
-    C-505:
-      state: PR_18_REREVIEW_PENDING
-      branch: codex/c505-cloud-coordinator
-      original_base_commit: a52fc44345e3baf763ef529ff3672dcd7ac3632a
-      integration_base_commit: c5bf5b3b81091f6c74465a77f204535e0f1389bc
-      authority: explicit_commit_push_pr_review_accept_merge_only
+    C-501:
+      state: UNVERSIONED_FRAMING_CORRECTION_CANDIDATE_REVIEW_PENDING
+      branch: codex/c501-schema-framing-correction-20260727
+      base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+      authority: explicit_upe_code_pipeline_through_task_closed
+    C-502:
+      state: FAIL_RETAINED_EVIDENCE_NOT_CLOSED
+      branch: codex/c502-app-server-smoke-20260727
+      base_commit: c8370a53b2d1b5cdf4c5f448ad7aae9c34a412dd
+      authority: no_rerun_authorized
 
   must_status:
     research_matrix: PASS
@@ -182,10 +197,11 @@ upe_state:
     C-407: MERGED_PR_15_PASS
     C-408: MERGED_PR_14_PASS
     C-409: MERGED_PR_17_PASS
-    C-501: MERGED_PR_16_PASS
+    C-501: CORRECTION_TESTED_LOCALLY_CANDIDATE_REVIEW_PENDING
+    C-502: FAIL_RETAINED_EVIDENCE_NOT_CLOSED
     C-505: PR_18_PASS_SIX_REVIEW_CYCLES_REPAIRED
-    harness_implementation: C505_SECURITY_PASS_PR_18_REREVIEW_PENDING
-    local_implementation_authorization: GRANTED_COMMIT_PUSH_PR_REVIEW_ACCEPT_MERGE_ONLY
+    harness_implementation: C501_UNVERSIONED_FRAMING_CORRECTION_REVIEW_PENDING
+    local_implementation_authorization: GRANTED_C501_UPE_CODE_THROUGH_TASK_CLOSED
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -209,6 +225,9 @@ upe_state:
     - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
 
   findings:
+    - The retained C-502 run proved that the generated stable 0.144.3 wire protocol is unversioned JSONL; the prior C-501 adapter invented and required a jsonrpc 2.0 member.
+    - C-501 now emits unversioned requests, notifications and server-request replies, accepts unversioned inbound envelopes, preserves strict classification, and follows generated Draft 7 extra-member behavior.
+    - The retained C-502 result and gate remain FAIL and not closed; no rerun, App Server process, model turn or fixture mutation occurred during this correction.
     - PR #4 merged C-301/C-302 into main at a7e99bd32e71ef047296446c14f9e4376b444fcd.
     - Accepted docs/research, docs/architecture, and schemas trees already existed on main and were reused without rewriting.
     - The build brief required four prompt and five template paths, but no accepted source files existed at those paths; C-303 records each new file as an intentional transformation of exact accepted contracts.
@@ -237,6 +256,9 @@ upe_state:
     - Resumable stop states have no outbound C-401 edge; actual resume and reconciliation transitions remain assigned to C-503.
 
   completed:
+    - Reopened C-501 on current main and implemented unversioned envelope framing without modifying generated schema artifacts.
+    - Added outbound wire-capture, unversioned success/error, notification/server-request, schema-extra, ambiguous-envelope and boolean-ID regressions while preserving PR #22 nested terminal correlation.
+    - Passed 36 focused and 477 complete repository tests plus lock, Ruff lint/format, strict mypy, work-specification, reference, schema, report and diff gates.
     - Created and validated four bounded prompts for initialization, generation, read-only review, and independent evaluation.
     - Created and validated five workflow/task/progress/decision/blocker templates with explicit canonical-state and approval boundaries.
     - Recorded nine content hashes, source mappings, and three unchanged accepted Git tree identities in validation/C-303-MATERIALIZATION.yaml.
@@ -299,7 +321,8 @@ upe_state:
     - Repaired the seventh PR #18 review round by redacting split credential-flag values in flat command, exception and tool-output text; all 69 permission tests plus changed-file Ruff and strict mypy checks pass, while the immediately preceding head retains the 457-test complete-suite evidence.
 
   unresolved:
-    - Run the controlled App Server initialize/thread/turn/tool/approval/interrupt/reconnect smoke test before marking the real adapter tested.
+    - A new bounded C-502 live-smoke run requires separate explicit approval; the consumed retained attempt remains FAIL and was not rerun.
+    - C-503 remains blocked until a separately authorized C-502 run passes.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
     - Wire the accepted C-505 policy into orchestration, persistence, recovery, CLI and provider dispatch only through the separate C-506 integration package.
     - Add CI and complete release/security review before release readiness.
@@ -339,7 +362,7 @@ upe_state:
       - C-405 exact worktree ownership, Windows lexical/reparse and filesystem-identity checks, dirty-state preservation, and two-step cleanup-target verification with no cleanup effect
       - C-408 deterministic-first invocation, mandatory frozen semantic criteria, exact criteria/evidence/correction bounds, three-valued verdict aggregation, actual-artifact inspection, and read-only effect boundary
       - C-407 exact-limit and prospective budget accounting, total-token derivation, retry/backoff overflow and jitter boundaries, no-progress checkpoint preservation, and non-idempotent reconciliation refusal
-      - C-501 strict JSON-RPC envelopes, generated initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
+      - C-501 generated unversioned JSONL envelopes, strict response/notification/server-request classification, initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
       - C-409 exact command parsing, fail-closed dispatch, concurrent bounded process reads, timeout child termination, secret-safe diagnostics, deterministic JSON, and read-only SQLite inspection
       - C-505 exact approval identity/scope/expiry/revocation, command/environment minimization, Windows path/network refusal and recursive secret/PII redaction with malformed-input canaries
     result: PASS
@@ -350,8 +373,9 @@ upe_state:
       ownership/containment, the C-408 optional evaluator interface, and C-407
       executable budget/retry/no-progress policy, the C-501 schema-bound
       Codex App Server adapter, C-409 executable CLI/doctor diagnostics, and
-      C-505 pure host approval/permission security. C-505 is locally tested but
-      not integrated with the orchestrator/provider boundary. Live model/provider calls, cleanup effects,
+      C-505 pure host approval/permission security, and the reopened C-501
+      unversioned envelope correction. C-505 is locally tested but not integrated
+      with the orchestrator/provider boundary. Live model/provider calls, cleanup effects,
       evaluator persistence, broader authoritative entity/action state,
       resume/recovery, broader Python compatibility, release, and
       deployment are not claimed.
@@ -365,12 +389,13 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume PR #18 in codex/c505-cloud-coordinator from merged C-409 at
-    c5bf5b3b81091f6c74465a77f204535e0f1389bc. Preserve the protected primary
-    checkout and all other worktrees. Confirm the targeted seventh-review
-    regression checks, then verify report freshness on merged main.
+    Resume C-501 framing correction on
+    codex/c501-schema-framing-correction-20260727 from
+    293b328d436a27a848df2b7bf1858b840840058f. Preserve the dirty primary,
+    retained C-502 evidence, prior C-501 worktrees and unrelated lanes.
 
   next_action: >-
-    Request PR #18 re-review of the repaired head, accept and merge only after no
-    unresolved finding remains, then verify report freshness on merged main.
-    Keep C-506 separate and do not claim live compatibility from C-501 evidence.
+    Run the fresh upe-code candidate review, then advance only through the
+    authorized exact commit, push, PR and merge gates. After merge, verify report
+    freshness and that C-502, not C-503, is the next separately authorized
+    runtime frontier.

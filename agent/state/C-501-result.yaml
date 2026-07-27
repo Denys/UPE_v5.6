@@ -1,85 +1,66 @@
 schema_version: '1.0'
 record_id: C-501-RESULT
-generated_at: '2026-07-26T20:01:07+02:00'
-status: TESTED_LOCALLY_READY_FOR_COMMIT
+generated_at: '2026-07-27T07:54:39.868Z'
+status: TESTED_LOCALLY_READY_FOR_CANDIDATE_REVIEW
 
 task:
   id: C-501
   title: Implement the Codex App Server adapter
+  correction: APP_SERVER_UNVERSIONED_ENVELOPE_FRAMING
   verdict: PASS
   gate: validation/C-501-GATE.yaml
+  task_closed: false
 
 repository:
   identity: Denys/UPE_v5.6
-  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c501-terminal-shape-correction-20260726'
-  branch: codex/c501-terminal-shape-correction-20260726
-  base_commit: 92858f79f00849c58c7edc3d8e5642bdc414bd78
-  working_tree_head: 92858f79f00849c58c7edc3d8e5642bdc414bd78
-  original_functional_head: ec04ed06498dfce466e062b9d0f7e2577211a6f3
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c501-schema-framing-correction-20260727'
+  branch: codex/c501-schema-framing-correction-20260727
+  base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+  working_tree_head: 293b328d436a27a848df2b7bf1858b840840058f
   original_pull_request: https://github.com/Denys/UPE_v5.6/pull/16
+  nested_terminal_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/22
 
-cloud_source:
-  task_id: task_e_6a60106e668c832895a198576c4179fc
-  result_label: CLOUD_IMPLEMENTATION_UNVERIFIED_LOCALLY
-  initial_review_verdict: REJECTED_PROTOCOL_NONCONFORMANCE
-  cloud_initial_work_time: 6m59s
-  cloud_repair_work_time: 6m14s
-  corrected_cloud_pr_head: 689eb918097a1ca9857e176e43052b7f1e017499
-  local_review_verdict: REPAIR_REQUIRED_THEN_PASS
+defect_repaired:
+  mechanism: >-
+    The accepted adapter invented and required a jsonrpc 2.0 member that is
+    absent from the generated stable codex-cli 0.144.3 request, notification,
+    server-request and live response framing.
+  observed_failure: >-
+    The retained C-502 attempt reached initialize_response_parse, where the
+    unchanged adapter rejected the first unversioned response before any thread,
+    turn, model or external action.
+  correction:
+    - outbound requests contain id, method and params without jsonrpc
+    - outbound notifications contain method and applicable params without jsonrpc
+    - server-request replies contain id and result without jsonrpc
+    - inbound unversioned responses, notifications and server requests are classified distinctly
+    - response envelopes require a valid ID and exactly one result or error
+    - method envelopes cannot contain a result or error
+    - malformed, ambiguous and boolean-ID envelopes fail closed
 
-implemented:
-  transport:
-    - standard-library synchronous subprocess JSONL transport with injectable fake boundary
-    - strict JSON-RPC 2.0 response, notification and server-request envelope parsing
-    - interleaved-message preservation, missing-executable handling, process-exit normalization and stderr redaction
-  compatibility:
-    - initialize request and initialized notification use the generated stable schema
-    - exact Codex CLI 0.144.3 and accepted schema-reference pin fail closed
-    - no live compatibility or C-502 smoke claim
-  lifecycle:
-    - idempotent start, stop and preflight
-    - schema-aligned thread/start, thread/resume, turn/start and turn/interrupt operations
-    - provider thread/turn identity collision and forged-handle refusal
-  streaming:
-    - real turn/item/error notification and approval-request translation
-    - contiguous adapter-local ordering, bounded reference-only summaries and redacted deltas
-    - exactly-one terminal return without blocking after completion
-    - deterministic success, failure, interruption and host-requested cancellation mapping
-  approvals:
-    - command and file approval requests retain original JSON-RPC request identity
-    - granted and denied host decisions map to generated accept and decline values
+generated_schema_binding:
+  codex_cli_version: 0.144.3
+  schema_ref: docs/research/generated-app-server-schema/codex-cli-0.144.3/stable
+  generated_artifacts_modified: false
+  extra_member_behavior: >-
+    Draft 7 object schemas omit additionalProperties false, so unspecified
+    members are schema-permitted. The adapter accepts such members unless they
+    conflict with response versus method-envelope classification.
 
-local_review_repairs:
-  - replaced invented Cloud RPC methods and flat payloads with generated slash methods and nested envelopes
-  - replaced invalid initialize capabilities with experimentalApi and requestAttestation
-  - added required text_elements to text user input
-  - replaced invalid approved/denied approval replies with accept/decline
-  - made terminal streaming return immediately instead of waiting for another provider message
-  - made process-exit normalization reachable and kept stderr contents out of errors
-  - enforced exact CLI-version token and accepted schema-reference identity
-  - distinguished host-requested cancellation from provider interruption without inventing a cancelled wire status
-  - prevented retried error notifications from poisoning a later successful terminal
-  - added strict malformed-envelope, boolean-ID, interleaving, process-exit and post-terminal regressions
-
-schema_shape_correction:
-  reproduced:
-    - Baseline merged focused suite passed 19 tests because turn lifecycle fixtures fabricated a top-level turnId.
-    - Replacing those fixtures with generated-schema-validated params.threadId and params.turn shapes reproduced 7 failures with 12 tests still passing.
-  implemented:
-    - turn/started and turn/completed correlate through params.turn.id.
-    - item, delta and error notifications retain their schema-defined top-level turnId correlation.
-    - mismatched, missing, malformed and conflicting turn identifiers fail closed.
-    - unrelated notifications without a turn identifier remain ignored by the active turn stream.
-    - duplicate terminal translation remains a post-terminal protocol failure while the first terminal returns immediately.
+preserved_behavior:
+  - generated initialize and initialized lifecycle payloads
+  - generated thread start and resume plus turn start and interrupt payloads
+  - interleaved-message preservation
+  - approval replies using the original server request ID and accept or decline
+  - provider stderr and sensitive output redaction
+  - immediate exactly-once terminal return
+  - PR 22 nested turn/started and turn/completed correlation through params.turn.id
 
 verification:
   result: PASS
-  targeted_C501: 27_passed
-  complete_unit_tests: 440_passed
-  complete_repository_tests: 468_passed
-  initial_complete_repository_attempt: 1_failed_467_passed_GIT_BASH_PATH_MISSING_DIRNAME_AND_CYGPATH
-  rerun_with_git_for_windows_tool_path: 468_passed
   uv_lock: PASS_33_PACKAGES
+  targeted_C501: 36_passed
+  complete_repository_tests: 477_passed
   ruff_lint: PASS
   ruff_format: PASS_49_FILES
   strict_mypy: PASS_40_SOURCE_FILES
@@ -87,25 +68,41 @@ verification:
   reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
   schema_validator: PASS_6_INSTANCES
   capability_report_frontier_tests: PASS_9_TESTS
-  capability_report: PASS_CURRENT
+  capability_report_before_reconciliation: PASS_CURRENT
   git_diff_check: PASS
+  test_effect_boundary: >-
+    C-501 tests use in-memory transports and monkeypatched subprocess
+    construction; they start no App Server, model, shell, network or external
+    action.
 
 evidence_hashes_sha256:
-  src/harness/adapters/codex_app_server.py: 1fcc6f3364fdbfdf3bfb347e9a771524f72a2a0216848492b2fc36cc6c7ba973
-  tests/unit/test_codex_adapter.py: 4440bc87c2585a699a1fa37cfa22856af49b9170b94540b45a2e848943601850
+  src/harness/adapters/codex_app_server.py: 0514395e7f9a109d333e3662881df1e81f716e84b724f2671e92a3fd8066adca
+  tests/unit/test_codex_adapter.py: 5230f5c0b3f82f87484b1c79c08429a5f14617f8ab1abd9568252b7584a93c4c
 
-preserved_state:
+c502_evidence_preserved:
+  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727'
+  status: FAIL_NOT_CLOSED
+  rerun_performed: false
+  result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
+  gate_sha256: b3dad269ad2aa4d060382be1a25b2ac4131b646d6083a393522ab5d3e79f9765
+  observation_sha256: 2f67e7f947dbc5b05bcd5fd20ba04d445414059077c686c44d3a1f943c376d49
+  validator_sha256: 1f02cd3c7a31470dc346f089bbe0db749297acdabbcb1f26258ea1f4655076e3
+
+protected_state:
   primary_checkout_user_artifacts: preserved_unmodified
-  cloud_tests_started_real_codex_shell_model_or_network: false
+  prior_C501_worktrees: preserved_unmodified
+  unrelated_worktrees: preserved_unmodified
+  retained_C502_worktree: preserved_unmodified
+  generated_schema_artifacts: preserved_unmodified
+  app_server_or_model_started: false
   release_or_deployment: not_performed
 
 known_limits:
-  - No real Codex App Server process was started; live initialize/thread/turn/tool/approval/interrupt behavior remains C-502 evidence.
-  - This correction does not claim that C-502 is unblocked.
-  - Crash, reconnect and process-state reconciliation remain C-503 work.
-  - C-409/C-505/C-506 status was not reverified; CLI and integrated security behavior remain outside this correction.
+  - The failed C-502 attempt remains historical evidence and was not rerun.
+  - Live compatibility requires a new separately authorized bounded C-502 run.
+  - C-503 remains blocked because C-502 has not passed.
   - Python 3.12 and 3.13 remain unverified; the accepted Windows runtime is Python 3.14.3.
 
 next_action: >-
-  Obtain separate approval to commit the C-501 correction. Push, PR update or
-  creation, and merge remain later approval stages.
+  Freeze the exact candidate and obtain a fresh independent candidate-review
+  PASS approving only the task-scoped commit.

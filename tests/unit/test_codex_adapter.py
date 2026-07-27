@@ -30,7 +30,7 @@ from harness.adapters.codex_app_server import (
     CodexAppServerAdapter,
     InboundKind,
     InboundMessage,
-    SubprocessJsonRpcTransport,
+    SubprocessJsonlTransport,
 )
 from harness.state import (
     ApprovalStatus,
@@ -55,6 +55,7 @@ SCHEMA_DIRECTORY = (
     / "json-schema"
     / "v2"
 )
+STABLE_SCHEMA_DIRECTORY = SCHEMA_DIRECTORY.parents[2] / "stable" / "json-schema"
 
 
 def budget_state() -> BudgetState:
@@ -191,6 +192,46 @@ class FakeTransport:
     def iter_messages(self) -> Iterator[InboundMessage]:
         while self.inbound:
             yield self.inbound.pop(0)
+
+
+@dataclass(slots=True)
+class RecordingStdin:
+    lines: list[str] = field(default_factory=list)
+
+    def write(self, value: str) -> int:
+        self.lines.append(value)
+        return len(value)
+
+    def flush(self) -> None:
+        return None
+
+
+@dataclass(slots=True)
+class ScriptedStdout:
+    lines: Iterator[str]
+
+    def readline(self) -> str:
+        return next(self.lines)
+
+
+class ScriptedProcess:
+    def __init__(self, lines: list[str]) -> None:
+        self.stdin = RecordingStdin()
+        self.stdout = ScriptedStdout(iter(lines))
+        self.stderr: None = None
+        self.returncode: None = None
+
+    def poll(self) -> None:
+        return None
+
+
+def scripted_transport(
+    *lines: str,
+) -> tuple[SubprocessJsonlTransport, ScriptedProcess]:
+    process = ScriptedProcess(list(lines))
+    transport = SubprocessJsonlTransport(("codex", "app-server"))
+    transport._process = process  # type: ignore[assignment]
+    return transport, process
 
 
 def ready_replies() -> dict[str, list[Mapping[str, Any]]]:
@@ -715,10 +756,88 @@ def test_state_guards_reject_duplicate_request_forged_handles_and_bad_approval()
         )
 
 
-def test_subprocess_transport_startup_missing_executable_invalid_json_envelope_and_rpc_errors(
+def test_subprocess_transport_emits_only_schema_shaped_unversioned_envelopes() -> None:
+    transport, process = scripted_transport('{"id":1,"result":{"ok":"yes"}}\n')
+
+    assert transport.request("initialize", {"clientInfo": {"name": "test"}}) == {"ok": "yes"}
+    transport.notify("initialized")
+    transport.notify("client/ready", {"ready": True})
+    transport.respond("server.request.1", {"decision": "accept"})
+
+    wire = [json.loads(line) for line in process.stdin.lines]
+    assert wire == [
+        {"id": 1, "method": "initialize", "params": {"clientInfo": {"name": "test"}}},
+        {"method": "initialized"},
+        {"method": "client/ready", "params": {"ready": True}},
+        {"id": "server.request.1", "result": {"decision": "accept"}},
+    ]
+    assert all("jsonrpc" not in envelope for envelope in wire)
+
+
+def test_unversioned_success_error_notification_and_server_request_are_distinct() -> None:
+    transport, _ = scripted_transport(
+        '{"method":"thread/started","params":{"thread":{"id":"thread.1"}}}\n',
+        '{"id":"server.request.1","method":"item/tool/requestUserInput","params":{}}\n',
+        '{"id":1,"result":{"ok":"yes"},"schemaPermittedExtension":true}\n',
+    )
+
+    assert transport.request("initialize", {}) == {"ok": "yes"}
+    notification = next(transport.iter_messages())
+    server_request = next(transport.iter_messages())
+    assert notification.kind is InboundKind.NOTIFICATION
+    assert notification.request_id is None
+    assert server_request.kind is InboundKind.SERVER_REQUEST
+    assert server_request.request_id == "server.request.1"
+
+    failing, _ = scripted_transport('{"id":1,"error":{"code":"bad_request","message":"boom"}}\n')
+    with pytest.raises(ProviderAdapterError) as raised:
+        failing.request("initialize", {})
+    assert raised.value.provider_code == "bad_request"
+
+
+def test_generated_stable_request_schema_permits_unspecified_extra_members() -> None:
+    schema = json.loads(
+        (STABLE_SCHEMA_DIRECTORY / "ClientRequest.json").read_text(encoding="utf-8")
+    )
+    Draft7Validator.check_schema(schema)
+    assert all(branch.get("additionalProperties", True) is not False for branch in schema["oneOf"])
+    Draft7Validator(schema).validate(
+        {
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "clientInfo": {"name": CLIENT_NAME, "version": CLIENT_VERSION},
+                "capabilities": {
+                    "experimentalApi": False,
+                    "requestAttestation": False,
+                },
+            },
+            "schemaPermittedExtension": True,
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "{}\n",
+        '{"id":1}\n',
+        '{"id":1,"result":{},"error":{"code":"bad","message":"boom"}}\n',
+        '{"id":true,"result":{}}\n',
+        '{"id":true,"method":"event","params":{}}\n',
+        '{"method":"event","params":{},"result":{}}\n',
+    ],
+)
+def test_unversioned_malformed_ambiguous_and_boolean_id_envelopes_fail_closed(
+    line: str,
+) -> None:
+    assert parse_failure(line).category is ProviderErrorCategory.PROTOCOL
+
+
+def test_subprocess_transport_startup_missing_executable_invalid_json_and_response_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    missing = SubprocessJsonRpcTransport(("missing-codex-binary", "app-server"))
+    missing = SubprocessJsonlTransport(("missing-codex-binary", "app-server"))
 
     def raise_oserror(*_args: object, **_kwargs: object) -> object:
         raise FileNotFoundError("missing")
@@ -728,25 +847,15 @@ def test_subprocess_transport_startup_missing_executable_invalid_json_envelope_a
         missing.start()
 
     assert parse_failure("not-json\n").category is ProviderErrorCategory.PROTOCOL
+    assert parse_failure('{"result":{}}\n').category is ProviderErrorCategory.PROTOCOL
     assert (
-        parse_failure('{"jsonrpc":"2.0","result":{}}\n').category is ProviderErrorCategory.PROTOCOL
+        parse_failure('{"id":1,"error":{"code":"bad","message":"boom"}}\n').provider_code == "bad"
     )
     assert (
-        parse_failure(
-            '{"jsonrpc":"2.0","id":1,"error":{"code":"bad","message":"boom"}}\n'
-        ).provider_code
-        == "bad"
-    )
-    assert (
-        parse_failure(
-            '{"jsonrpc":"2.0","id":1,"result":{},"error":{"code":"bad","message":"boom"}}\n'
-        ).category
+        parse_failure('{"id":1,"result":{},"error":{"code":"bad","message":"boom"}}\n').category
         is ProviderErrorCategory.PROTOCOL
     )
-    assert (
-        parse_failure('{"jsonrpc":"2.0","id":true,"result":{}}\n').category
-        is ProviderErrorCategory.PROTOCOL
-    )
+    assert parse_failure('{"id":true,"result":{}}\n').category is ProviderErrorCategory.PROTOCOL
 
 
 def test_subprocess_transport_preserves_interleaved_notification() -> None:
@@ -754,8 +863,8 @@ def test_subprocess_transport_preserves_interleaved_notification() -> None:
         def __init__(self) -> None:
             self.lines = iter(
                 [
-                    '{"jsonrpc":"2.0","method":"thread/started","params":{}}\n',
-                    '{"jsonrpc":"2.0","id":1,"result":{"ok":"yes"}}\n',
+                    '{"method":"thread/started","params":{}}\n',
+                    '{"id":1,"result":{"ok":"yes"}}\n',
                 ]
             )
 
@@ -778,7 +887,7 @@ def test_subprocess_transport_preserves_interleaved_notification() -> None:
         def poll(self) -> None:
             return None
 
-    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport = SubprocessJsonlTransport(("codex", "app-server"))
     transport._process = Process()  # type: ignore[assignment]
 
     assert transport.request("initialize", {}) == {"ok": "yes"}
@@ -801,7 +910,7 @@ def test_subprocess_transport_normalizes_process_exit_without_leaking_stderr() -
         def poll(self) -> int:
             return 7
 
-    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport = SubprocessJsonlTransport(("codex", "app-server"))
     transport._process = Process()  # type: ignore[assignment]
 
     with pytest.raises(ProviderAdapterError) as raised:
@@ -832,7 +941,7 @@ def parse_failure(line: str) -> ProviderAdapterError:
         def poll(self) -> None:
             return None
 
-    transport = SubprocessJsonRpcTransport(("codex", "app-server"))
+    transport = SubprocessJsonlTransport(("codex", "app-server"))
     transport._process = Process()  # type: ignore[assignment]
     with pytest.raises(ProviderAdapterError) as error:
         transport.request("initialize", {})
