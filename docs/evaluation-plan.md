@@ -134,9 +134,10 @@ The exact local commands are listed in
   part of C-410 validation.
 - The corrected C-501 adapter is covered by deterministic unit tests, but the
   real App Server smoke remains C-502.
-- C-502 remains blocked until the coordinator records post-merge revalidation
-  of the C-501 terminal-notification correction and separately authorizes the
-  controlled live smoke.
+- PR #22 merged the C-501 terminal-notification correction, and C-410
+  revalidated the current base with the complete repository suite. The
+  canonical frontier therefore marks C-502 ready; executing its controlled
+  live smoke still requires separate authorization and is not part of C-410.
 - Restart/reconciliation is C-503 and integrated security is C-506.
 - Python 3.12 and 3.13 remain unverified by the historical package gates; the
   current C-410 handoff must report the Python version actually used.

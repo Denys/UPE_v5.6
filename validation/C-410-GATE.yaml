@@ -34,7 +34,7 @@ criteria:
     evidence:
       - Documentation was checked against the merged C-401 through C-409, C-501 and C-505 source, tests and accepted gate records.
       - The packaged CLI is described as doctor-only by default; recovery, cleanup effects, live App Server behavior and C-506 integration remain explicitly unclaimed.
-      - PR 22's terminal-notification correction is described as merged while C-502 remains blocked pending coordinator-recorded post-merge revalidation and separate live-smoke authorization.
+      - PR 22's terminal-notification correction is described as merged and revalidated on the current base, while C-502 live-smoke execution remains separately authorization-gated and unclaimed.
   - id: C-410-DOCUMENTATION-GATES
     verdict: PASS
     evidence:

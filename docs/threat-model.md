@@ -100,10 +100,11 @@ schema-defined top-level `turnId`.
 
 This repository state includes a passing corrected
 [`C-501 gate`](../validation/C-501-GATE.yaml), but that record was authored on
-the correction branch before merge. Treat C-502 as blocked until the coordinator
-records a post-merge revalidation of the corrective package and then separately
-authorizes the controlled live smoke. Documentation validation or ordinary unit
-tests are not a substitute for the live C-502 provider exercise.
+the correction branch before merge. PR #22 merged the correction, and the
+complete C-410 suite revalidated the current base, so the canonical frontier
+marks C-502 ready. The controlled live smoke still requires separate
+authorization; documentation validation and deterministic tests are not a
+substitute for that provider exercise.
 
 ## Operator rules
 

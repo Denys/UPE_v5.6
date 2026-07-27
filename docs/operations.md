@@ -198,8 +198,11 @@ not automatically answer the provider or continue the event stream.
 - Treat SQLite as authoritative.
 - Do not edit the `runs` or `outbox` tables manually.
 - Do not truncate a partial or conflicting JSONL file and continue.
-- A missing JSONL mirror may be rebuilt by delivering pending authoritative
-  outbox rows through `JsonlEventMirror.deliver_pending`.
+- Pending, undelivered outbox rows may be delivered to a missing JSONL mirror
+  through `JsonlEventMirror.deliver_pending`.
+- `deliver_pending` cannot reconstruct rows already marked delivered. Full
+  reconstruction from `all_outbox()` is not implemented; preserve the
+  authoritative database and stop if an acknowledged mirror is lost.
 - Exact replay after fsync/before acknowledgement is deduplicated.
 - Preserve corruption evidence and stop on hash, sequence, transition,
   canonical-JSON, or mirror conflicts.
@@ -231,9 +234,10 @@ process exit, and compatibility failure stop or fail closed. Provider stderr
 contents are not exposed.
 
 PR `#22` merged the C-501 terminal-notification correlation correction into the
-current base. C-502 remains blocked until the coordinator records post-merge
-revalidation of that correction and separately authorizes the controlled live
-App Server smoke. C-410 does not start a real provider.
+current base, and the complete C-410 repository suite revalidated that base.
+The canonical readiness frontier therefore marks C-502 ready. Starting its
+controlled live App Server smoke still requires separate authorization; C-410
+does not start a real provider or claim live compatibility.
 
 ## Documentation and development validation
 
@@ -255,8 +259,8 @@ git diff --check
 
 C-410 also requires a local Markdown-link check and a four-output content gate
 covering setup, operation, recovery, approvals, limitations, C-501 correction
-status, and the C-502 blocker. These checks must be reported with their exact
-command and result in the handoff.
+status, and the C-502 readiness/live-authorization boundary. These checks must
+be reported with their exact command and result in the handoff.
 
 ## Known limitations
 
