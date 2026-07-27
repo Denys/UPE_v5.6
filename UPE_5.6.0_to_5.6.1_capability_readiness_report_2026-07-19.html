@@ -976,8 +976,8 @@
               <td class="feature">Codex App Server integration</td>
               <td><span class="mark"><span class="dot green"></span>Implemented, not live-tested</span></td>
               <td>Only real v0 adapter; binary/schema pinning and fail-closed compatibility preflight.</td>
-              <td class="evidence">C‑501 binds initialize/thread/turn/approval/interrupt JSON-RPC to the accepted CLI 0.144.3 generated schema; 19 focused and 340 repository tests pass without starting Codex.</td>
-              <td>Adapter implemented; C‑502 live smoke remains critical.</td>
+              <td class="evidence">C‑501 now binds initialize/thread/turn/approval/interrupt to the accepted CLI 0.144.3 unversioned JSONL framing; 36 focused and 477 repository tests pass without starting App Server or a model, while PR #22 nested terminal correlation remains covered.</td>
+              <td>Adapter framing corrected; retained C‑502 evidence remains FAIL and a new bounded smoke requires separate approval.</td>
             </tr>
             <tr>
               <td class="feature">End-to-end application verification</td>
@@ -1326,10 +1326,10 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-27T03:12:39+02:00",
+  "refreshed_at": "2026-07-27T09:59:00+02:00",
   "repository": {
-    "head": "d687b0efc7726e2713debbd5f2fd75c52d33b9c5",
-    "branch": "codex/c410-runtime-docs-20260727"
+    "head": "unavailable",
+    "branch": "unavailable"
   },
   "summary": {
     "visible_tasks": 60,

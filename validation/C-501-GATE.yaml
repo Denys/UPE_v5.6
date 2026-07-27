@@ -1,70 +1,73 @@
 schema_version: '1.0'
 gate_id: C-501-CODEX-APP-SERVER-ADAPTER
-generated_at: '2026-07-26T20:01:07+02:00'
+generated_at: '2026-07-27T07:54:39.868Z'
 status: PASS
 status_reason: >-
-  The schema-pinned synchronous adapter confines raw Codex App Server JSON-RPC
-  to its boundary, correlates schema-valid terminal notifications through
-  params.turn.id, and passes 468 repository tests plus strict Windows static,
-  reference, schema and report gates without starting a real provider process.
+  The schema-pinned synchronous adapter now uses the generated stable
+  codex-cli 0.144.3 unversioned JSONL envelope framing, preserves strict
+  classification and all accepted lifecycle behavior, and passes 477
+  repository tests without starting App Server or a model.
 
 repository:
   identity: Denys/UPE_v5.6
-  base_commit: 92858f79f00849c58c7edc3d8e5642bdc414bd78
-  working_tree_head: 92858f79f00849c58c7edc3d8e5642bdc414bd78
-  branch: codex/c501-terminal-shape-correction-20260726
+  base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+  working_tree_head: 293b328d436a27a848df2b7bf1858b840840058f
+  branch: codex/c501-schema-framing-correction-20260727
   original_pull_request: https://github.com/Denys/UPE_v5.6/pull/16
+  nested_terminal_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/22
 
 criteria:
-  - id: C-501-SCHEMA-COMPATIBILITY
+  - id: C-501-UNVERSIONED-FRAMING
     verdict: PASS
     evidence:
-      - initialize/initialized and thread/start, thread/resume, turn/start and turn/interrupt match the accepted generated stable schema.
-      - Exact Codex CLI 0.144.3 and schema-reference pins fail closed; no invented compatibility RPC or live compatibility claim remains.
-      - Generated initialize capabilities, text input fields, response wrappers, turn statuses and approval decisions have adversarial regressions.
-  - id: C-501-TRANSPORT
+      - Outbound requests contain id, method and params without jsonrpc.
+      - Outbound notifications contain method and applicable params without jsonrpc.
+      - Approval and other server-request replies contain id and result without jsonrpc.
+      - Unversioned success and error responses parse and bind to their matching request ID.
+  - id: C-501-STRICT-CLASSIFICATION
     verdict: PASS
     evidence:
-      - JSON-RPC responses, notifications and server requests are parsed as distinct strict envelopes.
-      - Interleaved messages are preserved; malformed JSON/envelopes, boolean IDs, RPC errors, missing executable, stdout closure and process exit normalize fail closed.
-      - Provider stderr length may be reported but its contents are never exposed.
+      - Responses require a valid string or integer ID and exactly one object result or error.
+      - Notifications are method envelopes without IDs; server requests are method envelopes with valid IDs.
+      - Method plus result or error is ambiguous and rejected.
+      - Missing-shape, conflicting result and error, malformed values and boolean IDs fail closed.
+  - id: C-501-GENERATED-SCHEMA-COMPATIBILITY
+    verdict: PASS
+    evidence:
+      - Generated stable ClientRequest, ServerRequest and ServerNotification unions omit jsonrpc.
+      - Generated artifacts remain byte-for-byte unmodified by this correction.
+      - Draft 7 object branches do not set additionalProperties false; schema-permitted extras are accepted unless classification-conflicting.
+      - Exact Codex CLI 0.144.3 and accepted schema-reference pins remain fail closed.
   - id: C-501-SESSION-TURN-LIFECYCLE
     verdict: PASS
     evidence:
-      - Startup, shutdown and initialize preflight are idempotent and reset stale local handles after stop.
-      - Thread create/resume and turn submit preserve Run, Task, request, provider thread and provider turn identity.
-      - Duplicate requests, provider identity collisions and forged session/turn handles are refused.
+      - Initialize, initialized, thread/start, thread/resume, turn/start and turn/interrupt shapes remain generated-schema aligned.
+      - Interleaved inbound messages are preserved losslessly.
+      - Original approval request identity and accept or decline decisions remain intact.
+      - Provider thread, turn, run, task and request identity guards remain unchanged.
   - id: C-501-STREAM-TERMINAL
     verdict: PASS
     evidence:
-      - Generated-schema-validated turn/started and turn/completed fixtures contain params.threadId and params.turn, with correlation through params.turn.id and no fabricated top-level turnId.
-      - Item, delta and error notifications retain schema-defined top-level turnId correlation.
-      - Mismatched, missing, malformed and conflicting identifiers fail closed; unrelated notifications without a turn identifier are ignored.
-      - Output deltas and provider payloads are redacted into bounded reference-only summaries.
-      - Success, failure, interruption and host-requested cancellation emit one terminal and return without waiting; duplicate terminal translation fails as post-terminal protocol input.
-  - id: C-501-APPROVAL-INTERRUPT
-    verdict: PASS
-    evidence:
-      - Approval allow/deny replies use the original server request ID and generated accept/decline values.
-      - Turn interrupt uses the generated threadId/turnId request and session cancellation interrupts every active turn without inventing thread/cancel.
+      - PR 22 turn/started and turn/completed correlation through params.turn.id remains covered.
+      - Item, delta and error notifications retain schema-defined top-level turnId behavior.
+      - Stderr and output redaction, immediate terminal return and duplicate post-terminal refusal remain covered.
   - id: C-501-REGRESSION
     verdict: PASS
     evidence:
-      - Twenty-seven focused C-501, 440 unit and 468 complete repository tests pass on Windows.
-      - Lock, Ruff lint/format, strict mypy, work-specification, reference, schema, report freshness and diff checks pass.
-      - The schema-valid fixture red run reproduced 7 failures and 12 passes before the adapter correction.
-      - The first full-suite attempt had one environment-only failure because Git Bash lacked dirname and cygpath on PATH; the clean rerun with Git for Windows tool paths passed all 468 tests.
-  - id: C-501-SCOPE-AND-LIMITS
+      - Thirty-six focused C-501 and 477 complete repository tests pass on Windows Python 3.14.3.
+      - Lock, Ruff lint and format, strict mypy, work-specification, reference, schema, report and diff checks pass.
+      - New tests start no App Server, model, shell, network or external action.
+  - id: C-501-SCOPE-AND-PRESERVATION
     verdict: PASS
     evidence:
-      - Functional code remains confined to the two canonical C-501 paths; only C-501-specific result and gate evidence also changed.
-      - Unit tests use fake/in-memory transports and start no real Codex process, shell, model, network or external action.
-      - C-502 live smoke remains unverified and is not claimed unblocked; C-503 recovery and C-505/C-506 security integration remain explicitly unclaimed.
+      - Functional changes are confined to the canonical adapter and unit-test paths.
+      - C-501 result, gate, current-state and mandatory derived report are the only evidence paths eligible for serialized reconciliation.
+      - Generated schemas, retained C-502 files and status, primary checkout and unrelated worktrees remain unchanged.
+      - No C-502 rerun, release, deployment, destructive cleanup or unrelated external mutation occurred.
 
 commands:
   - py -3 -m uv lock --check
   - py -3 -m uv run pytest -q tests/unit/test_codex_adapter.py
-  - py -3 -m uv run pytest -q tests/unit
   - py -3 -m uv run pytest -q
   - py -3 -m uv run ruff check .
   - py -3 -m uv run ruff format --check .
@@ -76,10 +79,24 @@ commands:
   - py -3 -m uv run python scripts/update_capability_readiness_report.py --check
   - git diff --check
 
+observed_results:
+  focused_tests: 36_passed
+  full_repository_tests: 477_passed
+  uv_lock: PASS_33_PACKAGES
+  ruff_lint: PASS
+  ruff_format: PASS_49_FILES
+  strict_mypy: PASS_40_SOURCE_FILES
+  work_specification_validator: PASS_16_CASES
+  reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+  schema_validator: PASS_6_INSTANCES
+  capability_report_tests: PASS_9_TESTS
+  capability_report_before_reconciliation: PASS_CURRENT
+  git_diff_check: PASS
+
 known_limits:
-  - Static/generated-schema conformance is accepted; live App Server behavior remains C-502.
-  - This correction does not claim that C-502 is unblocked.
-  - Restart/reconnect recovery, CLI integration and host security policy are later work packages.
+  - No C-502 rerun was performed; live compatibility remains separately authorization-gated.
+  - C-502 remains FAIL and not closed, so C-503 remains blocked.
+  - App Server remains experimental and no production-readiness claim is made.
   - Python 3.12 and 3.13 remain unverified.
 
-next_action: Obtain separate approval to commit; push, PR and merge remain later approval stages.
+next_action: Obtain fresh candidate review approving only the exact task-scoped commit.

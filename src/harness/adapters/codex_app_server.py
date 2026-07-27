@@ -1,4 +1,4 @@
-"""Codex App Server adapter bound to the generated JSON-RPC schema.
+"""Codex App Server adapter bound to the generated unversioned JSONL schema.
 
 Raw App Server request, response, notification, and server-request envelopes are
 confined to this module.  The harness-facing surface remains the provider-neutral
@@ -34,13 +34,13 @@ from harness.adapters.base import (
 from harness.state import ActionClass, ApprovalStatus, RedactionStatus
 
 EXPECTED_CODEX_CLI_VERSION = "0.144.3"
-APP_SERVER_PROTOCOL_VERSION = "codex-app-server-jsonrpc-v2"
+APP_SERVER_PROTOCOL_VERSION = "codex-app-server-unversioned-jsonl"
 SCHEMA_REF = "docs/research/generated-app-server-schema/codex-cli-0.144.3/stable"
 CLIENT_NAME = "upe-harness-c501"
 CLIENT_VERSION = "0.1.0"
 
 JSON = Mapping[str, Any]
-RpcId = str | int
+RequestId = str | int
 _STABLE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _NESTED_TURN_NOTIFICATION_METHODS = frozenset({"turn/started", "turn/completed"})
 _TOP_LEVEL_TURN_NOTIFICATION_METHODS = frozenset(
@@ -61,18 +61,18 @@ class InboundKind(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class InboundMessage:
-    """Parsed JSON-RPC message from the App Server."""
+    """Parsed unversioned JSONL message from the App Server."""
 
     kind: InboundKind
     method: str | None = None
     params: JSON | None = None
-    request_id: RpcId | None = None
+    request_id: RequestId | None = None
     result: JSON | None = None
     error: JSON | None = None
 
 
 class CodexAppServerTransport(Protocol):
-    """Injectable synchronous JSON-RPC/JSONL transport."""
+    """Injectable synchronous App Server JSONL transport."""
 
     @property
     def started(self) -> bool: ...
@@ -85,13 +85,13 @@ class CodexAppServerTransport(Protocol):
 
     def notify(self, method: str, params: JSON | None = None) -> None: ...
 
-    def respond(self, request_id: RpcId, result: JSON) -> None: ...
+    def respond(self, request_id: RequestId, result: JSON) -> None: ...
 
     def iter_messages(self) -> Iterator[InboundMessage]: ...
 
 
-class SubprocessJsonRpcTransport:
-    """Strict standard-library JSONL JSON-RPC transport for Codex App Server."""
+class SubprocessJsonlTransport:
+    """Strict standard-library unversioned JSONL transport for Codex App Server."""
 
     def __init__(self, command: Sequence[str]) -> None:
         if not command:
@@ -142,26 +142,26 @@ class SubprocessJsonRpcTransport:
     def request(self, method: str, params: JSON) -> JSON:
         self._next_id += 1
         request_id = self._next_id
-        self._write({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
+        self._write({"id": request_id, "method": method, "params": params})
         while True:
             message = self._read_message()
             if message.kind is not InboundKind.RESPONSE or message.request_id != request_id:
                 self._pending.append(message)
                 continue
             if message.error is not None:
-                raise _rpc_error(message.error)
+                raise _response_error(message.error)
             if message.result is None:
-                raise _error("JSON-RPC response missing result", ProviderErrorCategory.PROTOCOL)
+                raise _error("App Server response missing result", ProviderErrorCategory.PROTOCOL)
             return message.result
 
     def notify(self, method: str, params: JSON | None = None) -> None:
-        envelope: dict[str, object] = {"jsonrpc": "2.0", "method": method}
+        envelope: dict[str, object] = {"method": method}
         if params is not None:
             envelope["params"] = params
         self._write(envelope)
 
-    def respond(self, request_id: RpcId, result: JSON) -> None:
-        self._write({"jsonrpc": "2.0", "id": request_id, "result": result})
+    def respond(self, request_id: RequestId, result: JSON) -> None:
+        self._write({"id": request_id, "result": result})
 
     def iter_messages(self) -> Iterator[InboundMessage]:
         while True:
@@ -189,7 +189,9 @@ class SubprocessJsonRpcTransport:
         try:
             raw = json.loads(line)
         except json.JSONDecodeError as exc:
-            raise _error("invalid JSON-RPC JSON", ProviderErrorCategory.PROTOCOL) from exc
+            raise _error(
+                "invalid App Server JSONL message", ProviderErrorCategory.PROTOCOL
+            ) from exc
         return _parse_inbound(raw)
 
     def _require_process(self) -> subprocess.Popen[str]:
@@ -217,7 +219,7 @@ class _TurnState:
     terminal: bool = False
     sequence: int = 0
     seen_real_ids: set[str] = field(default_factory=set)
-    pending_approvals: dict[str, RpcId] = field(default_factory=dict)
+    pending_approvals: dict[str, RequestId] = field(default_factory=dict)
     redacted: bool = False
     cancellation_requested: bool = False
 
@@ -499,7 +501,7 @@ class CodexAppServerAdapter:
             return None
         if _string(params.get("threadId"), "approval.threadId") != state.handle.session_id:
             raise _error("approval thread/turn mismatch", ProviderErrorCategory.PROTOCOL)
-        request_id = _rpc_id(message.request_id, "approval request id")
+        request_id = _request_id(message.request_id, "approval request id")
         item_id = _stable_id(params.get("itemId"), "approval.itemId")
         approval_id = str(params.get("approvalId") or item_id)
         self._dedupe(state, "server-request", f"{message.method}:{request_id}")
@@ -623,55 +625,54 @@ def _notification_turn_identity(method: str, params: JSON) -> tuple[str, JSON | 
 
 
 def _parse_inbound(raw: Any) -> InboundMessage:
-    envelope = _object(raw, "json-rpc envelope")
-    if envelope.get("jsonrpc") != "2.0":
-        raise _error("JSON-RPC envelope must declare version 2.0", ProviderErrorCategory.PROTOCOL)
+    envelope = _object(raw, "App Server envelope")
     has_id = "id" in envelope
     has_method = "method" in envelope
     if has_method:
         if "result" in envelope or "error" in envelope:
             raise _error(
-                "JSON-RPC method message cannot contain result or error",
+                "App Server method message cannot contain result or error",
                 ProviderErrorCategory.PROTOCOL,
             )
-        method = _string(envelope.get("method"), "json-rpc method")
-        params = _object(envelope.get("params", {}), "json-rpc params")
+        method = _string(envelope.get("method"), "App Server method")
+        params = _object(envelope.get("params", {}), "App Server params")
         if has_id:
             return InboundMessage(
                 kind=InboundKind.SERVER_REQUEST,
                 method=method,
                 params=params,
-                request_id=_rpc_id(envelope.get("id"), "json-rpc id"),
+                request_id=_request_id(envelope.get("id"), "App Server request id"),
             )
         return InboundMessage(kind=InboundKind.NOTIFICATION, method=method, params=params)
     if has_id:
-        request_id = _rpc_id(envelope.get("id"), "json-rpc id")
+        request_id = _request_id(envelope.get("id"), "App Server response id")
         has_error = "error" in envelope
         has_result = "result" in envelope
         if has_error == has_result:
             raise _error(
-                "JSON-RPC response must contain exactly one of result or error",
+                "App Server response must contain exactly one of result or error",
                 ProviderErrorCategory.PROTOCOL,
             )
         if has_error:
             return InboundMessage(
                 kind=InboundKind.RESPONSE,
                 request_id=request_id,
-                error=_object(envelope.get("error"), "json-rpc error"),
+                error=_object(envelope.get("error"), "App Server error"),
             )
         return InboundMessage(
             kind=InboundKind.RESPONSE,
             request_id=request_id,
-            result=_object(envelope.get("result"), "json-rpc result"),
+            result=_object(envelope.get("result"), "App Server result"),
         )
     raise _error(
-        "JSON-RPC envelope is neither response nor method message", ProviderErrorCategory.PROTOCOL
+        "App Server envelope is neither response nor method message",
+        ProviderErrorCategory.PROTOCOL,
     )
 
 
-def _rpc_error(error: JSON) -> ProviderAdapterError:
-    code = str(error.get("code", "json_rpc_error"))
-    message = _string(error.get("message"), "json-rpc error.message")
+def _response_error(error: JSON) -> ProviderAdapterError:
+    code = str(error.get("code", "app_server_error"))
+    message = _string(error.get("message"), "App Server error.message")
     return _error(message, ProviderErrorCategory.PROTOCOL, retryable=False, provider_code=code)
 
 
@@ -741,13 +742,14 @@ def _stable_id(value: Any, location: str) -> str:
     return normalized
 
 
-def _rpc_id(value: Any, location: str) -> RpcId:
+def _request_id(value: Any, location: str) -> RequestId:
     if type(value) is str and value != "":
         return value
     if type(value) is int:
         return value
     raise _error(
-        f"{location} must be a JSON-RPC string or integer id", ProviderErrorCategory.PROTOCOL
+        f"{location} must be an App Server string or integer id",
+        ProviderErrorCategory.PROTOCOL,
     )
 
 
@@ -777,7 +779,7 @@ __all__ = [
     "InboundKind",
     "InboundMessage",
     "SCHEMA_REF",
-    "SubprocessJsonRpcTransport",
+    "SubprocessJsonlTransport",
 ]
 
 assert issubclass(CodexAppServerAdapter, object)
