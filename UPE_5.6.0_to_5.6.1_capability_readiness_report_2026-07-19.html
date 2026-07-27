@@ -766,7 +766,7 @@
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑409 plus C‑501 and C‑505 are implemented and tested locally. C‑502 and C‑410 can now start independently alongside W‑211 and W‑212.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑410 plus C‑501 and C‑505 are implemented and tested locally. C‑502 can now start independently alongside W‑211 and W‑212.</li>
           </ol>
         </aside>
       </div>
@@ -1326,34 +1326,34 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-22T21:54:08+02:00",
+  "refreshed_at": "2026-07-27T03:12:39+02:00",
   "repository": {
-    "head": "5d976c3fb79ac578de85cf926be3d4dddcf2514b",
-    "branch": "codex/c505-cloud-coordinator"
+    "head": "d687b0efc7726e2713debbd5f2fd75c52d33b9c5",
+    "branch": "codex/c410-runtime-docs-20260727"
   },
   "summary": {
     "visible_tasks": 60,
     "delivery_tasks": 57,
-    "completed_delivery": 41,
-    "progress_percent": 72,
+    "completed_delivery": 42,
+    "progress_percent": 74,
     "deferred_post_v0": 10,
     "status_counts": {
-      "complete": 41,
+      "complete": 42,
       "in_development": 0,
-      "ready": 4,
+      "ready": 3,
       "blocked": 15,
       "optional": 0,
       "approval_required": 0
     },
     "model_counts_remaining": {
-      "High": 15,
+      "High": 14,
       "Max": 3,
       "Pro": 1
     },
     "surface_counts_remaining": {
       "Web allowed": 3,
       "Web · Pro required": 1,
-      "Local required": 15
+      "Local required": 14
     }
   },
   "tasks": [
@@ -3729,12 +3729,12 @@
       "title": "Document threat model, state model, evaluation plan, and operations",
       "phase": "5-core-harness",
       "phase_label": "Core harness",
-      "status": "ready",
+      "status": "complete",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "satisfied",
       "dependencies": [
         "C-401",
         "C-404",
@@ -3775,15 +3775,12 @@
         "setup, operation, recovery, approvals and limitations match implementation"
       ],
       "planning": {
-        "estimate": "2–4 engineering days",
-        "estimate_hours": {
-          "minimum": 16.0,
-          "maximum": 32.0
-        },
-        "confidence": "rough",
-        "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
+        "estimate": null,
+        "estimate_hours": null,
+        "confidence": "not_applicable",
+        "basis": "Completed work is not assigned a retrospective estimate.",
+        "parallelizable_now": false,
+        "parallel_note": "Already complete.",
         "blocked_by": []
       }
     },
@@ -5002,7 +4999,6 @@
     "bundle_allowed": false,
     "task_ids": [
       "C-502",
-      "C-410",
       "W-211",
       "W-212"
     ],
@@ -5019,15 +5015,6 @@
       {
         "label": "Run 2",
         "task_ids": [
-          "C-410"
-        ],
-        "surface": "Local required",
-        "estimate": "2–4 engineering days",
-        "application": "Operational effect: Documentation follows working code and exact tests, not imagined capabilities. Produces docs/threat-model.md · docs/state-model.md · docs/evaluation-plan.md · +1 more. No direct downstream package is recorded in the visible v0 route."
-      },
-      {
-        "label": "Run 3",
-        "task_ids": [
           "W-211"
         ],
         "surface": "Web allowed",
@@ -5035,7 +5022,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 4",
+        "label": "Run 3",
         "task_ids": [
           "W-212"
         ],
@@ -5044,7 +5031,7 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "4 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-502 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "3 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-502 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
       "C-503 waits on C-502",
       "C-604 waits on C-603, C-502"
@@ -5053,7 +5040,7 @@
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
       "parallel": "2–4 engineering days plus serial integration",
-      "sequential": "about 4.9–9.6 engineering days plus integration"
+      "sequential": "about 2.9–5.6 engineering days plus integration"
     },
     "handoff": {
       "label": "Live parallel execution handoff",
