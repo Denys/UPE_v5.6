@@ -4,7 +4,7 @@
 
 The harness decides completion from evidence, not from a generator's final
 message. This plan describes the implemented validation/evaluation path at
-`origin/main` `b1d1a9be9669eb16f6d86e906c4b42b75a2e99e6`, observed on
+`origin/main` `c8370a53b2d1b5cdf4c5f448ad7aae9c34a412dd`, observed on
 2026-07-27.
 
 The evaluation order is fixed:

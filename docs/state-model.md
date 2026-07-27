@@ -3,7 +3,7 @@
 ## Authority and layers
 
 This state model reflects code at `origin/main`
-`b1d1a9be9669eb16f6d86e906c4b42b75a2e99e6`, observed on 2026-07-27.
+`c8370a53b2d1b5cdf4c5f448ad7aae9c34a412dd`, observed on 2026-07-27.
 The canonical Python contracts are in [`state.py`](../src/harness/state.py);
 the matching JSON schemas are
 [`goal.schema.json`](../schemas/goal.schema.json),
