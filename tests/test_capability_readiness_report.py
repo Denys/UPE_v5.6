@@ -99,8 +99,8 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-409"]["status"] == "complete"
     assert tasks["C-409"]["dependency_mode"] == "satisfied"
     assert tasks["C-409"]["incomplete_dependencies"] == []
-    assert tasks["C-410"]["status"] == "ready"
-    assert tasks["C-410"]["dependency_mode"] == "independent_now"
+    assert tasks["C-410"]["status"] == "complete"
+    assert tasks["C-410"]["dependency_mode"] == "satisfied"
     assert tasks["C-410"]["incomplete_dependencies"] == []
     assert tasks["C-501"]["status"] == "complete"
     assert tasks["C-501"]["dependency_mode"] == "satisfied"
@@ -116,8 +116,8 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
 def test_visible_report_narrative_matches_current_frontier() -> None:
     html = REPORT.read_text(encoding="utf-8")
 
-    assert "C‑301…C‑409 plus C‑501 and C‑505 are implemented and tested locally" in html
-    assert "C‑502 and C‑410 can now start independently" in html
+    assert "C‑301…C‑410 plus C‑501 and C‑505 are implemented and tested locally" in html
+    assert "C‑502 can now start independently alongside W‑211 and W‑212" in html
     assert "C‑501 schema-bound Codex App Server adapter" in html
     assert "C‑301…C‑404 are implemented and tested" not in html
 
@@ -153,7 +153,6 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     expected_estimates = {
         "W-211": "3–5 hours",
         "W-212": "4–8 hours",
-        "C-410": "2–4 engineering days",
         "C-502": "2–4 engineering days",
     }
     for task_id, estimate in expected_estimates.items():
@@ -199,10 +198,9 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
     assert recommendation["classification"] == "parallel_runs"
     assert recommendation["classification_label"] == "Parallel runs"
     assert recommendation["bundle_allowed"] is False
-    assert recommendation["task_ids"] == ["C-502", "C-410", "W-211", "W-212"]
+    assert recommendation["task_ids"] == ["C-502", "W-211", "W-212"]
     assert [run["task_ids"] for run in recommendation["runs"]] == [
         ["C-502"],
-        ["C-410"],
         ["W-211"],
         ["W-212"],
     ]
@@ -212,7 +210,7 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
         "2–4 engineering days plus serial integration"
     )
     assert recommendation["elapsed_comparison"]["sequential"] == (
-        "about 4.9–9.6 engineering days plus integration"
+        "about 2.9–5.6 engineering days plus integration"
     )
     assert (ROOT / recommendation["handoff"]["path"]).is_file()
 
