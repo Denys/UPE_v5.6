@@ -1,0 +1,60 @@
+schema_version: '1.0'
+record_id: C-501-PR25-POST-MERGE-RECONCILIATION
+generated_at: '2026-07-28'
+status: PASS
+
+repository:
+  identity: Denys/UPE_v5.6
+  pull_request: https://github.com/Denys/UPE_v5.6/pull/25
+  candidate_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+  target_branch: main
+
+findings:
+  C501_code:
+    verdict: PASS
+    basis:
+      - PR 25 removed the invented jsonrpc member and adopted generated unversioned JSONL framing.
+      - The merged C-501 gate records 36 focused and 477 repository tests.
+      - Static post-merge inspection found no new blocker in the corrected envelope classification or generated-schema binding.
+  C501_bookkeeping:
+    prior_status: STALE_AFTER_MERGE
+    defects:
+      - agent/state/C-501-result.yaml still said candidate review pending and task_closed false.
+      - validation/C-501-GATE.yaml still asked for candidate review after PR 25 had merged.
+    resolution: reconciled_in_companion_result_and_gate
+  C502_prior_attempt:
+    verdict: PRESERVE_FAIL_AS_HISTORICAL_ATTEMPT
+    reason: >-
+      The failed attempt exercised the old adapter and is evidence of the defect
+      that PR 25 repaired. Rewriting or deleting it would destroy provenance.
+  C502_next_attempt:
+    verdict: AUTHORIZED_READY_FOR_LOCAL_EXECUTION
+    authority_source: user request dated 2026-07-28 to investigate and solve C-501/C-502 blockers
+    handoff: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+  C503:
+    verdict: BLOCKED_CORRECTLY
+    reason: C-503 depends on a passing fresh C-502 attempt.
+  readiness_report_git_context:
+    verdict: DEFECT_CONFIRMED_NON_BLOCKING_FOR_C501_CODE
+    defect: >-
+      The updater converts any failed Git command to the literal unavailable,
+      while freshness comparison excludes the repository block. The report can
+      therefore pass its freshness test with degraded Git provenance.
+    containment:
+      - This reconciliation binds exact PR head and merge SHAs independently of the report block.
+      - A dedicated follow-up issue must make report Git context fail closed or preserve a previously valid context.
+
+protected_C502_attempt_hashes:
+  result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
+  gate_sha256: b3dad269ad2aa4d060382be1a25b2ac4131b646d6083a393522ab5d3e79f9765
+  observation_sha256: 2f67e7f947dbc5b05bcd5fd20ba04d445414059077c686c44d3a1f943c376d49
+  validator_sha256: 1f02cd3c7a31470dc346f089bbe0db749297acdabbcb1f26258ea1f4655076e3
+
+acceptance:
+  C501_contract: PASS
+  C501_evidence_integrity: PASS
+  C501_delivery: PASS
+  C502_ready_to_attempt: PASS
+  C502_live_compatibility: UNKNOWN
+  C503_unblocked: FAIL
