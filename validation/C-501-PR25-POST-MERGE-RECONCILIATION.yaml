@@ -28,7 +28,7 @@ run_record:
     - none_for_PR_26_reconciliation
   next_recommended_step: Run local checks, obtain exact-head review, and request separate merge authorization.
   blocking_issues:
-    - PR_26_EXACT_HEAD_REVIEW_P1_REMEDIATION
+    - PR_26_EXACT_HEAD_REVIEW_PENDING
     - PR_26_NOT_MERGED
     - C502_LIVE_COMPATIBILITY_UNKNOWN
     - C503_DEPENDS_ON_C502_PASS
@@ -55,8 +55,8 @@ run_record:
     - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
   local_verification:
     yaml_parse: PASS_4_FILES
-    capability_report_tests: PASS_17
-    complete_repository_tests: PASS_485
+    capability_report_tests: PASS_18
+    complete_repository_tests: PASS_486
     ruff_lint: PASS
     ruff_format: PASS_49_FILES
     mypy_strict: PASS_40_SOURCE_FILES
@@ -81,16 +81,17 @@ run_record:
       first_review_remediation_commit: 3ec38abb0c65d47a50b25a7d271c5f915aae3758
       detached_head_remediation_commit: 9677460bc3d9078c55f5db11baafde290ee905df
       pre_write_provenance_remediation_commit: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
+      squash_safe_provenance_remediation_commit: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
-      latest_reviewed_head: a08366aad7007c62fbfc4728633eec6711cc9143
+      delivered_through_known_head: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
+      latest_reviewed_head: bf6a514c22aedfb24fe6aefcd4c005be2069a28e
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
+      body_reconciled_through_known_head: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -109,6 +110,14 @@ run_record:
         findings:
           - normal refresh accepted invalid explicit or preserved heads before writing
         remediation: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
+      - reviewed_head: bf6a514c22aedfb24fe6aefcd4c005be2069a28e
+        verdict: BLOCKED_ONE_P1_ONE_P2
+        findings:
+          - post-squash check required a feature-only Git object
+          - durable blocker still named completed P1 remediation
+        remediation:
+          - 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
+          - this_follow_up_commit
     fresh_review_required: true
     merge:
       status: NOT_AUTHORIZED_NOT_PERFORMED
