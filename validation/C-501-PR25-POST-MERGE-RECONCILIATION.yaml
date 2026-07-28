@@ -13,9 +13,11 @@ run_record:
       - Use existing UPE canonical state/result/gate/ADR locations instead of adding root state.md and decision_log.md duplicates.
       - Require approval, interrupt and resume/reconnect evidence before C-502 may pass.
       - Keep C-502 attempt-001 immutable and create only attempt-002 evidence.
+      - Express the C-502 transfer as a W-204 schema-valid WORK_TO_CODEX handoff while retaining its bounded lifecycle and approval contract.
     rejected:
       - Treating the one-turn happy-path handoff as sufficient for ADR-001.
       - Treating report head or branch values of unavailable as valid provenance.
+      - Retaining a bespoke human-readable C-502 YAML envelope that the canonical handoff validator rejects.
     deferred:
       - Execute C-502 attempt-002 only after PR 26 merges.
       - Unblock C-503 only after every C-502 lifecycle condition passes.
@@ -33,6 +35,7 @@ run_record:
     - C502_LIVE_COMPATIBILITY_UNKNOWN
     - C503_DEPENDS_ON_C502_PASS
   artifacts_generated:
+    - handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
     - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
     - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
     - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
@@ -47,6 +50,7 @@ run_record:
     - AGENTS.md
     - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
     - docs/research/research-state.yaml
+    - handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
     - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
     - handoffs/CAPABILITY-READINESS-GIT-CONTEXT-REPAIR.md
     - scripts/update_capability_readiness_report.py
@@ -55,6 +59,8 @@ run_record:
     - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
   local_verification:
     yaml_parse: PASS_4_FILES
+    C502_goal_contract_schema: PASS_DRAFT_2020_12_DIRECT_FORMAT_CHECK
+    C502_handoff_schema: PASS_DRAFT_2020_12_DIRECT_FORMAT_CHECK
     capability_report_tests: PASS_18
     complete_repository_tests: PASS_486
     ruff_lint: PASS
@@ -83,16 +89,17 @@ run_record:
       pre_write_provenance_remediation_commit: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
       squash_safe_provenance_remediation_commit: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
       detached_squash_propagation_commit: 71b7a3117b2d499bd3c17f6a0418593472408f5f
+      C502_handoff_schema_remediation_commit: resolve_containing_commit_from_git_history
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: 71b7a3117b2d499bd3c17f6a0418593472408f5f
-      latest_reviewed_head: 480f387c99383768b938051a0313eb5d61388bcd
+      delivered_through_known_head: 79589b4d37526da84485a7321764fd38ea4688cb
+      latest_reviewed_head: 79589b4d37526da84485a7321764fd38ea4688cb
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: 71b7a3117b2d499bd3c17f6a0418593472408f5f
+      body_reconciled_through_known_head: 79589b4d37526da84485a7321764fd38ea4688cb
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -124,6 +131,11 @@ run_record:
         findings:
           - detached squash checkout did not propagate the bound-report allowance into repository context resolution
         remediation: 71b7a3117b2d499bd3c17f6a0418593472408f5f
+      - reviewed_head: 79589b4d37526da84485a7321764fd38ea4688cb
+        verdict: BLOCKED_ONE_P1
+        findings:
+          - the C-502 handoff used a bespoke envelope and failed the required schemas/handoff.schema.yaml contract
+        remediation: this_follow_up_commit
     fresh_review_required: true
     merge:
       status: NOT_AUTHORIZED_NOT_PERFORMED
@@ -157,6 +169,9 @@ findings:
     verdict: AUTHORIZED_PENDING_PR_26_INTEGRATION
     authority_source: user request dated 2026-07-28 to investigate and solve C-501/C-502 blockers
     handoff: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    goal_contract: handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
+    goal_contract_status: PASS_LOCAL_DRAFT_2020_12
+    handoff_contract: PASS_LOCAL_DRAFT_2020_12
     required_live_scope:
       - initialize
       - thread and turn
@@ -188,6 +203,8 @@ acceptance:
   C501_contract: PASS
   C501_evidence_integrity: PASS
   C501_delivery: PASS
+  C502_handoff_contract: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
+  C502_goal_contract: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
   C502_ready_to_attempt: PENDING_PR_26_INTEGRATION
   C502_live_compatibility: UNKNOWN
   C503_unblocked: FAIL

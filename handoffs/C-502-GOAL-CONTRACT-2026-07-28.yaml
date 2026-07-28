@@ -1,0 +1,422 @@
+schema_version: 1.0.0
+goal_id: goal.c502.bounded-live-smoke-rerun
+objective: >-
+  Run exactly one bounded Windows-native Codex App Server attempt against the
+  PR 25 C-501 correction, proving initialize, thread/turn, exact-scope approval,
+  interrupt, resume/reconnect, ordered events, terminal outcomes, fixture-only
+  mutation and deterministic validation without claiming release readiness.
+
+scope:
+  in_scope:
+    - One fresh isolated worktree and branch from updated origin/main after PR 26 integration.
+    - One App Server process, one thread, one fixture-mutating turn and at most two non-mutating control turns.
+    - Initialize, thread/turn, exact-scope approval, interrupt, resume/reconnect, event ordering and terminal behavior.
+    - C-305 fixture bootstrap, fixture-only deterministic change and validator execution.
+    - Bounded attempt-002 evidence, C-502 result/gate, canonical state, observation and one task-scoped pull request.
+  out_of_scope:
+    - PR 26 merge, release, deployment, production use or repository visibility changes.
+    - C-503 crash/restart recovery implementation.
+    - Network or external-service actions initiated by the smoke task.
+    - Mutation of the primary checkout, unrelated worktrees, unrelated repositories or retained attempt-001 evidence.
+  allowed_files:
+    - kind: REPOSITORY_PATH
+      ref: examples/fixture-repository/.fixture-output/repository
+      description: Generated C-305 fixture repository and only permitted smoke-task mutation root.
+    - kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002
+      description: New bounded live-smoke evidence directory.
+    - kind: REPOSITORY_PATH
+      ref: docs/research/app-server-smoke-observation.md
+      description: Evidence-labelled live protocol observation.
+    - kind: REPOSITORY_PATH
+      ref: agent/state/C-502-result.yaml
+      description: Immutable C-502 task result.
+    - kind: REPOSITORY_PATH
+      ref: validation/C-502-GATE.yaml
+      description: C-502 deterministic and exact-head acceptance gate.
+    - kind: REPOSITORY_PATH
+      ref: docs/research/research-state.yaml
+      description: Canonical UPE current state.
+  allowed_systems:
+    - Denys/UPE_v5.6 isolated local worktree
+    - Windows-native Codex App Server process pinned to Codex CLI 0.144.3
+    - Generated C-305 fixture repository
+    - Denys/UPE_v5.6 task-scoped C-502 Git branch and pull request
+
+authoritative_inputs:
+  - kind: REPOSITORY_PATH
+    ref: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    description: W-204 WORK_TO_CODEX execution handoff.
+  - kind: REPOSITORY_PATH
+    ref: chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+    description: Canonical C-502 task mapping and completion evidence.
+  - kind: REPOSITORY_PATH
+    ref: docs/architecture/ADR-001-harness-boundary.md
+    description: Accepted harness, approval, recovery and provider boundary.
+  - kind: REPOSITORY_PATH
+    ref: validation/C-501-GATE.yaml
+    description: Accepted C-501 deterministic adapter gate and live-evidence boundary.
+  - kind: REPOSITORY_PATH
+    ref: agent/state/C-501-result.yaml
+    description: Reconciled PR 25 result and protected attempt-001 hashes.
+  - kind: REPOSITORY_PATH
+    ref: docs/research/research-state.yaml
+    description: Canonical current UPE state and C-502/C-503 status.
+  - kind: REPOSITORY_PATH
+    ref: docs/research/generated-app-server-schema/codex-cli-0.144.3
+    description: Accepted generated App Server protocol identity.
+
+done_conditions:
+  - id: done.c502.preflight
+    description: >-
+      A fresh worktree proves PR 25 and accepted PR 26 ancestry, exact repository
+      and runtime identity, clean fixture baseline, Codex CLI 0.144.3, successful
+      app-server help probe and passing focused C-501 tests.
+    mandatory: true
+    verification:
+      method: DETERMINISTIC
+      evidence_required: true
+      validator_refs:
+        - kind: REPOSITORY_PATH
+          ref: validation/C-501-GATE.yaml
+          description: Focused C-501 test and deterministic adapter gate.
+      evaluator_access: NOT_APPLICABLE
+    output_ids:
+      - OUT-C502-run-summary
+      - OUT-C502-validator
+    release_blocking: true
+  - id: done.c502.lifecycle
+    description: >-
+      One bounded attempt proves initialize, one thread, approval-gated fixture
+      change, correlated interrupt, same-thread resume/reconnect, ordered events,
+      exactly one terminal per turn and clean process shutdown.
+    mandatory: true
+    verification:
+      method: HUMAN_REVIEW
+      evidence_required: true
+      validator_refs: []
+      evaluator_access: READ_ONLY
+    output_ids:
+      - OUT-C502-run-summary
+      - OUT-C502-events
+      - OUT-C502-approval
+      - OUT-C502-interrupt
+      - OUT-C502-reconnect
+    release_blocking: true
+  - id: done.c502.containment
+    description: >-
+      The observed diff is fixture-only, matches the deterministic C-305
+      validator result, and no external or unrelated mutation occurred.
+    mandatory: true
+    verification:
+      method: DETERMINISTIC
+      evidence_required: true
+      validator_refs:
+        - kind: REPOSITORY_PATH
+          ref: scripts/bootstrap.sh
+          description: Accepted C-305 fixture bootstrap and validator entrypoint.
+      evaluator_access: NOT_APPLICABLE
+    output_ids:
+      - OUT-C502-fixture-diff
+      - OUT-C502-validator
+    release_blocking: true
+  - id: done.c502.evidence-state
+    description: >-
+      Every attempt-002 artifact has a recorded SHA-256; historical hashes remain
+      unchanged; observation, result, gate and canonical state distinguish
+      observed facts from inference and keep C-503 blocked unless C-502 passes.
+    mandatory: true
+    verification:
+      method: HUMAN_REVIEW
+      evidence_required: true
+      validator_refs: []
+      evaluator_access: READ_ONLY
+    output_ids:
+      - OUT-C502-observation
+      - OUT-C502-result
+      - OUT-C502-gate
+      - OUT-C502-state
+    release_blocking: true
+  - id: done.c502.review
+    description: >-
+      Deterministic checks pass and a fresh exact-head read-only review finds no
+      blocker; merge remains separately authorization-gated.
+    mandatory: true
+    verification:
+      method: HUMAN_REVIEW
+      evidence_required: true
+      validator_refs: []
+      evaluator_access: READ_ONLY
+    output_ids:
+      - OUT-C502-gate
+      - OUT-C502-state
+    release_blocking: true
+
+constraints:
+  must:
+    - id: must.c502.single-attempt
+      description: Execute exactly one attempt-002 with one process, one thread, at most three turns and one fixture-mutating turn.
+    - id: must.c502.stop-first-failure
+      description: Stop at the first unmet mandatory condition and record FAIL or INSUFFICIENT_EVIDENCE with bounded partial evidence.
+    - id: must.c502.state-persistence
+      description: Update result, gate, canonical state and observation before considering the run complete.
+    - id: must.c502.exact-head-review
+      description: Obtain fresh exact-head read-only review after deterministic validation.
+  must_not:
+    - id: must-not.c502.premerge
+      description: Do not start until PR 26 is merged under separate authorization and present in current origin/main.
+    - id: must-not.c502.repeat-history
+      description: Do not rerun, rewrite or delete retained attempt-001 evidence.
+    - id: must-not.c502.external
+      description: Do not allow smoke-task network, external-service, production or unrelated repository actions.
+    - id: must-not.c502.widen
+      description: Do not widen process, thread, turn, mutation, command, path or approval bounds.
+    - id: must-not.c502.merge
+      description: Do not merge any pull request without a new exact-scope authorization.
+  safety:
+    - id: safety.c502.worktree
+      description: Preserve the primary checkout and unrelated worktrees through a fresh isolated worktree.
+    - id: safety.c502.approval
+      description: Revalidate exact thread, turn, item, path, command, target, scope and expiry before every consequential action.
+    - id: safety.c502.secrets
+      description: Refuse credentials, secret values, broad environment inheritance and unrelated user artifacts.
+    - id: safety.c502.reconciliation
+      description: Reconcile target state before any retry after an unknown action result.
+  evidence:
+    - id: evidence.c502.identity
+      description: Record exact repository, branch, commit, worktree, CLI, schema and Python identities.
+    - id: evidence.c502.correlation
+      description: Preserve ordered thread, turn, item, approval, interrupt, reconnect and terminal correlations.
+    - id: evidence.c502.hashes
+      description: Record SHA-256 for every attempt-002 artifact and preserve all four attempt-001 hashes verbatim.
+    - id: evidence.c502.labels
+      description: Label observation, retained evidence, inference and unknowns separately.
+
+tools:
+  required:
+    - capability_id: local.repository
+      purpose: Inspect the exact UPE repository and create bounded local evidence/state artifacts.
+      required_action_scope: WRITE
+      capability_record_ref: null
+      fallback: Stop with a repository identity or write-scope blocker.
+    - capability_id: codex.app-server
+      purpose: Execute the one bounded Windows-native lifecycle smoke.
+      required_action_scope: CONSEQUENTIAL
+      capability_record_ref: null
+      fallback: Record INSUFFICIENT_EVIDENCE without substituting a fake or inferred live result.
+    - capability_id: local.git
+      purpose: Create the isolated worktree/branch and prove baseline plus fixture containment.
+      required_action_scope: WRITE
+      capability_record_ref: null
+      fallback: Stop before App Server startup if Git identity or containment cannot be proved.
+    - capability_id: github.repository
+      purpose: Deliver one validated task-scoped evidence branch and pull request.
+      required_action_scope: CONSEQUENTIAL
+      capability_record_ref: null
+      fallback: Produce a local commit/patch and mark remote delivery incomplete.
+  optional:
+    - capability_id: exact-head.reviewer
+      purpose: Perform a fresh read-only review of the final C-502 branch head.
+      required_action_scope: READ_ONLY
+      capability_record_ref: null
+      fallback: Keep the C-502 gate incomplete pending independent review.
+  avoid_or_disable:
+    - capability_id: smoke-task.network
+      reason: The live model task must not initiate network or external-service actions.
+    - capability_id: production.system
+      reason: C-502 is a fixture-only validation task and has no production authority.
+    - capability_id: unrelated.repository.write
+      reason: Only the generated fixture and named evidence/state paths are in scope.
+  actual_exposure_required: true
+
+approvals:
+  external_write_default: EXPLICIT_AUTHORIZATION
+  consequential_action_default: STRICT_PREFLIGHT
+  rules:
+    - action_class: WRITE
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Write only the generated fixture and named attempt-002 evidence/state paths in a fresh isolated worktree.
+      approver: user
+    - action_class: COMMIT
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Commit only the bounded C-502 attempt-002 evidence and required state/gate updates.
+      approver: user
+    - action_class: PUSH
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Push only the task-scoped C-502 evidence branch.
+      approver: user
+    - action_class: CREATE_PR
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Create one task-scoped C-502 evidence pull request after validation.
+      approver: user
+    - action_class: UPDATE_PR
+      requirement: EXPLICIT_AUTHORIZATION
+      scope: Update only that C-502 pull request with validation and review results.
+      approver: user
+    - action_class: MERGE
+      requirement: FORBIDDEN
+      scope: No pull-request merge is authorized by this goal contract.
+      approver: user
+    - action_class: RELEASE
+      requirement: FORBIDDEN
+      scope: No release action is authorized.
+      approver: user
+    - action_class: DEPLOY
+      requirement: FORBIDDEN
+      scope: No deployment action is authorized.
+      approver: user
+    - action_class: PRODUCTION_MUTATION
+      requirement: FORBIDDEN
+      scope: No production mutation is authorized.
+      approver: user
+    - action_class: DESTRUCTIVE_ACTION
+      requirement: FORBIDDEN
+      scope: No destructive action is authorized.
+      approver: user
+  authorization_refs:
+    - kind: EXTERNAL_RESOURCE
+      ref: GitHub-connected UPE conversation dated 2026-07-28
+      description: >-
+        User request authorizing completion of the bounded missing C-501/C-502
+        work; every concrete action must revalidate its exact scope.
+
+budget:
+  max_iterations: 1
+  max_elapsed_seconds: 3600
+  max_input_tokens: null
+  max_output_tokens: null
+  max_total_tokens: null
+  max_cost: null
+  retry_policy:
+    max_transient_retries: 0
+    identical_failure_limit: 1
+    no_progress_iteration_limit: 1
+  enforcement_owner: TRUSTED_HOST
+  stop_on_exhaustion: true
+
+outputs:
+  - id: OUT-C502-run-summary
+    description: Exact baseline, runtime, bounds, scenario and terminal summary.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/run-summary.json
+      description: Attempt-002 run summary.
+    format: JSON
+    required: true
+    done_condition_ids:
+      - done.c502.preflight
+      - done.c502.lifecycle
+  - id: OUT-C502-events
+    description: Ordered bounded provider event and terminal audit stream.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/events.jsonl
+      description: Attempt-002 event mirror.
+    format: JSONL
+    required: true
+    done_condition_ids:
+      - done.c502.lifecycle
+  - id: OUT-C502-approval
+    description: Exact-scope approval request, decision and correlation result.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/approval-result.json
+      description: Attempt-002 approval result.
+    format: JSON
+    required: true
+    done_condition_ids:
+      - done.c502.lifecycle
+  - id: OUT-C502-interrupt
+    description: Interrupt request, correlation and interrupted terminal result.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/interrupt-result.json
+      description: Attempt-002 interrupt result.
+    format: JSON
+    required: true
+    done_condition_ids:
+      - done.c502.lifecycle
+  - id: OUT-C502-reconnect
+    description: Same-thread resume/reconnect identity and terminal result.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/reconnect-result.json
+      description: Attempt-002 reconnect result.
+    format: JSON
+    required: true
+    done_condition_ids:
+      - done.c502.lifecycle
+  - id: OUT-C502-fixture-diff
+    description: Fixture-only deterministic Git diff.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/fixture-diff.patch
+      description: Attempt-002 fixture patch.
+    format: unified diff
+    required: true
+    done_condition_ids:
+      - done.c502.containment
+  - id: OUT-C502-validator
+    description: Deterministic fixture and focused preflight validator results.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: evals/results/app-server-smoke/attempt-002/validator-result.json
+      description: Attempt-002 validator result.
+    format: JSON
+    required: true
+    done_condition_ids:
+      - done.c502.preflight
+      - done.c502.containment
+  - id: OUT-C502-observation
+    description: Evidence-labelled App Server smoke observation.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: docs/research/app-server-smoke-observation.md
+      description: Canonical live-smoke research observation.
+    format: Markdown
+    required: true
+    done_condition_ids:
+      - done.c502.evidence-state
+  - id: OUT-C502-result
+    description: Immutable C-502 run/task result.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: agent/state/C-502-result.yaml
+      description: Canonical C-502 result.
+    format: YAML
+    required: true
+    done_condition_ids:
+      - done.c502.evidence-state
+  - id: OUT-C502-gate
+    description: Deterministic and exact-head C-502 acceptance gate.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: validation/C-502-GATE.yaml
+      description: Canonical C-502 gate.
+    format: YAML
+    required: true
+    done_condition_ids:
+      - done.c502.evidence-state
+      - done.c502.review
+  - id: OUT-C502-state
+    description: Updated canonical UPE current state and next action.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: docs/research/research-state.yaml
+      description: Canonical UPE current state.
+    format: YAML
+    required: true
+    done_condition_ids:
+      - done.c502.evidence-state
+      - done.c502.review
+
+completion_policy:
+  rule: ALL_MANDATORY_CONDITIONS_PASS
+  deterministic_validation_first: true
+  evidence_required: true
+  fail_blocks_completion: true
+  insufficient_evidence_blocks_completion: true
+  worker_self_attestation_sufficient: false
+
+created_at: '2026-07-28T21:31:33Z'
+updated_at: null
