@@ -55,10 +55,10 @@ run_record:
     - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
   local_verification:
     yaml_parse: PASS_4_FILES
-    capability_report_tests: PASS_15
-    complete_repository_tests: PASS_483
+    capability_report_tests: PASS_17
+    complete_repository_tests: PASS_485
     ruff_lint: PASS
-    ruff_format: PASS_115_FILES
+    ruff_format: PASS_49_FILES
     mypy_strict: PASS_40_SOURCE_FILES
     work_specification_validator: PASS
     reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
@@ -80,16 +80,17 @@ run_record:
       locally_verified_completion_commit: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
       first_review_remediation_commit: 3ec38abb0c65d47a50b25a7d271c5f915aae3758
       detached_head_remediation_commit: 9677460bc3d9078c55f5db11baafde290ee905df
+      pre_write_provenance_remediation_commit: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: 9677460bc3d9078c55f5db11baafde290ee905df
-      latest_reviewed_head: 3ec38abb0c65d47a50b25a7d271c5f915aae3758
+      delivered_through_known_head: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
+      latest_reviewed_head: a08366aad7007c62fbfc4728633eec6711cc9143
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: 9677460bc3d9078c55f5db11baafde290ee905df
+      body_reconciled_through_known_head: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -102,7 +103,12 @@ run_record:
         verdict: BLOCKED_ONE_P1
         findings:
           - detached-HEAD checkout skipped embedded commit existence validation
-        remediation: this_follow_up_commit
+        remediation: 9677460bc3d9078c55f5db11baafde290ee905df
+      - reviewed_head: a08366aad7007c62fbfc4728633eec6711cc9143
+        verdict: BLOCKED_ONE_P2
+        findings:
+          - normal refresh accepted invalid explicit or preserved heads before writing
+        remediation: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
     fresh_review_required: true
     merge:
       status: NOT_AUTHORIZED_NOT_PERFORMED
