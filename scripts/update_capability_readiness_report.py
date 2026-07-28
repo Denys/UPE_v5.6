@@ -323,6 +323,17 @@ def _git_value(root: Path, *arguments: str) -> str | None:
     return value if completed.returncode == 0 and value else None
 
 
+def _repository_commit_exists(root: Path, head: str) -> bool:
+    completed = subprocess.run(
+        ["git", "cat-file", "-e", f"{head}^{{commit}}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0
+
+
 def _valid_repository_values(head: object, branch: object) -> bool:
     return (
         isinstance(head, str)
@@ -903,6 +914,20 @@ def main(arguments: list[str] | None = None) -> int:
     ):
         print(
             "FAIL capability readiness report repository provenance is invalid",
+            file=sys.stderr,
+        )
+        return 1
+    observed_head = _git_value(root, "rev-parse", "HEAD")
+    observed_branch = _git_value(root, "branch", "--show-current")
+    if (
+        options.check
+        and not options.allow_invalid_repository_context
+        and _valid_repository_values(observed_head, observed_branch)
+        and isinstance(existing_repository, Mapping)
+        and not _repository_commit_exists(root, str(existing_repository["head"]))
+    ):
+        print(
+            "FAIL capability readiness report repository head does not resolve to a commit",
             file=sys.stderr,
         )
         return 1

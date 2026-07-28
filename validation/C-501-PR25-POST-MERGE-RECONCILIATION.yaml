@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-501-PR25-POST-MERGE-RECONCILIATION
 generated_at: '2026-07-28'
-status: LOCAL_RECONCILIATION_PASS_PENDING_PR_26_DELIVERY
+status: LOCAL_RECONCILIATION_PASS_PENDING_EXACT_HEAD_REVIEW
 
 run_record:
   objective: >-
@@ -28,6 +28,7 @@ run_record:
     - none_for_PR_26_reconciliation
   next_recommended_step: Run local checks, obtain exact-head review, and request separate merge authorization.
   blocking_issues:
+    - PR_26_EXACT_HEAD_REVIEW_P1_REMEDIATION
     - PR_26_NOT_MERGED
     - C502_LIVE_COMPATIBILITY_UNKNOWN
     - C503_DEPENDS_ON_C502_PASS
@@ -54,8 +55,8 @@ run_record:
     - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
   local_verification:
     yaml_parse: PASS_4_FILES
-    capability_report_tests: PASS_13
-    complete_repository_tests: PASS_481
+    capability_report_tests: PASS_14
+    complete_repository_tests: PASS_482
     ruff_lint: PASS
     ruff_format: PASS_49_FILES
     mypy_strict: PASS_40_SOURCE_FILES
@@ -67,11 +68,36 @@ run_record:
     git_diff_check: PASS
     protected_C502_hashes: PASS_4_UNCHANGED
   delivery:
-    commit: not_performed
-    push: not_performed
-    PR_26_update: not_performed
-    exact_head_review: pending_after_delivery
-    merge: not_authorized_not_performed
+    commit:
+      status: PERFORMED
+      initial_reconciliation_commits:
+        - 5827d19
+        - 4622a3b
+        - 497bf6d
+        - c05aada
+        - 729cf1c
+        - 8c00081
+      locally_verified_completion_commit: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
+      delivery_record_commit: resolve_containing_commit_from_git_history
+    push:
+      status: PERFORMED
+      remote_branch: agent/reconcile-c501-c502
+      delivered_through_reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
+      delivery_record_push: this_follow_up_commit
+    PR_26_update:
+      status: PERFORMED
+      body_reconciled_at_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
+      prior_P1_threads_replied: true
+    exact_head_review:
+      reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
+      verdict: BLOCKED_TWO_P1
+      findings:
+        - delivery state incorrectly said commit and push were not performed
+        - syntactically valid but nonexistent repository head passed when Git could disprove it
+      remediation: this_follow_up_commit
+      fresh_review_required: true
+    merge:
+      status: NOT_AUTHORIZED_NOT_PERFORMED
 
 repository:
   identity: Denys/UPE_v5.6

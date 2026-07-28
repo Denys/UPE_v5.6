@@ -91,14 +91,38 @@ def test_capability_readiness_report_state_is_current() -> None:
 def test_repository_identity_is_refresh_context_not_freshness_state(tmp_path: Path) -> None:
     embedded = _payload()
     changed = deepcopy(embedded)
+    repository = embedded["repository"]
+    assert isinstance(repository, dict)
     changed["repository"] = {
-        "head": "0" * 40,
+        "head": repository["head"],
         "branch": "codex/post-refresh-commit",
         "context_status": "observed",
     }
     completed = _check_report(_temporary_report(tmp_path, changed))
 
     assert completed.returncode == 0, completed.stderr
+
+
+def test_repository_identity_rejects_nonexistent_commit_when_git_is_available(
+    tmp_path: Path,
+) -> None:
+    embedded = _payload()
+    changed = deepcopy(embedded)
+    changed["repository"] = {
+        "head": "0" * 40,
+        "branch": "codex/fabricated-context",
+        "context_status": "observed",
+    }
+    temporary_report = _temporary_report(tmp_path, changed)
+    module = _updater_module()
+
+    with (
+        patch.object(module, "_git_value", side_effect=["3" * 40, "main"]),
+        patch.object(module, "_repository_commit_exists", return_value=False),
+    ):
+        result = module.main(["--check", "--quiet", "--report", str(temporary_report)])
+
+    assert result == 1
 
 
 def test_repository_identity_fails_closed_when_provenance_is_invalid(tmp_path: Path) -> None:
