@@ -158,7 +158,7 @@ def test_repository_check_accepts_unreachable_source_when_report_is_in_head(
         patch.object(
             module,
             "_git_value",
-            side_effect=["3" * 40, "3" * 40, "main"],
+            side_effect=["3" * 40, "3" * 40, None],
         ),
         patch.object(module, "_repository_commit_exists", return_value=False),
         patch.object(module, "_report_matches_head", return_value=True),

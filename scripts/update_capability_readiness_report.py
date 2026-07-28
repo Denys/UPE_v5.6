@@ -386,6 +386,7 @@ def _repository_context(
     explicit_head: str | None,
     explicit_branch: str | None,
     previous: object,
+    allow_unresolved_preserved: bool = False,
 ) -> dict[str, str]:
     observed_head = _git_value(root, "rev-parse", "HEAD")
     observed_branch = _git_value(root, "branch", "--show-current")
@@ -412,8 +413,10 @@ def _repository_context(
     if isinstance(previous, Mapping) and _valid_repository_values(
         previous.get("head"), previous.get("branch")
     ):
-        if _valid_repository_head(observed_head) and not _repository_commit_exists(
-            root, str(previous["head"])
+        if (
+            _valid_repository_head(observed_head)
+            and not allow_unresolved_preserved
+            and not _repository_commit_exists(root, str(previous["head"]))
         ):
             raise ValueError("preserved repository head does not resolve to a commit")
         return {
@@ -942,6 +945,7 @@ def main(arguments: list[str] | None = None) -> int:
     html = report.read_bytes().decode("utf-8")
     existing = _embedded_payload(html)
     existing_repository = existing.get("repository")
+    report_bound_to_head = options.check and _report_matches_head(root, report)
     if (
         options.check
         and not options.allow_invalid_repository_context
@@ -959,7 +963,7 @@ def main(arguments: list[str] | None = None) -> int:
         and _valid_repository_head(observed_head)
         and isinstance(existing_repository, Mapping)
         and not _repository_commit_exists(root, str(existing_repository["head"]))
-        and not _report_matches_head(root, report)
+        and not report_bound_to_head
     ):
         print(
             "FAIL capability readiness report repository head is unresolved "
@@ -979,6 +983,7 @@ def main(arguments: list[str] | None = None) -> int:
             explicit_head=options.repository_head,
             explicit_branch=options.repository_branch,
             previous=existing_repository,
+            allow_unresolved_preserved=report_bound_to_head,
         )
     except ValueError as error:
         if not (options.check and options.allow_invalid_repository_context):
