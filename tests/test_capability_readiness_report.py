@@ -7,7 +7,7 @@ import subprocess
 import sys
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
@@ -318,10 +318,45 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-502"]["status"] == "blocked"
     assert tasks["C-502"]["dependency_mode"] == "sequential"
     assert tasks["C-502"]["incomplete_dependencies"] == []
-    assert tasks["C-502"]["execution_gate"] == "AUTHORIZED_PENDING_PR_26_INTEGRATION"
+    assert tasks["C-502"]["execution_gate"] == "PR_26_merged_and_exact_head_reviewed"
     assert tasks["C-505"]["status"] == "complete"
     assert tasks["C-505"]["dependency_mode"] == "satisfied"
     assert tasks["C-505"]["incomplete_dependencies"] == []
+
+
+def test_execution_gate_is_derived_from_persisted_field_not_state_label() -> None:
+    module = _updater_module()
+    backlog = module._load_yaml(ROOT / module.BACKLOG_PATH)
+    state = deepcopy(module._load_yaml(ROOT / module.STATE_PATH))
+    c502 = state["upe_state"]["active_development"]["C-502"]
+    c502["state"] = "RENAMED_AUTHORIZATION_STATE"
+
+    original_load_yaml = module._load_yaml
+
+    def load_with_renamed_state(path: Path) -> dict[str, Any]:
+        if path == ROOT / module.BACKLOG_PATH:
+            return cast(dict[str, Any], backlog)
+        if path == ROOT / module.STATE_PATH:
+            return cast(dict[str, Any], state)
+        return cast(dict[str, Any], original_load_yaml(path))
+
+    with patch.object(module, "_load_yaml", side_effect=load_with_renamed_state):
+        payload = module.build_payload(
+            ROOT,
+            repository_context={
+                "head": "1" * 40,
+                "branch": "codex/execution-gate-regression",
+                "context_status": "explicit",
+            },
+            refreshed_at="2026-07-28T00:00:00+00:00",
+        )
+
+    tasks_value = payload["tasks"]
+    assert isinstance(tasks_value, list)
+    tasks = {task["id"]: task for task in tasks_value if isinstance(task, dict)}
+    assert tasks["C-502"]["status"] == "blocked"
+    assert tasks["C-502"]["execution_gate"] == "PR_26_merged_and_exact_head_reviewed"
+    assert tasks["C-502"]["planning"]["parallelizable_now"] is False
 
 
 def test_visible_report_narrative_matches_current_frontier() -> None:
@@ -375,9 +410,9 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     c502_planning = tasks["C-502"]["planning"]
     assert c502_planning["estimate"] == "2–4 engineering days"
     assert c502_planning["parallelizable_now"] is False
-    assert c502_planning["blocked_by"] == ["AUTHORIZED_PENDING_PR_26_INTEGRATION"]
+    assert c502_planning["blocked_by"] == ["PR_26_merged_and_exact_head_reviewed"]
     assert c502_planning["parallel_note"] == (
-        "Blocked by execution gate AUTHORIZED_PENDING_PR_26_INTEGRATION."
+        "Blocked by execution gate PR_26_merged_and_exact_head_reviewed."
     )
 
     assert tasks["C-407"]["planning"]["estimate"] is None
@@ -425,7 +460,7 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
         ["W-211"],
         ["W-212"],
     ]
-    assert "C-502 waits on AUTHORIZED_PENDING_PR_26_INTEGRATION" in recommendation["blockers"]
+    assert "C-502 waits on PR_26_merged_and_exact_head_reviewed" in recommendation["blockers"]
     assert "shared" in recommendation["scope_collision_warning"].lower()
     assert recommendation["elapsed_comparison"]["parallel"] == (
         "0.5–1.0 engineering days plus serial integration"

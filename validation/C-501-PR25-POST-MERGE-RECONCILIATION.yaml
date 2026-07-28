@@ -92,17 +92,18 @@ run_record:
       squash_safe_provenance_remediation_commit: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
       detached_squash_propagation_commit: 71b7a3117b2d499bd3c17f6a0418593472408f5f
       C502_handoff_schema_remediation_commit: resolve_containing_commit_from_git_history
-      C502_execution_gate_remediation_commit: resolve_containing_commit_from_git_history
+      C502_execution_gate_remediation_commit: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+      C502_persisted_gate_source_remediation_commit: resolve_containing_commit_from_git_history
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
-      latest_reviewed_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
+      delivered_through_known_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+      latest_reviewed_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
+      body_reconciled_through_known_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -145,6 +146,11 @@ run_record:
           - the readiness report still recommended C-502 before its PR 26 integration gate cleared
           - the C-502 allowlist omitted the fixture owner marker and mandatory derived readiness report write
           - the goal contract cited bootstrap rather than the actual post-edit verify-fast and verify-full validators
+        remediation: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+      - reviewed_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+        verdict: BLOCKED_ONE_P1
+        findings:
+          - the readiness updater inferred the C-502 blocker from a hard-coded state alias instead of the persisted execution_gate field
         remediation: this_follow_up_commit
     fresh_review_required: true
     merge:
@@ -209,6 +215,7 @@ findings:
   C502_readiness_execution_gate:
     verdict: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
     source_state: AUTHORIZED_PENDING_PR_26_INTEGRATION
+    persisted_execution_gate: PR_26_merged_and_exact_head_reviewed
     rendered_status: blocked
     rendered_dependency_mode: sequential
     next_run_exclusion: true

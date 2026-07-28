@@ -1326,11 +1326,11 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-28T23:58:09+02:00",
+  "refreshed_at": "2026-07-29T00:25:26+02:00",
   "repository": {
     "head": "b0e93fce2252d411af09b67a9f7d6644cfd1f11c",
     "branch": "codex/pr26-state-persistence-reconciliation-20260728",
-    "context_status": "observed"
+    "context_status": "preserved"
   },
   "summary": {
     "visible_tasks": 60,
@@ -3911,7 +3911,7 @@
         "C-409"
       ],
       "incomplete_dependencies": [],
-      "execution_gate": "AUTHORIZED_PENDING_PR_26_INTEGRATION",
+      "execution_gate": "PR_26_merged_and_exact_head_reviewed",
       "dependents": [
         "C-503",
         "C-604"
@@ -3961,9 +3961,9 @@
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
         "parallelizable_now": false,
-        "parallel_note": "Blocked by execution gate AUTHORIZED_PENDING_PR_26_INTEGRATION.",
+        "parallel_note": "Blocked by execution gate PR_26_merged_and_exact_head_reviewed.",
         "blocked_by": [
-          "AUTHORIZED_PENDING_PR_26_INTEGRATION"
+          "PR_26_merged_and_exact_head_reviewed"
         ]
       }
     },
@@ -5087,7 +5087,7 @@
     ],
     "rationale": "2 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize W-211 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
-      "C-502 waits on AUTHORIZED_PENDING_PR_26_INTEGRATION"
+      "C-502 waits on PR_26_merged_and_exact_head_reviewed"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",

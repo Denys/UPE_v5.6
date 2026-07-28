@@ -28,10 +28,6 @@ RANGE_PATTERN = re.compile(r"\b([A-Z]+)-(\d{3})-\1-(\d{3})\b")
 SUCCESS_WORDS = ("PASS", "MERGED", "COMPLETE", "ACCEPTED", "DONE", "TESTED_LOCALLY")
 FAILURE_WORDS = ("FAIL", "BLOCKED", "UNKNOWN", "PENDING", "REJECTED")
 
-EXECUTION_GATE_STATES: Mapping[str, str] = {
-    "AUTHORIZED-PENDING-PR-26-INTEGRATION": "AUTHORIZED_PENDING_PR_26_INTEGRATION",
-}
-
 STATUS_ALIASES: Mapping[str, tuple[str, ...]] = {
     "research_matrix": ("R-001",),
     "pattern_comparison": ("R-002",),
@@ -280,6 +276,24 @@ def _active_development_states(state: Mapping[str, Any]) -> dict[str, str]:
         raw_state = record.get("state", "") if isinstance(record, Mapping) else record
         states[_normalize_state_key(raw_task_id)] = _normalize_state_key(raw_state)
     return states
+
+
+def _active_development_execution_gates(state: Mapping[str, Any]) -> dict[str, str]:
+    upe_state = state.get("upe_state", {})
+    if not isinstance(upe_state, Mapping):
+        return {}
+    active = upe_state.get("active_development", {})
+    if not isinstance(active, Mapping):
+        return {}
+
+    gates: dict[str, str] = {}
+    for raw_task_id, record in active.items():
+        if not isinstance(record, Mapping):
+            continue
+        raw_gate = record.get("execution_gate")
+        if isinstance(raw_gate, str) and raw_gate.strip():
+            gates[_normalize_state_key(raw_task_id)] = raw_gate.strip()
+    return gates
 
 
 def _completed_task_ids(
@@ -747,6 +761,7 @@ def build_payload(
     tasks = [task for task in raw_tasks if isinstance(task, Mapping)]
     completed = _completed_task_ids(tasks, state, root)
     active_states = _active_development_states(state)
+    execution_gates = _active_development_execution_gates(state)
 
     visible_tasks = [
         task
@@ -760,8 +775,7 @@ def build_payload(
         dependencies = [str(item) for item in task.get("dependencies", [])]
         incomplete_dependencies = [item for item in dependencies if item not in completed]
         canonical_status = str(task.get("status", "planned")).lower()
-        active_state = active_states.get(task_id)
-        execution_gate = EXECUTION_GATE_STATES.get(active_state or "")
+        execution_gate = execution_gates.get(task_id)
         if task_id in completed:
             status = "complete"
             dependency_mode = "satisfied"
