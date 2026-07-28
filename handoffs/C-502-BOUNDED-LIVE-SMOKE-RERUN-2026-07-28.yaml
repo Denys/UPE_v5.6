@@ -1,0 +1,140 @@
+schema_version: '1.0'
+handoff_id: C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28
+task_id: C-502
+status: AUTHORIZED_READY_FOR_LOCAL_EXECUTION
+
+objective: >-
+  Run one narrow Windows-native Codex App Server happy-path smoke against the
+  C-501 correction merged by PR 25. Prove initialize, thread, turn, event and
+  terminal behavior while allowing mutation only inside the generated C-305
+  fixture repository.
+
+authorization:
+  source: user request in the GitHub-connected UPE conversation
+  date: '2026-07-28'
+  permits:
+    - create one fresh isolated worktree and branch
+    - start the local Codex App Server for one bounded smoke
+    - run one model turn against the generated fixture repository
+    - run fixture-local deterministic validation
+    - record local evidence and prepare a task-scoped pull request
+  excludes:
+    - release or deployment
+    - production or unrelated repository mutation
+    - network or external-service actions initiated by the smoke task
+    - C-503 recovery implementation
+    - modification or deletion of prior C-502 attempt evidence
+    - merge without a separate exact-head review and passing checks
+
+baseline:
+  repository: Denys/UPE_v5.6
+  required_main_ancestor: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+  C501_pull_request: 25
+  C501_candidate_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  C501_gate: validation/C-501-GATE.yaml
+  expected_codex_cli: 0.144.3
+  expected_protocol: codex-app-server-unversioned-jsonl
+  supported_observed_python: 3.14.3
+
+prior_attempt:
+  treatment: immutable_historical_failure
+  failure_stage: initialize_response_parse
+  failure_cause: old_adapter_required_invented_jsonrpc_member
+  superseded_cause_repaired_by: PR_25
+  hashes:
+    result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
+    gate_sha256: b3dad269ad2aa4d060382be1a25b2ac4131b646d6083a393522ab5d3e79f9765
+    observation_sha256: 2f67e7f947dbc5b05bcd5fd20ba04d445414059077c686c44d3a1f943c376d49
+    validator_sha256: 1f02cd3c7a31470dc346f089bbe0db749297acdabbcb1f26258ea1f4655076e3
+
+execution_boundary:
+  surface: local_codex_windows
+  branch: codex/c502-app-server-smoke-rerun-20260728
+  worktree: fresh_isolated_worktree_required
+  fixture_bootstrap: scripts/bootstrap.sh
+  fixture_repository: examples/fixture-repository/.fixture-output/repository
+  allowed_mutation_roots:
+    - examples/fixture-repository/.fixture-output/repository
+    - evals/results/app-server-smoke/attempt-002
+    - agent/state/C-502-result.yaml
+    - validation/C-502-GATE.yaml
+    - docs/research/app-server-smoke-observation.md
+  protected_roots:
+    - primary user checkout and unrelated worktrees
+    - docs/research/generated-app-server-schema
+    - prior C-502 worktree and evidence artifacts
+    - production, network and external systems
+
+preflight:
+  - Verify origin/main contains required_main_ancestor and create the worktree from current origin/main.
+  - Record exact branch, HEAD, dirty state, worktrees, Python, uv, Git and Codex CLI identities.
+  - Require codex-cli 0.144.3 and `codex app-server --help` exit 0; stop on mismatch.
+  - Bootstrap the C-305 fixture and verify its exact Git root and clean baseline.
+  - Run the focused C-501 adapter tests before the live smoke.
+  - Refuse credentials or broad environment inheritance not required by the smoke.
+
+smoke_contract:
+  maximum_app_server_processes: 1
+  maximum_threads: 1
+  maximum_turns: 1
+  task: >-
+    Make one harmless, deterministic text-file change inside the generated fixture
+    repository, then run the fixture validator command specified by the accepted
+    C-305 contract. Do not access the network or any path outside the fixture.
+  required_observations:
+    - initialize response accepted and exact CLI/schema pin confirmed
+    - initialized notification sent
+    - one thread created
+    - one turn created
+    - provider events recorded in order
+    - exactly one terminal outcome recorded
+    - only fixture-local change observed
+    - deterministic validator result recorded
+    - App Server process stopped cleanly
+  approval_policy:
+    fixture_local_read: allow
+    fixture_local_write: allow_only_when_exact_path_and_scope_match
+    command_execution: allow_only_the_predeclared_fixture_validator
+    network: deny
+    external_or_unrelated_write: deny_and_stop
+
+stop_conditions:
+  - Git baseline does not contain PR 25 merge commit.
+  - CLI, schema or protocol identity differs from the accepted pin.
+  - Any response or notification is malformed, ambiguous or mismatched.
+  - The provider requests an action outside the exact fixture scope.
+  - More than one thread, turn or App Server process would be required.
+  - Terminal state is missing, duplicated or ambiguous.
+  - Validator evidence cannot be tied to the observed fixture diff.
+  - Any secret, credential value or unrelated user artifact would be exposed or modified.
+
+outputs:
+  attempt_directory: evals/results/app-server-smoke/attempt-002
+  required_files:
+    - evals/results/app-server-smoke/attempt-002/run-summary.json
+    - evals/results/app-server-smoke/attempt-002/events.jsonl
+    - evals/results/app-server-smoke/attempt-002/fixture-diff.patch
+    - evals/results/app-server-smoke/attempt-002/validator-result.json
+    - docs/research/app-server-smoke-observation.md
+    - agent/state/C-502-result.yaml
+    - validation/C-502-GATE.yaml
+  evidence_rules:
+    - redact model text, stderr and environment values to bounded references where not required for acceptance
+    - record SHA-256 for every result artifact
+    - preserve the prior attempt hashes verbatim
+    - distinguish observed execution from inference and retained PR 25 evidence
+
+pass_requires:
+  - all preflight checks pass
+  - all required observations exist
+  - fixture-only mutation is proven
+  - validator passes
+  - no external or unrelated mutation occurs
+  - result and gate both identify the exact main baseline and attempt-002 hashes
+  - a fresh exact-head read-only review finds no blocker
+
+failure_policy:
+  - Record FAIL or UNKNOWN at the first unmet mandatory condition.
+  - Preserve partial evidence and stop the App Server process.
+  - Do not retry unchanged.
+  - Do not unblock C-503 unless this attempt reaches PASS.
