@@ -147,6 +147,50 @@ def test_repository_identity_rejects_nonexistent_commit_in_detached_checkout(
     assert result == 1
 
 
+def test_repository_refresh_rejects_nonexistent_explicit_head_before_write(
+    tmp_path: Path,
+) -> None:
+    temporary_report = _temporary_report(tmp_path, _payload())
+    before = temporary_report.read_bytes()
+    module = _updater_module()
+
+    with (
+        patch.object(module, "_git_value", side_effect=["3" * 40, "3" * 40, None]),
+        patch.object(module, "_repository_commit_exists", return_value=False),
+    ):
+        result = module.main(
+            [
+                "--quiet",
+                "--report",
+                str(temporary_report),
+                "--repository-head",
+                "0" * 40,
+                "--repository-branch",
+                "codex/fabricated-context",
+            ]
+        )
+
+    assert result == 1
+    assert temporary_report.read_bytes() == before
+
+
+def test_repository_refresh_rejects_nonexistent_preserved_head_before_write(
+    tmp_path: Path,
+) -> None:
+    temporary_report = _temporary_report(tmp_path, _payload())
+    before = temporary_report.read_bytes()
+    module = _updater_module()
+
+    with (
+        patch.object(module, "_git_value", side_effect=["3" * 40, "3" * 40, None]),
+        patch.object(module, "_repository_commit_exists", return_value=False),
+    ):
+        result = module.main(["--quiet", "--report", str(temporary_report)])
+
+    assert result == 1
+    assert temporary_report.read_bytes() == before
+
+
 def test_repository_identity_fails_closed_when_provenance_is_invalid(tmp_path: Path) -> None:
     embedded = _payload()
     changed = deepcopy(embedded)

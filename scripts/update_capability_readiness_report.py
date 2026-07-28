@@ -375,6 +375,10 @@ def _repository_context(
     if explicit_head is not None or explicit_branch is not None:
         if not _valid_repository_values(explicit_head, explicit_branch):
             raise ValueError("repository overrides require a 40-hex head and a non-empty branch")
+        if _valid_repository_head(observed_head) and not _repository_commit_exists(
+            root, str(explicit_head)
+        ):
+            raise ValueError("repository override head does not resolve to a commit")
         return {
             "head": str(explicit_head),
             "branch": str(explicit_branch),
@@ -384,6 +388,10 @@ def _repository_context(
     if isinstance(previous, Mapping) and _valid_repository_values(
         previous.get("head"), previous.get("branch")
     ):
+        if _valid_repository_head(observed_head) and not _repository_commit_exists(
+            root, str(previous["head"])
+        ):
+            raise ValueError("preserved repository head does not resolve to a commit")
         return {
             "head": str(previous["head"]),
             "branch": str(previous["branch"]),
