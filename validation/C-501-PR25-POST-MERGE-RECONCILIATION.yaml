@@ -82,16 +82,17 @@ run_record:
       detached_head_remediation_commit: 9677460bc3d9078c55f5db11baafde290ee905df
       pre_write_provenance_remediation_commit: c8f99ec92cefb9eeeae89a2922efb7bda6e5d550
       squash_safe_provenance_remediation_commit: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
+      detached_squash_propagation_commit: 71b7a3117b2d499bd3c17f6a0418593472408f5f
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
-      latest_reviewed_head: bf6a514c22aedfb24fe6aefcd4c005be2069a28e
+      delivered_through_known_head: 71b7a3117b2d499bd3c17f6a0418593472408f5f
+      latest_reviewed_head: 480f387c99383768b938051a0313eb5d61388bcd
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
+      body_reconciled_through_known_head: 71b7a3117b2d499bd3c17f6a0418593472408f5f
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -117,7 +118,12 @@ run_record:
           - durable blocker still named completed P1 remediation
         remediation:
           - 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
-          - this_follow_up_commit
+          - 480f387c99383768b938051a0313eb5d61388bcd
+      - reviewed_head: 480f387c99383768b938051a0313eb5d61388bcd
+        verdict: BLOCKED_ONE_P1
+        findings:
+          - detached squash checkout did not propagate the bound-report allowance into repository context resolution
+        remediation: 71b7a3117b2d499bd3c17f6a0418593472408f5f
     fresh_review_required: true
     merge:
       status: NOT_AUTHORIZED_NOT_PERFORMED
