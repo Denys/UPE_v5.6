@@ -2,7 +2,7 @@
 
 ## Status
 
-`READY_FOR_LOCAL_IMPLEMENTATION`
+`IMPLEMENTED_LOCALLY_PENDING_PR_26_DELIVERY`
 
 ## Problem
 
@@ -49,6 +49,24 @@ This does not invalidate review bound to the exact PR SHA/tree/diff. It does deg
 - A non-40-hex SHA is rejected.
 - Capability-state freshness remains independent of the commit created by refreshing the report.
 - A tracked report containing `head: unavailable` or `branch: unavailable` fails the separate provenance check.
+
+## Local implementation and verification
+
+PR #26 now implements the repair in
+`scripts/update_capability_readiness_report.py` and its dedicated tests:
+
+- observed Git identity wins when both HEAD and branch are valid;
+- a paired, validated explicit override is used only when Git is unavailable;
+- previously valid embedded values are retained as `preserved`;
+- missing or malformed provenance fails before the report write;
+- `--check` validates provenance separately from capability freshness;
+- `--allow-invalid-repository-context` is diagnostic-only and cannot authorize a write.
+
+The report was regenerated with a validated explicit PR-head/branch context
+because the uv subprocess could not read Git under the worktree ownership
+boundary. The report tests, full repository suite, Ruff, mypy, schema,
+reference, Work-specification, freshness and diff gates pass locally. These are
+local PR #26 results until committed, pushed, reviewed and merged.
 
 ## Boundaries
 

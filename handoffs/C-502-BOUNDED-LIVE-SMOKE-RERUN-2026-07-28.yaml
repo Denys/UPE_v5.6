@@ -1,21 +1,22 @@
 schema_version: '1.0'
 handoff_id: C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28
 task_id: C-502
-status: AUTHORIZED_READY_FOR_LOCAL_EXECUTION
+status: AUTHORIZED_PENDING_PR_26_INTEGRATION
 
 objective: >-
-  Run one narrow Windows-native Codex App Server happy-path smoke against the
-  C-501 correction merged by PR 25. Prove initialize, thread, turn, event and
-  terminal behavior while allowing mutation only inside the generated C-305
-  fixture repository.
+  Run one bounded Windows-native Codex App Server lifecycle smoke against the
+  C-501 correction merged by PR 25. Prove initialize, thread, turn, tool
+  approval, interrupt, resume/reconnect, event and terminal behavior while
+  allowing mutation only inside the generated C-305 fixture repository.
 
 authorization:
   source: user request in the GitHub-connected UPE conversation
   date: '2026-07-28'
   permits:
     - create one fresh isolated worktree and branch
-    - start the local Codex App Server for one bounded smoke
-    - run one model turn against the generated fixture repository
+    - start the local Codex App Server for one bounded lifecycle attempt
+    - run one primary fixture turn and at most two non-mutating control turns
+    - exercise one tool approval, one interrupt and one thread resume/reconnect
     - run fixture-local deterministic validation
     - record local evidence and prepare a task-scoped pull request
   excludes:
@@ -25,6 +26,17 @@ authorization:
     - C-503 recovery implementation
     - modification or deletion of prior C-502 attempt evidence
     - merge without a separate exact-head review and passing checks
+  scope_basis:
+    - user request dated 2026-07-28 to complete the missing C-501/C-502 steps
+    - docs/architecture/ADR-001-harness-boundary.md controlled-smoke contract
+
+execution_gate:
+  required_before_start:
+    - PR 26 is merged into main after passing local checks and exact-head review.
+    - Current origin/main contains both the PR 25 merge and the accepted PR 26 merge.
+    - The canonical current state and readiness report agree that this attempt is authorized.
+  live_compatibility_before_start: UNKNOWN
+  C503_before_start: BLOCKED
 
 baseline:
   repository: Denys/UPE_v5.6
@@ -76,18 +88,36 @@ preflight:
 smoke_contract:
   maximum_app_server_processes: 1
   maximum_threads: 1
-  maximum_turns: 1
-  task: >-
-    Make one harmless, deterministic text-file change inside the generated fixture
-    repository, then run the fixture validator command specified by the accepted
-    C-305 contract. Do not access the network or any path outside the fixture.
+  maximum_turns: 3
+  maximum_fixture_mutating_turns: 1
+  scenarios:
+    - id: approval_and_fixture_change
+      task: >-
+        Request one harmless deterministic text-file change inside the generated
+        fixture repository. Observe the approval request, verify its exact
+        thread, turn, item and path scope, allow it once, then run only the
+        predeclared C-305 fixture validator.
+      required_terminal: completed
+    - id: interrupt
+      task: >-
+        Start a non-mutating bounded turn, interrupt it after the first
+        correlated non-terminal event, and require an interrupted terminal.
+      required_terminal: interrupted
+    - id: resume_reconnect
+      task: >-
+        Resume the same thread through the adapter, verify the returned thread
+        identity, submit one non-mutating confirmation turn, and require exactly
+        one completed terminal without repeating the fixture mutation.
+      required_terminal: completed
   required_observations:
     - initialize response accepted and exact CLI/schema pin confirmed
     - initialized notification sent
     - one thread created
-    - one turn created
-    - provider events recorded in order
-    - exactly one terminal outcome recorded
+    - one exact-scope approval request observed and answered once
+    - interrupt request correlated to the active thread and turn
+    - interrupted terminal observed for the interrupted turn
+    - thread resume/reconnect returns the original thread identity
+    - each turn has ordered provider events and exactly one terminal outcome
     - only fixture-local change observed
     - deterministic validator result recorded
     - App Server process stopped cleanly
@@ -103,8 +133,11 @@ stop_conditions:
   - CLI, schema or protocol identity differs from the accepted pin.
   - Any response or notification is malformed, ambiguous or mismatched.
   - The provider requests an action outside the exact fixture scope.
-  - More than one thread, turn or App Server process would be required.
-  - Terminal state is missing, duplicated or ambiguous.
+  - More than one thread, three turns or one App Server process would be required.
+  - The approval request is absent, duplicated, uncorrelated or outside the exact fixture scope.
+  - Interrupt does not produce one correlated interrupted terminal.
+  - Resume/reconnect changes thread identity or repeats the fixture mutation.
+  - Any terminal state is missing, duplicated or ambiguous.
   - Validator evidence cannot be tied to the observed fixture diff.
   - Any secret, credential value or unrelated user artifact would be exposed or modified.
 
@@ -113,6 +146,9 @@ outputs:
   required_files:
     - evals/results/app-server-smoke/attempt-002/run-summary.json
     - evals/results/app-server-smoke/attempt-002/events.jsonl
+    - evals/results/app-server-smoke/attempt-002/approval-result.json
+    - evals/results/app-server-smoke/attempt-002/interrupt-result.json
+    - evals/results/app-server-smoke/attempt-002/reconnect-result.json
     - evals/results/app-server-smoke/attempt-002/fixture-diff.patch
     - evals/results/app-server-smoke/attempt-002/validator-result.json
     - docs/research/app-server-smoke-observation.md
@@ -127,6 +163,7 @@ outputs:
 pass_requires:
   - all preflight checks pass
   - all required observations exist
+  - approval, interrupt and resume/reconnect scenarios each satisfy their terminal contract
   - fixture-only mutation is proven
   - validator passes
   - no external or unrelated mutation occurs

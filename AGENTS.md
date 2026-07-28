@@ -96,6 +96,45 @@ Use the C-305 fixture and C-306 validator commands documented in `README.md`
 only after their scripts exist in the current checkout. A missing command or
 dependency is evidence; do not report it as passing.
 
+## Mandatory engineering state persistence
+
+Every run that produces an engineering decision, accepted/rejected/deferred
+alternative, repository modification, rule change, or meaningful discovery MUST
+persist project state before it can be reported complete.
+
+At session start, read `docs/research/research-state.yaml`, then the owned task
+result, gate, handoff, and relevant ADR. UPE does not add a parallel `state.md`
+or `decision_log.md`: current working state remains in
+`docs/research/research-state.yaml`; immutable task/run evidence remains under
+`agent/state/` and `validation/`; architecture decisions remain under
+`docs/architecture/`.
+
+At session end:
+
+1. Update the owned result/gate or dated reconciliation record with objective,
+   decisions (accepted/rejected/deferred), repository changes, evidence,
+   assumptions, risks, open questions, next action, blockers, artifacts, and
+   version impact. Preserve prior attempts and hashes; never rewrite a historical
+   FAIL into a new attempt.
+2. Update only the affected current fields in
+   `docs/research/research-state.yaml`. Preserve unrelated history and explain
+   any changed decision.
+3. Record an architecture reversal in a new ADR or an explicit amendment with
+   `old`, `new`, `reason`, `evidence`, and `impact`; never silently replace the
+   old decision.
+4. Run the readiness updater after canonical records are current, then re-read
+   every changed state artifact and run its parser/reference/freshness checks.
+
+The completion gate is: decisions, evidence, next action, blockers, generated
+artifacts, and UPE version impact are recorded (use explicit `none` where
+applicable); changed writes were re-read; and required validators passed. If a
+write or verification is unavailable, produce the complete patch/artifact and
+finish with `STATUS: INCOMPLETE — state persistence missing`.
+
+State belongs in the same scoped task change. A state-only commit is appropriate
+for pure reconciliation only, and commit, push, PR modification, merge, release,
+and deployment still require their own explicit authorization.
+
 ## End-of-run readiness hook
 
 After updating owned task result, gate, backlog, or mutable current-state records,

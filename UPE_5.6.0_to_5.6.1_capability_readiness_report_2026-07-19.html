@@ -1326,10 +1326,11 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-27T09:59:00+02:00",
+  "refreshed_at": "2026-07-28T22:21:35+02:00",
   "repository": {
-    "head": "unavailable",
-    "branch": "unavailable"
+    "head": "8c0008103724d3f0ed2791e1a57ba47a30e0abc4",
+    "branch": "agent/reconcile-c501-c502",
+    "context_status": "explicit"
   },
   "summary": {
     "visible_tasks": 60,
@@ -3872,8 +3873,8 @@
         "C-604"
       ],
       "critical_path": true,
-      "description": "One narrow happy-path smoke run; do not call the harness production-ready.",
-      "application": "Operational effect: One narrow happy-path smoke run; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics).",
+      "description": "One bounded lifecycle smoke covering initialize, thread/turn, exact-scope tool approval, interrupt and resume/reconnect; do not call the harness production-ready.",
+      "application": "Operational effect: One bounded lifecycle smoke covering initialize, thread/turn, exact-scope tool approval, interrupt and resume/reconnect; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics).",
       "origin_documents": [
         {
           "label": "Canonical implementation backlog",
@@ -3903,6 +3904,7 @@
       "completion_evidence": [
         "fixture-only change observed",
         "events recorded",
+        "approval, interrupt and resume/reconnect behavior observed",
         "validator evidence recorded",
         "no external mutation"
       ],
@@ -5010,7 +5012,7 @@
         ],
         "surface": "Local required",
         "estimate": "2–4 engineering days",
-        "application": "Operational effect: One narrow happy-path smoke run; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics)."
+        "application": "Operational effect: One bounded lifecycle smoke covering initialize, thread/turn, exact-scope tool approval, interrupt and resume/reconnect; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics)."
       },
       {
         "label": "Run 2",

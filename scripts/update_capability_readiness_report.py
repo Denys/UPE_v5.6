@@ -311,7 +311,7 @@ def _completed_task_ids(
     return completed
 
 
-def _git_value(root: Path, *arguments: str) -> str:
+def _git_value(root: Path, *arguments: str) -> str | None:
     completed = subprocess.run(
         ["git", *arguments],
         cwd=root,
@@ -319,7 +319,66 @@ def _git_value(root: Path, *arguments: str) -> str:
         capture_output=True,
         text=True,
     )
-    return completed.stdout.strip() if completed.returncode == 0 else "unavailable"
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and value else None
+
+
+def _valid_repository_values(head: object, branch: object) -> bool:
+    return (
+        isinstance(head, str)
+        and re.fullmatch(r"[0-9a-f]{40}", head) is not None
+        and isinstance(branch, str)
+        and bool(branch)
+        and branch != "unavailable"
+        and not any(character.isspace() or ord(character) < 32 for character in branch)
+    )
+
+
+def _valid_repository_context(value: object) -> bool:
+    return (
+        isinstance(value, Mapping)
+        and _valid_repository_values(value.get("head"), value.get("branch"))
+        and value.get("context_status") in {"observed", "explicit", "preserved"}
+    )
+
+
+def _repository_context(
+    root: Path,
+    *,
+    explicit_head: str | None,
+    explicit_branch: str | None,
+    previous: object,
+) -> dict[str, str]:
+    observed_head = _git_value(root, "rev-parse", "HEAD")
+    observed_branch = _git_value(root, "branch", "--show-current")
+    if _valid_repository_values(observed_head, observed_branch):
+        return {
+            "head": str(observed_head),
+            "branch": str(observed_branch),
+            "context_status": "observed",
+        }
+
+    if explicit_head is not None or explicit_branch is not None:
+        if not _valid_repository_values(explicit_head, explicit_branch):
+            raise ValueError("repository overrides require a 40-hex head and a non-empty branch")
+        return {
+            "head": str(explicit_head),
+            "branch": str(explicit_branch),
+            "context_status": "explicit",
+        }
+
+    if isinstance(previous, Mapping) and _valid_repository_values(
+        previous.get("head"), previous.get("branch")
+    ):
+        return {
+            "head": str(previous["head"]),
+            "branch": str(previous["branch"]),
+            "context_status": "preserved",
+        }
+
+    raise ValueError(
+        "repository provenance is unavailable; no observed, explicit, or preserved context exists"
+    )
 
 
 def _origin_documents(task: Mapping[str, Any]) -> list[dict[str, str]]:
@@ -604,7 +663,12 @@ def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
     }
 
 
-def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, Any]:
+def build_payload(
+    root: Path,
+    *,
+    repository_context: Mapping[str, str],
+    refreshed_at: str | None = None,
+) -> dict[str, Any]:
     backlog = _load_yaml(root / BACKLOG_PATH)
     state = _load_yaml(root / STATE_PATH)
     raw_tasks = backlog.get("tasks")
@@ -715,10 +779,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
     return {
         "schema_version": "1.0",
         "refreshed_at": refreshed_at or datetime.now().astimezone().isoformat(timespec="seconds"),
-        "repository": {
-            "head": _git_value(root, "rev-parse", "HEAD"),
-            "branch": _git_value(root, "branch", "--show-current"),
-        },
+        "repository": dict(repository_context),
         "summary": {
             "visible_tasks": len(rendered),
             "delivery_tasks": len(delivery_tasks),
@@ -810,6 +871,19 @@ def _parse_args(arguments: list[str]) -> argparse.Namespace:
     parser.add_argument("--check", action="store_true", help="fail when embedded state is stale")
     parser.add_argument("--quiet", action="store_true", help="suppress the summary line")
     parser.add_argument("--report", type=Path, help="override the report path")
+    parser.add_argument(
+        "--repository-head",
+        help="validated 40-hex repository head used only when local Git is unavailable",
+    )
+    parser.add_argument(
+        "--repository-branch",
+        help="repository branch paired with --repository-head",
+    )
+    parser.add_argument(
+        "--allow-invalid-repository-context",
+        action="store_true",
+        help="diagnostic-only: ignore invalid embedded provenance during --check",
+    )
     return parser.parse_args(arguments)
 
 
@@ -821,8 +895,43 @@ def main(arguments: list[str] | None = None) -> int:
         report = root / report
     html = report.read_bytes().decode("utf-8")
     existing = _embedded_payload(html)
+    existing_repository = existing.get("repository")
+    if (
+        options.check
+        and not options.allow_invalid_repository_context
+        and not _valid_repository_context(existing_repository)
+    ):
+        print(
+            "FAIL capability readiness report repository provenance is invalid",
+            file=sys.stderr,
+        )
+        return 1
+    if options.allow_invalid_repository_context and not options.check:
+        print(
+            "FAIL --allow-invalid-repository-context is diagnostic-only and requires --check",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        repository_context = _repository_context(
+            root,
+            explicit_head=options.repository_head,
+            explicit_branch=options.repository_branch,
+            previous=existing_repository,
+        )
+    except ValueError as error:
+        if not (options.check and options.allow_invalid_repository_context):
+            print(f"FAIL {error}", file=sys.stderr)
+            return 1
+        repository_context = (
+            dict(existing_repository) if isinstance(existing_repository, Mapping) else {}
+        )
     refreshed_at = str(existing.get("refreshed_at", "")) if options.check else None
-    expected = build_payload(root, refreshed_at=refreshed_at)
+    expected = build_payload(
+        root,
+        repository_context=repository_context,
+        refreshed_at=refreshed_at,
+    )
 
     if options.check:
         if _freshness_state(existing) != _freshness_state(expected):

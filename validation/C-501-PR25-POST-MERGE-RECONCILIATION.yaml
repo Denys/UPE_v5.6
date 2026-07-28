@@ -1,7 +1,77 @@
 schema_version: '1.0'
 record_id: C-501-PR25-POST-MERGE-RECONCILIATION
 generated_at: '2026-07-28'
-status: PASS
+status: LOCAL_RECONCILIATION_PASS_PENDING_PR_26_DELIVERY
+
+run_record:
+  objective: >-
+    Close stale C-501 bookkeeping after PR 25, make the C-502 rerun contract
+    satisfy ADR-001, reconcile canonical current state and report provenance,
+    and install the UPE-specific mandatory state-persistence rule.
+  decisions:
+    accepted:
+      - Use existing UPE canonical state/result/gate/ADR locations instead of adding root state.md and decision_log.md duplicates.
+      - Require approval, interrupt and resume/reconnect evidence before C-502 may pass.
+      - Keep C-502 attempt-001 immutable and create only attempt-002 evidence.
+    rejected:
+      - Treating the one-turn happy-path handoff as sufficient for ADR-001.
+      - Treating report head or branch values of unavailable as valid provenance.
+    deferred:
+      - Execute C-502 attempt-002 only after PR 26 merges.
+      - Unblock C-503 only after every C-502 lifecycle condition passes.
+  assumptions:
+    - The user request dated 2026-07-28 authorizes preparation and validation of the expanded C-502 handoff, not PR 26 merge.
+  risks:
+    - Live approval behavior is model-dependent and may yield UNKNOWN instead of PASS.
+    - App Server remains experimental and pinned to codex-cli 0.144.3.
+  open_questions:
+    - none_for_PR_26_reconciliation
+  next_recommended_step: Run local checks, obtain exact-head review, and request separate merge authorization.
+  blocking_issues:
+    - PR_26_NOT_MERGED
+    - C502_LIVE_COMPATIBILITY_UNKNOWN
+    - C503_DEPENDS_ON_C502_PASS
+  artifacts_generated:
+    - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  version_impact:
+    harness_runtime: none
+    app_server_protocol_contract: expanded_live_acceptance_only
+    state_and_recovery: current_state_and_completion_policy_reconciled
+    security_and_approvals: live_approval_evidence_required
+    documentation_and_report: updated
+    release_or_deployment: none
+  repository_changes:
+    - AGENTS.md
+    - chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+    - docs/research/research-state.yaml
+    - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    - handoffs/CAPABILITY-READINESS-GIT-CONTEXT-REPAIR.md
+    - scripts/update_capability_readiness_report.py
+    - tests/test_capability_readiness_report.py
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+  local_verification:
+    yaml_parse: PASS_4_FILES
+    capability_report_tests: PASS_13
+    complete_repository_tests: PASS_481
+    ruff_lint: PASS
+    ruff_format: PASS_49_FILES
+    mypy_strict: PASS_40_SOURCE_FILES
+    work_specification_validator: PASS
+    reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+    schema_validator: PASS_6_INSTANCES
+    capability_report_freshness_and_provenance: PASS
+    uv_lock: PASS_33_PACKAGES
+    git_diff_check: PASS
+    protected_C502_hashes: PASS_4_UNCHANGED
+  delivery:
+    commit: not_performed
+    push: not_performed
+    PR_26_update: not_performed
+    exact_head_review: pending_after_delivery
+    merge: not_authorized_not_performed
 
 repository:
   identity: Denys/UPE_v5.6
@@ -29,21 +99,29 @@ findings:
       The failed attempt exercised the old adapter and is evidence of the defect
       that PR 25 repaired. Rewriting or deleting it would destroy provenance.
   C502_next_attempt:
-    verdict: AUTHORIZED_READY_FOR_LOCAL_EXECUTION
+    verdict: AUTHORIZED_PENDING_PR_26_INTEGRATION
     authority_source: user request dated 2026-07-28 to investigate and solve C-501/C-502 blockers
     handoff: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    required_live_scope:
+      - initialize
+      - thread and turn
+      - tool approval
+      - interrupt
+      - resume or reconnect
+      - fixture-only mutation and validation
   C503:
     verdict: BLOCKED_CORRECTLY
     reason: C-503 depends on a passing fresh C-502 attempt.
   readiness_report_git_context:
-    verdict: DEFECT_CONFIRMED_NON_BLOCKING_FOR_C501_CODE
+    verdict: LOCAL_REPAIR_PASS_PENDING_PR_26_DELIVERY
     defect: >-
       The updater converts any failed Git command to the literal unavailable,
       while freshness comparison excludes the repository block. The report can
       therefore pass its freshness test with degraded Git provenance.
     containment:
       - This reconciliation binds exact PR head and merge SHAs independently of the report block.
-      - The executable repair contract is preserved at handoffs/CAPABILITY-READINESS-GIT-CONTEXT-REPAIR.md because repository Issues are disabled.
+      - The updater now selects observed, explicit or preserved validated context and otherwise fails before modifying the report.
+      - Capability freshness remains separate from repository-context validity.
 
 protected_C502_attempt_hashes:
   result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
@@ -55,6 +133,8 @@ acceptance:
   C501_contract: PASS
   C501_evidence_integrity: PASS
   C501_delivery: PASS
-  C502_ready_to_attempt: PASS
+  C502_ready_to_attempt: PENDING_PR_26_INTEGRATION
   C502_live_compatibility: UNKNOWN
   C503_unblocked: FAIL
+  report_provenance: PASS_LOCAL_PENDING_DELIVERY
+  state_persistence_contract: PASS_LOCAL_PENDING_DELIVERY

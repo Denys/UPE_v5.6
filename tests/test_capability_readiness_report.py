@@ -1,16 +1,29 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
 import sys
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html"
 UPDATER = ROOT / "scripts/update_capability_readiness_report.py"
 PROJECT_INSTRUCTIONS = ROOT / "AGENTS.md"
+
+
+def _updater_module() -> Any:
+    spec = importlib.util.spec_from_file_location("upe_capability_updater_test", UPDATER)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _payload() -> dict[str, object]:
@@ -24,6 +37,44 @@ def _payload() -> dict[str, object]:
     value = json.loads(match.group(1))
     assert isinstance(value, dict)
     return value
+
+
+def _temporary_report(tmp_path: Path, payload: dict[str, object]) -> Path:
+    html = REPORT.read_text(encoding="utf-8")
+    replacement = (
+        '<script type="application/json" id="upe-task-state">\n'
+        f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n"
+        "</script>"
+    )
+    changed_html, count = re.subn(
+        r'<script type="application/json" id="upe-task-state">.*?</script>',
+        replacement,
+        html,
+        count=1,
+        flags=re.DOTALL,
+    )
+    assert count == 1
+    temporary_report = tmp_path / REPORT.name
+    temporary_report.write_text(changed_html, encoding="utf-8")
+    return temporary_report
+
+
+def _check_report(report: Path, *extra_arguments: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(UPDATER),
+            "--check",
+            "--quiet",
+            "--report",
+            str(report),
+            *extra_arguments,
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_capability_readiness_report_state_is_current() -> None:
@@ -43,40 +94,88 @@ def test_repository_identity_is_refresh_context_not_freshness_state(tmp_path: Pa
     changed["repository"] = {
         "head": "0" * 40,
         "branch": "codex/post-refresh-commit",
+        "context_status": "observed",
     }
-    html = REPORT.read_text(encoding="utf-8")
-    replacement = (
-        '<script type="application/json" id="upe-task-state">\n'
-        f"{json.dumps(changed, ensure_ascii=False, indent=2)}\n"
-        "</script>"
-    )
-    changed_html, count = re.subn(
-        r'<script type="application/json" id="upe-task-state">.*?</script>',
-        replacement,
-        html,
-        count=1,
-        flags=re.DOTALL,
-    )
-    assert count == 1
-    temporary_report = tmp_path / REPORT.name
-    temporary_report.write_text(changed_html, encoding="utf-8")
+    completed = _check_report(_temporary_report(tmp_path, changed))
 
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(UPDATER),
-            "--check",
-            "--quiet",
-            "--report",
-            str(temporary_report),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_repository_identity_fails_closed_when_provenance_is_invalid(tmp_path: Path) -> None:
+    embedded = _payload()
+    changed = deepcopy(embedded)
+    changed["repository"] = {
+        "head": "unavailable",
+        "branch": "unavailable",
+        "context_status": "observed",
+    }
+
+    completed = _check_report(_temporary_report(tmp_path, changed))
+
+    assert completed.returncode == 1
+    assert "repository provenance is invalid" in completed.stderr
+
+
+def test_invalid_repository_context_override_is_diagnostic_only(tmp_path: Path) -> None:
+    embedded = _payload()
+    changed = deepcopy(embedded)
+    changed["repository"] = {
+        "head": "unavailable",
+        "branch": "unavailable",
+    }
+
+    completed = _check_report(
+        _temporary_report(tmp_path, changed),
+        "--allow-invalid-repository-context",
     )
 
     assert completed.returncode == 0, completed.stderr
+
+
+def test_repository_context_uses_explicit_then_preserved_when_git_is_unavailable() -> None:
+    module = _updater_module()
+    resolver = module._repository_context
+
+    with patch.object(module, "_git_value", side_effect=["3" * 40, "main"]):
+        observed = resolver(
+            ROOT,
+            explicit_head="1" * 40,
+            explicit_branch="codex/ignored-explicit-context",
+            previous={"head": "2" * 40, "branch": "preserved"},
+        )
+
+    with patch.object(module, "_git_value", return_value=None):
+        explicit = resolver(
+            ROOT,
+            explicit_head="1" * 40,
+            explicit_branch="codex/explicit-context",
+            previous=None,
+        )
+        preserved = resolver(
+            ROOT,
+            explicit_head=None,
+            explicit_branch=None,
+            previous={"head": "2" * 40, "branch": "main"},
+        )
+        with pytest.raises(ValueError, match="repository provenance is unavailable"):
+            resolver(
+                ROOT,
+                explicit_head=None,
+                explicit_branch=None,
+                previous={"head": "unavailable", "branch": "unavailable"},
+            )
+
+    assert observed == {
+        "head": "3" * 40,
+        "branch": "main",
+        "context_status": "observed",
+    }
+    assert explicit["context_status"] == "explicit"
+    assert preserved == {
+        "head": "2" * 40,
+        "branch": "main",
+        "context_status": "preserved",
+    }
 
 
 def test_capability_readiness_report_exposes_current_dependency_frontier() -> None:
@@ -222,3 +321,16 @@ def test_project_instructions_require_report_refresh_for_every_merged_wp() -> No
     assert "Every work package that becomes both completed and merged MUST update" in instructions
     assert "scripts/update_capability_readiness_report.py" in instructions
     assert "One coordinator serializes those files" in instructions
+
+
+def test_project_instructions_require_verified_state_persistence() -> None:
+    instructions = PROJECT_INSTRUCTIONS.read_text(encoding="utf-8")
+
+    assert "## Mandatory engineering state persistence" in instructions
+    assert "docs/research/research-state.yaml" in instructions
+    assert "agent/state/" in instructions
+    assert "docs/architecture/" in instructions
+    assert "Preserve prior attempts and hashes" in instructions
+    assert "run its parser/reference/freshness checks" in instructions
+    assert "STATUS: INCOMPLETE — state persistence missing" in instructions
+    assert "commit, push, PR modification, merge" in instructions
