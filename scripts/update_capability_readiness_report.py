@@ -334,10 +334,13 @@ def _repository_commit_exists(root: Path, head: str) -> bool:
     return completed.returncode == 0
 
 
+def _valid_repository_head(head: object) -> bool:
+    return isinstance(head, str) and re.fullmatch(r"[0-9a-f]{40}", head) is not None
+
+
 def _valid_repository_values(head: object, branch: object) -> bool:
     return (
-        isinstance(head, str)
-        and re.fullmatch(r"[0-9a-f]{40}", head) is not None
+        _valid_repository_head(head)
         and isinstance(branch, str)
         and bool(branch)
         and branch != "unavailable"
@@ -918,11 +921,10 @@ def main(arguments: list[str] | None = None) -> int:
         )
         return 1
     observed_head = _git_value(root, "rev-parse", "HEAD")
-    observed_branch = _git_value(root, "branch", "--show-current")
     if (
         options.check
         and not options.allow_invalid_repository_context
-        and _valid_repository_values(observed_head, observed_branch)
+        and _valid_repository_head(observed_head)
         and isinstance(existing_repository, Mapping)
         and not _repository_commit_exists(root, str(existing_repository["head"]))
     ):
