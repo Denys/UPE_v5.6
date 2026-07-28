@@ -260,16 +260,19 @@ def _evidence_is_successful(path: Path) -> bool:
 
 
 def _evidence_task_ids(root: Path) -> set[str]:
-    paths = [
-        *sorted((root / "agent/state").glob("*result*.yaml")),
+    result_paths = sorted((root / "agent/state").glob("*result*.yaml"))
+    gate_paths = [
         *sorted((root / "validation").glob("*GATE*.yaml")),
         *sorted((root / "gate-records").glob("*.yaml")),
     ]
+    authoritative_gate_ids = {
+        task_id for path in gate_paths for task_id in _task_ids_from_text(path.name)
+    }
     completed: set[str] = set()
-    for path in paths:
+    for path in [*result_paths, *gate_paths]:
         if not _evidence_is_successful(path):
             continue
-        completed.update(_task_ids_from_text(path.name))
+        record_task_ids = _task_ids_from_text(path.name)
         try:
             data = _load_yaml(path)
         except (OSError, ValueError, yaml.YAMLError):
@@ -278,14 +281,17 @@ def _evidence_task_ids(root: Path) -> set[str]:
         if isinstance(task_record, Mapping):
             declared_id = task_record.get("id")
             if declared_id is not None:
-                completed.update(_task_ids_from_text(str(declared_id)))
+                record_task_ids.update(_task_ids_from_text(str(declared_id)))
         for key in ("task_id", "task_ids"):
             declared = data.get(key)
             if isinstance(declared, list):
                 for item in declared:
-                    completed.update(_task_ids_from_text(str(item)))
+                    record_task_ids.update(_task_ids_from_text(str(item)))
             elif declared is not None:
-                completed.update(_task_ids_from_text(str(declared)))
+                record_task_ids.update(_task_ids_from_text(str(declared)))
+        if path in result_paths:
+            record_task_ids.difference_update(authoritative_gate_ids)
+        completed.update(record_task_ids)
     return completed
 
 

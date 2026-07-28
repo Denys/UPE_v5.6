@@ -374,6 +374,31 @@ def test_partial_pass_does_not_complete_failed_evidence(overall: str) -> None:
         assert module._evidence_is_successful(Path("validation/C-502-GATE.yaml")) is False
 
 
+@pytest.mark.parametrize(
+    ("gate_status", "expected_complete"),
+    [
+        ("FAIL", False),
+        ("INSUFFICIENT_EVIDENCE", False),
+        ("PASS", True),
+    ],
+)
+def test_authoritative_gate_controls_result_completion(
+    tmp_path: Path, gate_status: str, expected_complete: bool
+) -> None:
+    module = _updater_module()
+    result_path = tmp_path / "agent/state/C-502-result.yaml"
+    gate_path = tmp_path / "validation/C-502-GATE.yaml"
+    (tmp_path / "gate-records").mkdir()
+    result_path.parent.mkdir(parents=True)
+    gate_path.parent.mkdir()
+    result_path.write_text("status: PASS\n", encoding="utf-8")
+    gate_path.write_text(f"status: {gate_status}\n", encoding="utf-8")
+
+    completed = module._evidence_task_ids(tmp_path)
+
+    assert ("C-502" in completed) is expected_complete
+
+
 def test_c501_next_actions_preserve_c502_execution_gate() -> None:
     for relative_path in ("agent/state/C-501-result.yaml", "validation/C-501-GATE.yaml"):
         record = (ROOT / relative_path).read_text(encoding="utf-8")
