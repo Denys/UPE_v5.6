@@ -147,6 +147,27 @@ def test_repository_identity_rejects_nonexistent_commit_in_detached_checkout(
     assert result == 1
 
 
+def test_repository_check_accepts_unreachable_source_when_report_is_in_head(
+    tmp_path: Path,
+) -> None:
+    embedded = _payload()
+    temporary_report = _temporary_report(tmp_path, embedded)
+    module = _updater_module()
+
+    with (
+        patch.object(
+            module,
+            "_git_value",
+            side_effect=["3" * 40, "3" * 40, "main"],
+        ),
+        patch.object(module, "_repository_commit_exists", return_value=False),
+        patch.object(module, "_report_matches_head", return_value=True),
+    ):
+        result = module.main(["--check", "--quiet", "--report", str(temporary_report)])
+
+    assert result == 0
+
+
 def test_repository_refresh_rejects_nonexistent_explicit_head_before_write(
     tmp_path: Path,
 ) -> None:

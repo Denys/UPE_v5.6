@@ -334,6 +334,30 @@ def _repository_commit_exists(root: Path, head: str) -> bool:
     return completed.returncode == 0
 
 
+def _report_matches_head(root: Path, report: Path) -> bool:
+    try:
+        relative_report = report.resolve().relative_to(root.resolve())
+    except ValueError:
+        return False
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", relative_report.as_posix()],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if tracked.returncode != 0:
+        return False
+    unchanged = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", relative_report.as_posix()],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return unchanged.returncode == 0
+
+
 def _valid_repository_head(head: object) -> bool:
     return isinstance(head, str) and re.fullmatch(r"[0-9a-f]{40}", head) is not None
 
@@ -935,9 +959,11 @@ def main(arguments: list[str] | None = None) -> int:
         and _valid_repository_head(observed_head)
         and isinstance(existing_repository, Mapping)
         and not _repository_commit_exists(root, str(existing_repository["head"]))
+        and not _report_matches_head(root, report)
     ):
         print(
-            "FAIL capability readiness report repository head does not resolve to a commit",
+            "FAIL capability readiness report repository head is unresolved "
+            "and the report is not bound to current Git history",
             file=sys.stderr,
         )
         return 1
