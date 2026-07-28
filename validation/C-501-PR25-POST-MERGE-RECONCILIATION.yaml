@@ -14,6 +14,8 @@ run_record:
       - Require approval, interrupt and resume/reconnect evidence before C-502 may pass.
       - Keep C-502 attempt-001 immutable and create only attempt-002 evidence.
       - Express the C-502 transfer as a W-204 schema-valid WORK_TO_CODEX handoff while retaining its bounded lifecycle and approval contract.
+      - Keep the derived readiness frontier blocked by the explicit PR 26 integration gate even when every C-502 task dependency is complete.
+      - Include the fixture owner marker and readiness report in the C-502 write boundary and freeze verify-fast/verify-full as the post-edit validators.
     rejected:
       - Treating the one-turn happy-path handoff as sufficient for ADR-001.
       - Treating report head or branch values of unavailable as valid provenance.
@@ -90,16 +92,17 @@ run_record:
       squash_safe_provenance_remediation_commit: 96ac7bcc26cfc9376fc29622d2431c3b6be2c189
       detached_squash_propagation_commit: 71b7a3117b2d499bd3c17f6a0418593472408f5f
       C502_handoff_schema_remediation_commit: resolve_containing_commit_from_git_history
+      C502_execution_gate_remediation_commit: resolve_containing_commit_from_git_history
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: 79589b4d37526da84485a7321764fd38ea4688cb
-      latest_reviewed_head: 79589b4d37526da84485a7321764fd38ea4688cb
+      delivered_through_known_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
+      latest_reviewed_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: 79589b4d37526da84485a7321764fd38ea4688cb
+      body_reconciled_through_known_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -135,6 +138,13 @@ run_record:
         verdict: BLOCKED_ONE_P1
         findings:
           - the C-502 handoff used a bespoke envelope and failed the required schemas/handoff.schema.yaml contract
+        remediation: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
+      - reviewed_head: b0e93fce2252d411af09b67a9f7d6644cfd1f11c
+        verdict: BLOCKED_THREE_P1
+        findings:
+          - the readiness report still recommended C-502 before its PR 26 integration gate cleared
+          - the C-502 allowlist omitted the fixture owner marker and mandatory derived readiness report write
+          - the goal contract cited bootstrap rather than the actual post-edit verify-fast and verify-full validators
         remediation: this_follow_up_commit
     fresh_review_required: true
     merge:
@@ -172,6 +182,10 @@ findings:
     goal_contract: handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
     goal_contract_status: PASS_LOCAL_DRAFT_2020_12
     handoff_contract: PASS_LOCAL_DRAFT_2020_12
+    write_boundary: PASS_LOCAL_OWNER_MARKER_AND_READINESS_REPORT_INCLUDED
+    post_edit_validators:
+      - 'C:\Program Files\Git\usr\bin\bash.exe scripts/verify-fast.sh'
+      - 'C:\Program Files\Git\usr\bin\bash.exe scripts/verify-full.sh'
     required_live_scope:
       - initialize
       - thread and turn
@@ -192,6 +206,12 @@ findings:
       - This reconciliation binds exact PR head and merge SHAs independently of the report block.
       - The updater now selects observed, explicit or preserved validated context and otherwise fails before modifying the report.
       - Capability freshness remains separate from repository-context validity.
+  C502_readiness_execution_gate:
+    verdict: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
+    source_state: AUTHORIZED_PENDING_PR_26_INTEGRATION
+    rendered_status: blocked
+    rendered_dependency_mode: sequential
+    next_run_exclusion: true
 
 protected_C502_attempt_hashes:
   result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
@@ -205,6 +225,7 @@ acceptance:
   C501_delivery: PASS
   C502_handoff_contract: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
   C502_goal_contract: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
+  C502_readiness_execution_gate: PASS_LOCAL_PENDING_EXACT_HEAD_REVIEW
   C502_ready_to_attempt: PENDING_PR_26_INTEGRATION
   C502_live_compatibility: UNKNOWN
   C503_unblocked: FAIL

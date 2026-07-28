@@ -332,6 +332,7 @@ upe_state:
     - Reconciled C-501 result/gate with merged PR #25 while preserving the four protected C-502 attempt-001 hashes.
     - Added the PR #26 bounded C-502 attempt-002 handoff and expanded it to the complete ADR-001 approval, interrupt and reconnect lifecycle.
     - Converted the C-502 attempt-002 transfer from a bespoke YAML envelope to paired W-205 goal and W-204 WORK_TO_CODEX contracts and passed direct Draft 2020-12 validation with format checking.
+    - Repaired exact-head review findings so the readiness frontier honors the PR 26 integration gate, the C-502 write boundary covers the fixture owner marker and derived report, and post-edit evidence uses verify-fast plus verify-full without rerunning bootstrap.
     - Made verified engineering state persistence a mandatory UPE workspace completion rule using existing canonical state, evidence and ADR locations.
 
   unresolved:
@@ -381,6 +382,8 @@ upe_state:
       - C-409 exact command parsing, fail-closed dispatch, concurrent bounded process reads, timeout child termination, secret-safe diagnostics, deterministic JSON, and read-only SQLite inspection
       - C-505 exact approval identity/scope/expiry/revocation, command/environment minimization, Windows path/network refusal and recursive secret/PII redaction with malformed-input canaries
       - direct Draft 2020-12 validation of the C-502 WORK_TO_CODEX handoff against schemas/handoff.schema.yaml with RFC 3339 format checking
+      - readiness regression proving AUTHORIZED_PENDING_PR_26_INTEGRATION renders C-502 blocked/sequential and excludes it from suggested runs
+      - C-502 contract checks freezing verify-fast.sh and verify-full.sh as post-edit exit-0 validators and covering every mandatory write path
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,

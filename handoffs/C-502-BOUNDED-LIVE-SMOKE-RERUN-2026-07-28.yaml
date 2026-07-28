@@ -112,7 +112,8 @@ scope:
       evidence.
     - >-
       Record PASS, FAIL or INSUFFICIENT_EVIDENCE without retrying an unchanged
-      failed scenario, then update canonical state and the C-502 gate.
+      failed scenario, then update canonical state, the C-502 gate and the
+      derived readiness report.
   out_of_scope:
     - Release, deployment, production use or repository visibility changes.
     - C-503 crash/restart recovery implementation.
@@ -121,11 +122,13 @@ scope:
     - Any smoke-task network or external-service action.
   allowed_paths:
     - examples/fixture-repository/.fixture-output/repository
+    - examples/fixture-repository/.fixture-output.owner
     - evals/results/app-server-smoke/attempt-002
     - docs/research/app-server-smoke-observation.md
     - agent/state/C-502-result.yaml
     - validation/C-502-GATE.yaml
     - docs/research/research-state.yaml
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
   forbidden_actions:
     - Start before PR 26 is merged and present in the new worktree baseline.
     - Use more than one App Server process, one thread, three turns or one fixture-mutating turn.
@@ -149,6 +152,7 @@ must_requirements:
     output_refs:
       - OUT-C502-run-summary
       - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
     evidence_refs: []
   - must_id: MUST-C502-bounds
     statement: >-
@@ -210,13 +214,19 @@ must_requirements:
     statement: >-
       Prove that only the generated fixture changed, that the deterministic
       validator result matches that diff, that no external mutation occurred,
-      and that the App Server process stopped cleanly.
+      and that the App Server process stopped cleanly. After capturing the
+      observed edit, run exactly `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-fast.sh` and `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-full.sh`; require exit 0 plus `fixture_verify_fast=PASS` or
+      `fixture_verify_full=PASS` and `exit_code=0`. Do not rerun bootstrap after
+      the edit because it recreates the fixture repository.
     critical: true
     status: PENDING
     output_refs:
       - OUT-C502-run-summary
       - OUT-C502-fixture-diff
       - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
     evidence_refs: []
   - must_id: MUST-C502-evidence
     statement: >-
@@ -239,8 +249,9 @@ must_requirements:
   - must_id: MUST-C502-state
     statement: >-
       Update the C-502 result, gate, canonical research state and observation
-      with the exact main baseline and attempt-002 hashes; keep C-503 blocked
-      unless every critical condition passes.
+      with the exact main baseline and attempt-002 hashes; regenerate and check
+      the derived readiness report; keep C-503 blocked unless every critical
+      condition passes.
     critical: true
     status: PENDING
     output_refs:
@@ -248,6 +259,7 @@ must_requirements:
       - OUT-C502-gate
       - OUT-C502-state
       - OUT-C502-observation
+      - OUT-C502-readiness-report
     evidence_refs: []
   - must_id: MUST-C502-review
     statement: >-
@@ -261,6 +273,12 @@ must_requirements:
     evidence_refs: []
 
 outputs:
+  - output_id: OUT-C502-fixture-owner-marker
+    location: examples/fixture-repository/.fixture-output.owner
+    media_type: text/plain
+    status: PLANNED
+    digest: null
+    evidence_refs: []
   - output_id: OUT-C502-run-summary
     location: evals/results/app-server-smoke/attempt-002/run-summary.json
     media_type: application/json
@@ -324,6 +342,12 @@ outputs:
   - output_id: OUT-C502-state
     location: docs/research/research-state.yaml
     media_type: application/yaml
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-readiness-report
+    location: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    media_type: text/html
     status: PLANNED
     digest: null
     evidence_refs: []

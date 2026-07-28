@@ -13,6 +13,7 @@ scope:
     - Initialize, thread/turn, exact-scope approval, interrupt, resume/reconnect, event ordering and terminal behavior.
     - C-305 fixture bootstrap, fixture-only deterministic change and validator execution.
     - Bounded attempt-002 evidence, C-502 result/gate, canonical state, observation and one task-scoped pull request.
+    - Regeneration and validation of the derived capability-readiness report after canonical C-502 records change.
   out_of_scope:
     - PR 26 merge, release, deployment, production use or repository visibility changes.
     - C-503 crash/restart recovery implementation.
@@ -22,6 +23,9 @@ scope:
     - kind: REPOSITORY_PATH
       ref: examples/fixture-repository/.fixture-output/repository
       description: Generated C-305 fixture repository and only permitted smoke-task mutation root.
+    - kind: REPOSITORY_PATH
+      ref: examples/fixture-repository/.fixture-output.owner
+      description: Adjacent C-305 ownership marker written by the required bootstrap command.
     - kind: REPOSITORY_PATH
       ref: evals/results/app-server-smoke/attempt-002
       description: New bounded live-smoke evidence directory.
@@ -37,6 +41,9 @@ scope:
     - kind: REPOSITORY_PATH
       ref: docs/research/research-state.yaml
       description: Canonical UPE current state.
+    - kind: REPOSITORY_PATH
+      ref: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+      description: Derived readiness report regenerated after canonical state changes.
   allowed_systems:
     - Denys/UPE_v5.6 isolated local worktree
     - Windows-native Codex App Server process pinned to Codex CLI 0.144.3
@@ -84,6 +91,7 @@ done_conditions:
     output_ids:
       - OUT-C502-run-summary
       - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
     release_blocking: true
   - id: done.c502.lifecycle
     description: >-
@@ -106,19 +114,27 @@ done_conditions:
   - id: done.c502.containment
     description: >-
       The observed diff is fixture-only, matches the deterministic C-305
-      validator result, and no external or unrelated mutation occurred.
+      validator result, and no external or unrelated mutation occurred. After
+      the observed edit, `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-fast.sh` and `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-full.sh` each exit 0 and emit their respective PASS marker
+      plus `exit_code=0`; bootstrap is not rerun after the edit.
     mandatory: true
     verification:
       method: DETERMINISTIC
       evidence_required: true
       validator_refs:
         - kind: REPOSITORY_PATH
-          ref: scripts/bootstrap.sh
-          description: Accepted C-305 fixture bootstrap and validator entrypoint.
+          ref: scripts/verify-fast.sh
+          description: Post-edit fast C-305 self-check; expected exit 0 with fixture_verify_fast=PASS and exit_code=0.
+        - kind: REPOSITORY_PATH
+          ref: scripts/verify-full.sh
+          description: Post-edit full C-305 self-check, Git fsck and unit suite; expected exit 0 with fixture_verify_full=PASS and exit_code=0.
       evaluator_access: NOT_APPLICABLE
     output_ids:
       - OUT-C502-fixture-diff
       - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
     release_blocking: true
   - id: done.c502.evidence-state
     description: >-
@@ -136,6 +152,7 @@ done_conditions:
       - OUT-C502-result
       - OUT-C502-gate
       - OUT-C502-state
+      - OUT-C502-readiness-report
     release_blocking: true
   - id: done.c502.review
     description: >-
@@ -159,7 +176,7 @@ constraints:
     - id: must.c502.stop-first-failure
       description: Stop at the first unmet mandatory condition and record FAIL or INSUFFICIENT_EVIDENCE with bounded partial evidence.
     - id: must.c502.state-persistence
-      description: Update result, gate, canonical state and observation before considering the run complete.
+      description: Update result, gate, canonical state, observation and derived readiness report before considering the run complete.
     - id: must.c502.exact-head-review
       description: Obtain fresh exact-head read-only review after deterministic validation.
   must_not:
@@ -187,6 +204,8 @@ constraints:
       description: Record exact repository, branch, commit, worktree, CLI, schema and Python identities.
     - id: evidence.c502.correlation
       description: Preserve ordered thread, turn, item, approval, interrupt, reconnect and terminal correlations.
+    - id: evidence.c502.validators
+      description: Run verify-fast.sh and verify-full.sh only after the observed edit; require exit 0 and their explicit PASS markers without rerunning bootstrap.
     - id: evidence.c502.hashes
       description: Record SHA-256 for every attempt-002 artifact and preserve all four attempt-001 hashes verbatim.
     - id: evidence.c502.labels
@@ -295,6 +314,17 @@ budget:
   stop_on_exhaustion: true
 
 outputs:
+  - id: OUT-C502-fixture-owner-marker
+    description: Adjacent ownership marker created and validated by the C-305 fixture bootstrap.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: examples/fixture-repository/.fixture-output.owner
+      description: C-305 fixture owner marker required for safe generated-repository access.
+    format: UTF-8 text
+    required: true
+    done_condition_ids:
+      - done.c502.preflight
+      - done.c502.containment
   - id: OUT-C502-run-summary
     description: Exact baseline, runtime, bounds, scenario and terminal summary.
     destination:
@@ -405,6 +435,17 @@ outputs:
       ref: docs/research/research-state.yaml
       description: Canonical UPE current state.
     format: YAML
+    required: true
+    done_condition_ids:
+      - done.c502.evidence-state
+      - done.c502.review
+  - id: OUT-C502-readiness-report
+    description: Regenerated derived readiness report that keeps C-502 blocked until its execution gate clears.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+      description: Derived UPE capability-readiness report.
+    format: HTML
     required: true
     done_condition_ids:
       - done.c502.evidence-state

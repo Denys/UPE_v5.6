@@ -315,9 +315,10 @@ def test_capability_readiness_report_exposes_current_dependency_frontier() -> No
     assert tasks["C-501"]["status"] == "complete"
     assert tasks["C-501"]["dependency_mode"] == "satisfied"
     assert tasks["C-501"]["incomplete_dependencies"] == []
-    assert tasks["C-502"]["status"] == "ready"
-    assert tasks["C-502"]["dependency_mode"] == "independent_now"
+    assert tasks["C-502"]["status"] == "blocked"
+    assert tasks["C-502"]["dependency_mode"] == "sequential"
     assert tasks["C-502"]["incomplete_dependencies"] == []
+    assert tasks["C-502"]["execution_gate"] == "AUTHORIZED_PENDING_PR_26_INTEGRATION"
     assert tasks["C-505"]["status"] == "complete"
     assert tasks["C-505"]["dependency_mode"] == "satisfied"
     assert tasks["C-505"]["incomplete_dependencies"] == []
@@ -327,7 +328,8 @@ def test_visible_report_narrative_matches_current_frontier() -> None:
     html = REPORT.read_text(encoding="utf-8")
 
     assert "C‑301…C‑410 plus C‑501 and C‑505 are implemented and tested locally" in html
-    assert "C‑502 can now start independently alongside W‑211 and W‑212" in html
+    assert "C‑502 is authorized but remains blocked until PR #26 integration" in html
+    assert "C‑502 can now start independently alongside W‑211 and W‑212" not in html
     assert "C‑501 schema-bound Codex App Server adapter" in html
     assert "C‑301…C‑404 are implemented and tested" not in html
 
@@ -363,13 +365,20 @@ def test_capability_readiness_report_explains_origin_application_and_planning() 
     expected_estimates = {
         "W-211": "3–5 hours",
         "W-212": "4–8 hours",
-        "C-502": "2–4 engineering days",
     }
     for task_id, estimate in expected_estimates.items():
         planning = tasks[task_id]["planning"]
         assert planning["estimate"] == estimate
         assert planning["parallelizable_now"] is True
         assert planning["confidence"] == "rough"
+
+    c502_planning = tasks["C-502"]["planning"]
+    assert c502_planning["estimate"] == "2–4 engineering days"
+    assert c502_planning["parallelizable_now"] is False
+    assert c502_planning["blocked_by"] == ["AUTHORIZED_PENDING_PR_26_INTEGRATION"]
+    assert c502_planning["parallel_note"] == (
+        "Blocked by execution gate AUTHORIZED_PENDING_PR_26_INTEGRATION."
+    )
 
     assert tasks["C-407"]["planning"]["estimate"] is None
     assert tasks["C-407"]["planning"]["parallelizable_now"] is False
@@ -394,6 +403,9 @@ def test_capability_readiness_report_has_theme_and_click_details_ui() -> None:
     assert 'id="task-detail-application"' in html
     assert 'id="task-detail-planning"' in html
     assert 'id="next-run-card"' in html
+    assert "const taskStatusLabel = task => task.execution_gate" in html
+    assert '"Blocked by execution gate"' in html
+    assert "const taskWaitingOn = task => task.execution_gate" in html
     assert 'id="next-run-classification"' in html
     assert 'id="next-run-runs"' in html
     assert "showModal()" in html
@@ -408,19 +420,18 @@ def test_capability_readiness_report_generates_next_parallel_run() -> None:
     assert recommendation["classification"] == "parallel_runs"
     assert recommendation["classification_label"] == "Parallel runs"
     assert recommendation["bundle_allowed"] is False
-    assert recommendation["task_ids"] == ["C-502", "W-211", "W-212"]
+    assert recommendation["task_ids"] == ["W-211", "W-212"]
     assert [run["task_ids"] for run in recommendation["runs"]] == [
-        ["C-502"],
         ["W-211"],
         ["W-212"],
     ]
-    assert "C-503 waits on C-502" in recommendation["blockers"]
+    assert "C-502 waits on AUTHORIZED_PENDING_PR_26_INTEGRATION" in recommendation["blockers"]
     assert "shared" in recommendation["scope_collision_warning"].lower()
     assert recommendation["elapsed_comparison"]["parallel"] == (
-        "2–4 engineering days plus serial integration"
+        "0.5–1.0 engineering days plus serial integration"
     )
     assert recommendation["elapsed_comparison"]["sequential"] == (
-        "about 2.9–5.6 engineering days plus integration"
+        "about 0.9–1.6 engineering days plus integration"
     )
     assert (ROOT / recommendation["handoff"]["path"]).is_file()
 

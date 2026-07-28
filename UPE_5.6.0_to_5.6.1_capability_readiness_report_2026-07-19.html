@@ -766,7 +766,7 @@
           <ol>
             <li><strong>v5.6.0:</strong> ready for human/agent-guided use as an instruction framework.</li>
             <li><strong>v5.6.1 spec:</strong> accepted and adopted as the harness v0 implementation contract.</li>
-            <li><strong>Harness runtime:</strong> C‑301…C‑410 plus C‑501 and C‑505 are implemented and tested locally. C‑502 can now start independently alongside W‑211 and W‑212.</li>
+            <li><strong>Harness runtime:</strong> C‑301…C‑410 plus C‑501 and C‑505 are implemented and tested locally. C‑502 is authorized but remains blocked until PR #26 integration; W‑211 and W‑212 may start independently.</li>
           </ol>
         </aside>
       </div>
@@ -1326,11 +1326,11 @@
 <script type="application/json" id="upe-task-state">
 {
   "schema_version": "1.0",
-  "refreshed_at": "2026-07-28T22:35:55+02:00",
+  "refreshed_at": "2026-07-28T23:58:09+02:00",
   "repository": {
-    "head": "88335f8bf1dfb638f4367bc40f8e02e916f5ced0",
-    "branch": "agent/reconcile-c501-c502",
-    "context_status": "explicit"
+    "head": "b0e93fce2252d411af09b67a9f7d6644cfd1f11c",
+    "branch": "codex/pr26-state-persistence-reconciliation-20260728",
+    "context_status": "observed"
   },
   "summary": {
     "visible_tasks": 60,
@@ -1341,8 +1341,8 @@
     "status_counts": {
       "complete": 42,
       "in_development": 0,
-      "ready": 3,
-      "blocked": 15,
+      "ready": 2,
+      "blocked": 16,
       "optional": 0,
       "approval_required": 0
     },
@@ -1372,6 +1372,7 @@
       "dependency_mode": "satisfied",
       "dependencies": [],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "R-002",
         "R-003",
@@ -1427,6 +1428,7 @@
         "R-001"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "R-003",
         "R-004",
@@ -1481,6 +1483,7 @@
         "R-002"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "R-004",
         "R-005"
@@ -1535,6 +1538,7 @@
         "R-003"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "R-005"
       ],
@@ -1591,6 +1595,7 @@
         "R-004"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-101",
         "C-102"
@@ -1648,6 +1653,7 @@
         "R-005"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-104",
         "C-105"
@@ -1702,6 +1708,7 @@
         "R-005"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-103",
         "C-105"
@@ -1756,6 +1763,7 @@
         "C-102"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-105",
         "C-501"
@@ -1811,6 +1819,7 @@
         "C-101"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-105"
       ],
@@ -1869,6 +1878,7 @@
         "C-104"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-101"
       ],
@@ -1923,6 +1933,7 @@
         "C-105"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-102"
       ],
@@ -1978,6 +1989,7 @@
         "W-101"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "P-101"
       ],
@@ -2029,6 +2041,7 @@
         "W-102"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "G-ADR"
       ],
@@ -2084,6 +2097,7 @@
         "P-101"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-201",
         "W-202",
@@ -2145,6 +2159,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-209",
         "W-211",
@@ -2197,6 +2212,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-209",
         "W-212"
@@ -2250,6 +2266,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-207",
         "W-209",
@@ -2305,6 +2322,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-209",
         "C-301"
@@ -2363,6 +2381,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-301"
       ],
@@ -2413,6 +2432,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-301"
       ],
@@ -2463,6 +2483,7 @@
         "W-203"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-301",
         "C-408"
@@ -2518,6 +2539,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-301"
       ],
@@ -2571,6 +2593,7 @@
         "W-204"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-303"
       ],
@@ -2621,6 +2644,7 @@
         "G-ADR"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "W-212",
         "C-303"
@@ -2676,6 +2700,7 @@
         "W-201"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [],
       "critical_path": false,
       "description": "Optional operational support. Not the v0 harness scheduler.",
@@ -2737,6 +2762,7 @@
         "W-210"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [],
       "critical_path": false,
       "description": "Supporting UPE deployment note; not a harness v0 blocker.",
@@ -2809,6 +2835,7 @@
         "W-208"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-302"
       ],
@@ -2867,6 +2894,7 @@
         "C-301"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-303",
         "C-304",
@@ -2933,6 +2961,7 @@
         "W-210"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-304",
         "C-306"
@@ -2994,6 +3023,7 @@
         "C-303"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-401"
       ],
@@ -3052,6 +3082,7 @@
         "C-302"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-401",
         "C-404",
@@ -3114,6 +3145,7 @@
         "C-303"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-401"
       ],
@@ -3174,6 +3206,7 @@
         "C-306"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-402",
         "C-406",
@@ -3238,6 +3271,7 @@
         "C-401"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-403",
         "C-501"
@@ -3296,6 +3330,7 @@
         "C-402"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-404",
         "C-405",
@@ -3362,6 +3397,7 @@
         "C-305"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-408",
         "C-409",
@@ -3424,6 +3460,7 @@
         "C-305"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-409",
         "C-410",
@@ -3487,6 +3524,7 @@
         "C-403"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-407",
         "C-409",
@@ -3555,6 +3593,7 @@
         "C-406"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-409",
         "C-410",
@@ -3620,6 +3659,7 @@
         "W-207"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [],
       "critical_path": true,
       "description": "Optional second layer only for irreducible judgment.",
@@ -3681,6 +3721,7 @@
         "C-407"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-410",
         "C-502",
@@ -3745,6 +3786,7 @@
         "C-409"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [],
       "critical_path": true,
       "description": "Documentation follows working code and exact tests, not imagined capabilities.",
@@ -3804,6 +3846,7 @@
         "C-407"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-502",
         "C-503",
@@ -3856,18 +3899,19 @@
       "title": "Run a controlled Codex App Server smoke task",
       "phase": "6-app-server-recovery-security",
       "phase_label": "App Server + recovery",
-      "status": "ready",
+      "status": "blocked",
       "surface": "local_codex",
       "surface_label": "Local required",
       "model_route": "sol_high",
       "model_label": "High",
-      "dependency_mode": "independent_now",
+      "dependency_mode": "sequential",
       "dependencies": [
         "C-501",
         "C-305",
         "C-409"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": "AUTHORIZED_PENDING_PR_26_INTEGRATION",
       "dependents": [
         "C-503",
         "C-604"
@@ -3916,9 +3960,11 @@
         },
         "confidence": "rough",
         "basis": "Planning range derived from surface, model route, output count, and escalation risk; excludes review, CI queue, and merge latency.",
-        "parallelizable_now": true,
-        "parallel_note": "Can start from the current accepted baseline in an isolated branch/worktree; shared report and current-state bookkeeping must be integrated serially.",
-        "blocked_by": []
+        "parallelizable_now": false,
+        "parallel_note": "Blocked by execution gate AUTHORIZED_PENDING_PR_26_INTEGRATION.",
+        "blocked_by": [
+          "AUTHORIZED_PENDING_PR_26_INTEGRATION"
+        ]
       }
     },
     {
@@ -3941,6 +3987,7 @@
       "incomplete_dependencies": [
         "C-502"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-504",
         "C-506"
@@ -4013,6 +4060,7 @@
       "incomplete_dependencies": [
         "C-503"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-506"
       ],
@@ -4084,6 +4132,7 @@
         "C-501"
       ],
       "incomplete_dependencies": [],
+      "execution_gate": null,
       "dependents": [
         "C-506",
         "C-606"
@@ -4153,6 +4202,7 @@
         "C-503",
         "C-504"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-601",
         "C-602",
@@ -4226,6 +4276,7 @@
       "incomplete_dependencies": [
         "C-506"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-605"
       ],
@@ -4288,6 +4339,7 @@
       "incomplete_dependencies": [
         "C-506"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-605",
         "C-606"
@@ -4351,6 +4403,7 @@
       "incomplete_dependencies": [
         "C-506"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-604",
         "C-605",
@@ -4418,6 +4471,7 @@
         "C-603",
         "C-502"
       ],
+      "execution_gate": null,
       "dependents": [
         "W-701"
       ],
@@ -4486,6 +4540,7 @@
         "C-602",
         "C-603"
       ],
+      "execution_gate": null,
       "dependents": [
         "W-701"
       ],
@@ -4557,6 +4612,7 @@
         "C-602",
         "C-603"
       ],
+      "execution_gate": null,
       "dependents": [
         "W-701"
       ],
@@ -4627,6 +4683,7 @@
         "C-605",
         "C-606"
       ],
+      "execution_gate": null,
       "dependents": [
         "P-701"
       ],
@@ -4692,6 +4749,7 @@
       "incomplete_dependencies": [
         "W-701"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-701"
       ],
@@ -4756,6 +4814,7 @@
       "incomplete_dependencies": [
         "P-701"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-702"
       ],
@@ -4820,6 +4879,7 @@
       "incomplete_dependencies": [
         "C-701"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-703"
       ],
@@ -4883,6 +4943,7 @@
       "incomplete_dependencies": [
         "C-702"
       ],
+      "execution_gate": null,
       "dependents": [
         "C-704"
       ],
@@ -4949,6 +5010,7 @@
       "incomplete_dependencies": [
         "C-703"
       ],
+      "execution_gate": null,
       "dependents": [],
       "critical_path": false,
       "description": "Do not commit until explicitly authorized. Never push or open a PR under this plan.",
@@ -5000,22 +5062,12 @@
     "classification_label": "Parallel runs",
     "bundle_allowed": false,
     "task_ids": [
-      "C-502",
       "W-211",
       "W-212"
     ],
     "runs": [
       {
         "label": "Run 1",
-        "task_ids": [
-          "C-502"
-        ],
-        "surface": "Local required",
-        "estimate": "2–4 engineering days",
-        "application": "Operational effect: One bounded lifecycle smoke covering initialize, thread/turn, exact-scope tool approval, interrupt and resume/reconnect; do not call the harness production-ready. Produces evals/results/app-server-smoke/ · docs/research/app-server-smoke-observation.md. Directly enables C-503 (Implement crash/restart and process-state reconciliation), C-604 (Run repeated model-dependent trials and record metrics)."
-      },
-      {
-        "label": "Run 2",
         "task_ids": [
           "W-211"
         ],
@@ -5024,7 +5076,7 @@
         "application": "Operational effect: Optional operational support. Not the v0 harness scheduler. Produces docs/work/SCHEDULED_TASK_PATTERNS.md. No direct downstream package is recorded in the visible v0 route."
       },
       {
-        "label": "Run 3",
+        "label": "Run 2",
         "task_ids": [
           "W-212"
         ],
@@ -5033,16 +5085,15 @@
         "application": "Operational effect: Supporting UPE deployment note; not a harness v0 blocker. Produces docs/work/UPE_V5_6_1_MIGRATION_NOTES.md. No direct downstream package is recorded in the visible v0 route."
       }
     ],
-    "rationale": "3 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize C-502 because it has the widest transitive downstream unlock in the live graph.",
+    "rationale": "2 packages have satisfied dependencies and disjoint declared outputs. Start each as an isolated run; prioritize W-211 because it has the widest transitive downstream unlock in the live graph.",
     "blockers": [
-      "C-503 waits on C-502",
-      "C-604 waits on C-603, C-502"
+      "C-502 waits on AUTHORIZED_PENDING_PR_26_INTEGRATION"
     ],
     "scope_collisions": {},
     "scope_collision_warning": "Declared task outputs do not collide, but shared AGENTS.md, mutable current-state records, result-frontier assertions, and the readiness report belong to one serial integration lane. Do not bundle independent work packages into one change.",
     "elapsed_comparison": {
-      "parallel": "2–4 engineering days plus serial integration",
-      "sequential": "about 2.9–5.6 engineering days plus integration"
+      "parallel": "0.5–1.0 engineering days plus serial integration",
+      "sequential": "about 0.9–1.6 engineering days plus integration"
     },
     "handoff": {
       "label": "Live parallel execution handoff",
@@ -5179,6 +5230,11 @@
           independent_now: "Independent now",
           sequential: "Sequential"
         };
+        const taskStatusLabel = task => task.execution_gate
+          ? "Blocked by execution gate"
+          : (statusLabel[task.status] || task.status);
+        const taskWaitingOn = task => task.execution_gate
+          || (task.incomplete_dependencies.length ? task.incomplete_dependencies.join(", ") : "Nothing");
         const modelClass = value => `model-${String(value).toLowerCase()}`;
         const depClass = value => value === "independent_now" ? "dep-ready" : value === "sequential" ? "dep-sequential" : "";
 
@@ -5196,7 +5252,7 @@
           brick.dataset.taskId = task.id;
           brick.dataset.status = task.status;
           brick.dataset.surface = task.surface;
-          brick.setAttribute("aria-label", `${task.id}: ${task.title}. ${statusLabel[task.status] || task.status}. Click for full details.`);
+          brick.setAttribute("aria-label", `${task.id}: ${task.title}. ${taskStatusLabel(task)}. Click for full details.`);
 
           const top = document.createElement("span");
           top.className = "brick-top";
@@ -5268,10 +5324,10 @@
           description.textContent = task.description;
           const list = document.createElement("dl");
           list.className = "tooltip-grid";
-          tooltipRow(list, "State", statusLabel[task.status] || task.status);
+          tooltipRow(list, "State", taskStatusLabel(task));
           tooltipRow(list, "Dependency", dependencyLabel[task.dependency_mode] || task.dependency_mode);
           tooltipRow(list, "Depends on", task.dependencies.length ? task.dependencies.join(", ") : "None");
-          if (task.incomplete_dependencies.length) tooltipRow(list, "Waiting on", task.incomplete_dependencies.join(", "));
+          if (task.execution_gate || task.incomplete_dependencies.length) tooltipRow(list, "Waiting on", taskWaitingOn(task));
           if (task.dependents.length) tooltipRow(list, "Unlocks", task.dependents.join(", "));
           if (task.planning && task.planning.estimate) tooltipRow(list, "Estimate", task.planning.estimate);
           const hint = document.createElement("p");
@@ -5323,7 +5379,7 @@
           const chips = document.getElementById("task-detail-chips");
           if (chips) {
             chips.replaceChildren();
-            addChip(chips, statusLabel[task.status] || task.status, depClass(task.dependency_mode));
+            addChip(chips, taskStatusLabel(task), depClass(task.dependency_mode));
             addChip(chips, task.surface_label, task.surface === "local_codex" ? "surface-local" : "surface-web");
             addChip(chips, task.model_label, modelClass(task.model_label));
             if (task.planning && task.planning.estimate) addChip(chips, task.planning.estimate, "estimate");
@@ -5359,10 +5415,10 @@
           const dependencies = document.getElementById("task-detail-dependencies");
           if (dependencies) {
             dependencies.replaceChildren();
-            tooltipRow(dependencies, "State", statusLabel[task.status] || task.status);
+            tooltipRow(dependencies, "State", taskStatusLabel(task));
             tooltipRow(dependencies, "Mode", dependencyLabel[task.dependency_mode] || task.dependency_mode);
             tooltipRow(dependencies, "Depends on", task.dependencies.length ? task.dependencies.join(", ") : "None");
-            tooltipRow(dependencies, "Waiting on", task.incomplete_dependencies.length ? task.incomplete_dependencies.join(", ") : "Nothing");
+            tooltipRow(dependencies, "Waiting on", taskWaitingOn(task));
             tooltipRow(dependencies, "Unlocks", task.dependents.length ? task.dependents.join(", ") : "No visible direct dependent");
           }
           fillSimpleList("task-detail-outputs", task.outputs, "No file output recorded.");

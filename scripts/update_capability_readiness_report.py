@@ -28,6 +28,10 @@ RANGE_PATTERN = re.compile(r"\b([A-Z]+)-(\d{3})-\1-(\d{3})\b")
 SUCCESS_WORDS = ("PASS", "MERGED", "COMPLETE", "ACCEPTED", "DONE", "TESTED_LOCALLY")
 FAILURE_WORDS = ("FAIL", "BLOCKED", "UNKNOWN", "PENDING", "REJECTED")
 
+EXECUTION_GATE_STATES: Mapping[str, str] = {
+    "AUTHORIZED-PENDING-PR-26-INTEGRATION": "AUTHORIZED_PENDING_PR_26_INTEGRATION",
+}
+
 STATUS_ALIASES: Mapping[str, tuple[str, ...]] = {
     "research_matrix": ("R-001",),
     "pattern_comparison": ("R-002",),
@@ -503,6 +507,7 @@ def _planning(
     status: str,
     dependency_mode: str,
     incomplete_dependencies: list[str],
+    execution_gate: str | None,
 ) -> dict[str, object]:
     if status == "complete":
         return {
@@ -526,8 +531,18 @@ def _planning(
             "blocked_by": [],
         }
 
-    parallelizable_now = dependency_mode == "independent_now" and not incomplete_dependencies
-    if parallelizable_now:
+    blocked_by = [
+        *incomplete_dependencies,
+        *([execution_gate] if execution_gate is not None else []),
+    ]
+    parallelizable_now = (
+        dependency_mode == "independent_now"
+        and not incomplete_dependencies
+        and execution_gate is None
+    )
+    if execution_gate is not None:
+        parallel_note = f"Blocked by execution gate {execution_gate}."
+    elif parallelizable_now:
         parallel_note = (
             "Can start from the current accepted baseline in an isolated branch/worktree; "
             "shared report and current-state bookkeeping must be integrated serially."
@@ -549,7 +564,7 @@ def _planning(
         ),
         "parallelizable_now": parallelizable_now,
         "parallel_note": parallel_note,
-        "blocked_by": incomplete_dependencies,
+        "blocked_by": blocked_by,
     }
 
 
@@ -639,12 +654,18 @@ def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
         for index, task in enumerate(ready, start=1)
     ]
 
-    blockers = [
+    dependency_blockers = [
         f"{task['id']} waits on {', '.join(task['incomplete_dependencies'])}"
         for task in rendered
         if task["status"] == "blocked"
         and any(dependency in task_ids for dependency in task["incomplete_dependencies"])
-    ][:6]
+    ]
+    execution_gate_blockers = [
+        f"{task['id']} waits on {task['execution_gate']}"
+        for task in rendered
+        if task["status"] == "blocked" and task["execution_gate"] is not None
+    ]
+    blockers = [*execution_gate_blockers, *dependency_blockers][:6]
 
     effort_ranges = [
         task["planning"]["estimate_hours"]
@@ -739,12 +760,17 @@ def build_payload(
         dependencies = [str(item) for item in task.get("dependencies", [])]
         incomplete_dependencies = [item for item in dependencies if item not in completed]
         canonical_status = str(task.get("status", "planned")).lower()
+        active_state = active_states.get(task_id)
+        execution_gate = EXECUTION_GATE_STATES.get(active_state or "")
         if task_id in completed:
             status = "complete"
             dependency_mode = "satisfied"
         elif active_states.get(task_id) == "LOCALLY-ACCEPTED-UNMERGED":
             status = "in_development"
             dependency_mode = "in_progress"
+        elif execution_gate is not None:
+            status = "blocked"
+            dependency_mode = "sequential"
         elif canonical_status == "optional":
             status = "optional"
             dependency_mode = "independent" if not incomplete_dependencies else "sequential"
@@ -775,6 +801,7 @@ def build_payload(
                 "dependency_mode": dependency_mode,
                 "dependencies": dependencies,
                 "incomplete_dependencies": incomplete_dependencies,
+                "execution_gate": execution_gate,
                 "dependents": [],
                 "critical_path": bool(task.get("critical_path", False)),
                 "description": str(task.get("scope", "No scope description recorded.")),
@@ -787,6 +814,7 @@ def build_payload(
                     status=status,
                     dependency_mode=dependency_mode,
                     incomplete_dependencies=incomplete_dependencies,
+                    execution_gate=execution_gate,
                 ),
             }
         )
