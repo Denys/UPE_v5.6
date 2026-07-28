@@ -76,8 +76,10 @@ authoritative_inputs:
 done_conditions:
   - id: done.c502.preflight
     description: >-
-      A fresh worktree proves PR 25 and accepted PR 26 ancestry, exact repository
-      and runtime identity, clean fixture baseline, Codex CLI 0.144.3, successful
+      A fresh worktree proves PR 25 and the accepted PR 26 content are present on
+      one exact post-merge main baseline without requiring feature-branch
+      ancestry after a squash merge; it also proves exact repository and runtime
+      identity, a clean fixture baseline, Codex CLI 0.144.3, a successful
       app-server help probe and passing focused C-501 tests.
     mandatory: true
     verification:

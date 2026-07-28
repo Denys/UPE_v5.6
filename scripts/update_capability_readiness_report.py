@@ -7,7 +7,7 @@ import json
 import re
 import subprocess
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -210,15 +210,11 @@ def _task_ids_from_text(value: str) -> set[str]:
     return ids
 
 
-def _status_values(value: object) -> Iterable[object]:
-    if isinstance(value, Mapping):
-        for key, nested in value.items():
-            if str(key).lower() in {"status", "verdict", "result", "state"}:
-                yield nested
-            yield from _status_values(nested)
-    elif isinstance(value, list):
-        for nested in value:
-            yield from _status_values(nested)
+def _declared_status(record: Mapping[str, Any]) -> object | None:
+    for key in ("status", "verdict", "result", "state", "decision"):
+        if key in record:
+            return record[key]
+    return None
 
 
 def _evidence_is_successful(path: Path) -> bool:
@@ -226,7 +222,41 @@ def _evidence_is_successful(path: Path) -> bool:
         data = _load_yaml(path)
     except (OSError, ValueError, yaml.YAMLError):
         return False
-    return any(_successful(value) for value in _status_values(data))
+
+    overall = _declared_status(data)
+    if overall is not None:
+        return _successful(overall)
+
+    task = data.get("task")
+    if isinstance(task, Mapping):
+        task_status = _declared_status(task)
+        if task_status is not None:
+            return _successful(task_status)
+
+    tasks = data.get("tasks")
+    if isinstance(tasks, Mapping) and tasks:
+        task_statuses = [
+            _declared_status(record) for record in tasks.values() if isinstance(record, Mapping)
+        ]
+        return len(task_statuses) == len(tasks) and all(
+            status is not None and _successful(status) for status in task_statuses
+        )
+
+    verification = data.get("verification")
+    if isinstance(verification, Mapping):
+        verification_status = _declared_status(verification)
+        if verification_status is not None:
+            return _successful(verification_status)
+
+    upe_state = data.get("upe_state")
+    if isinstance(upe_state, Mapping):
+        verification = upe_state.get("verification")
+        if isinstance(verification, Mapping):
+            verification_status = _declared_status(verification)
+            if verification_status is not None:
+                return _successful(verification_status)
+
+    return False
 
 
 def _evidence_task_ids(root: Path) -> set[str]:

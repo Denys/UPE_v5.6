@@ -359,6 +359,46 @@ def test_execution_gate_is_derived_from_persisted_field_not_state_label() -> Non
     assert tasks["C-502"]["planning"]["parallelizable_now"] is False
 
 
+@pytest.mark.parametrize("overall", ["FAIL", "INSUFFICIENT_EVIDENCE"])
+def test_partial_pass_does_not_complete_failed_evidence(overall: str) -> None:
+    module = _updater_module()
+    evidence = {
+        "status": overall,
+        "criteria": [
+            {"id": "contract", "verdict": "PASS"},
+            {"id": "live-smoke", "verdict": overall},
+        ],
+    }
+
+    with patch.object(module, "_load_yaml", return_value=evidence):
+        assert module._evidence_is_successful(Path("validation/C-502-GATE.yaml")) is False
+
+
+def test_c501_next_actions_preserve_c502_execution_gate() -> None:
+    for relative_path in ("agent/state/C-501-result.yaml", "validation/C-501-GATE.yaml"):
+        record = (ROOT / relative_path).read_text(encoding="utf-8")
+        assert "next_action_gate: PR_26_merged_and_exact_head_reviewed" in record
+        assert "Only after PR 26 is merged and its exact reviewed content is present" in record
+
+
+def test_c502_handoff_resolves_mutable_inputs_from_post_merge_main() -> None:
+    handoff = (ROOT / "handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml").read_text(
+        encoding="utf-8"
+    )
+    authoritative_inputs = handoff.split("authoritative_inputs:\n", 1)[1].split("\nscope:\n", 1)[0]
+
+    assert "agent/reconcile-c501-c502@79589b4d37526da84485a7321764fd38ea4688cb" not in (
+        authoritative_inputs
+    )
+    assert (
+        authoritative_inputs.count(
+            "version_or_ref: post-merge-main@contains-PR-26-reviewed-content"
+        )
+        == 5
+    )
+    assert "without\n      requiring feature-branch SHA ancestry after a squash merge" in handoff
+
+
 def test_visible_report_narrative_matches_current_frontier() -> None:
     html = REPORT.read_text(encoding="utf-8")
 

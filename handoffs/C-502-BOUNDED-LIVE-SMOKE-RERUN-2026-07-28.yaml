@@ -57,31 +57,31 @@ authoritative_inputs:
   - input_id: IN-C502-backlog
     kind: REPOSITORY_FILE
     location: chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
-    version_or_ref: agent/reconcile-c501-c502@79589b4d37526da84485a7321764fd38ea4688cb
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
     digest: null
     required: true
   - input_id: IN-C502-goal-contract
     kind: REPOSITORY_FILE
     location: handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
-    version_or_ref: 1.0.0
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
     digest: null
     required: true
   - input_id: IN-C502-c501-gate
     kind: GATE_RECORD
     location: validation/C-501-GATE.yaml
-    version_or_ref: main@b20aa4304e61d12e6460e92fccb5b63d9560eb43
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
     digest: null
     required: true
   - input_id: IN-C502-c501-result
     kind: REPOSITORY_FILE
     location: agent/state/C-501-result.yaml
-    version_or_ref: agent/reconcile-c501-c502@79589b4d37526da84485a7321764fd38ea4688cb
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
     digest: null
     required: true
   - input_id: IN-C502-current-state
     kind: REPOSITORY_FILE
     location: docs/research/research-state.yaml
-    version_or_ref: agent/reconcile-c501-c502@79589b4d37526da84485a7321764fd38ea4688cb
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
     digest: null
     required: true
   - input_id: IN-C502-handoff-schema
@@ -143,10 +143,13 @@ must_requirements:
   - must_id: MUST-C502-preflight
     statement: >-
       From a fresh isolated worktree based on current origin/main, prove that the
-      baseline contains PR 25 and merged PR 26; record exact branch, HEAD, dirty
-      state, worktrees, Python, uv, Git and Codex identities; require Codex CLI
-      0.144.3 and a successful app-server help probe; bootstrap a clean C-305
-      fixture and pass the focused C-501 tests.
+      baseline contains PR 25 and the exact reviewed content merged through PR
+      26. Resolve every `post-merge-main@contains-PR-26-reviewed-content` input
+      from that single baseline and compare its tracked content, without
+      requiring feature-branch SHA ancestry after a squash merge. Record exact
+      branch, HEAD, dirty state, worktrees, Python, uv, Git and Codex identities;
+      require Codex CLI 0.144.3 and a successful app-server help probe; bootstrap
+      a clean C-305 fixture and pass the focused C-501 tests.
     critical: true
     status: PENDING
     output_refs:

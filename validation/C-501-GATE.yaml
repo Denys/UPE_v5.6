@@ -117,6 +117,9 @@ known_limits:
   - App Server remains experimental and no production-readiness claim is made.
   - Python 3.12 and 3.13 remain unverified.
 
+next_action_gate: PR_26_merged_and_exact_head_reviewed
 next_action: >-
-  Run the separately authorized bounded C-502 attempt from a fresh worktree and
-  preserve the prior failed attempt under its existing four hashes.
+  Only after PR 26 is merged and its exact reviewed content is present on
+  origin/main, run the separately authorized bounded C-502 attempt from a fresh
+  worktree based on that accepted main commit and preserve the prior failed
+  attempt under its existing four hashes.

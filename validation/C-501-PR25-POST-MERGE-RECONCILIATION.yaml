@@ -16,6 +16,9 @@ run_record:
       - Express the C-502 transfer as a W-204 schema-valid WORK_TO_CODEX handoff while retaining its bounded lifecycle and approval contract.
       - Keep the derived readiness frontier blocked by the explicit PR 26 integration gate even when every C-502 task dependency is complete.
       - Include the fixture owner marker and readiness report in the C-502 write boundary and freeze verify-fast/verify-full as the post-edit validators.
+      - Treat an evidence record's overall status as authoritative over nested passing criteria when deriving task completion.
+      - Carry the PR 26 merge-and-review prerequisite into both C-501 next-action records.
+      - Resolve mutable C-502 inputs from one exact post-merge main baseline by content rather than feature-branch ancestry.
     rejected:
       - Treating the one-turn happy-path handoff as sufficient for ADR-001.
       - Treating report head or branch values of unavailable as valid provenance.
@@ -93,17 +96,18 @@ run_record:
       detached_squash_propagation_commit: 71b7a3117b2d499bd3c17f6a0418593472408f5f
       C502_handoff_schema_remediation_commit: resolve_containing_commit_from_git_history
       C502_execution_gate_remediation_commit: 182f853b8b7ccc93b3035df16079a0cf547a31ba
-      C502_persisted_gate_source_remediation_commit: resolve_containing_commit_from_git_history
+      C502_persisted_gate_source_remediation_commit: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
+      C502_evidence_and_post_merge_input_remediation_commit: resolve_containing_commit_from_git_history
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
-      latest_reviewed_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+      delivered_through_known_head: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
+      latest_reviewed_head: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: 182f853b8b7ccc93b3035df16079a0cf547a31ba
+      body_reconciled_through_known_head: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -151,6 +155,13 @@ run_record:
         verdict: BLOCKED_ONE_P1
         findings:
           - the readiness updater inferred the C-502 blocker from a hard-coded state alias instead of the persisted execution_gate field
+        remediation: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
+      - reviewed_head: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
+        verdict: BLOCKED_THREE_P1
+        findings:
+          - nested PASS criteria could mark an overall failed or insufficient C-502 gate complete
+          - C-501 result and gate next actions omitted the PR 26 merge-and-review prerequisite
+          - mutable C-502 inputs were pinned to a stale feature commit that is not squash-safe
         remediation: this_follow_up_commit
     fresh_review_required: true
     merge:
