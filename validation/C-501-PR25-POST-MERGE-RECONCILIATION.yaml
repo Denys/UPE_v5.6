@@ -43,7 +43,7 @@ findings:
       therefore pass its freshness test with degraded Git provenance.
     containment:
       - This reconciliation binds exact PR head and merge SHAs independently of the report block.
-      - A dedicated follow-up issue must make report Git context fail closed or preserve a previously valid context.
+      - The executable repair contract is preserved at handoffs/CAPABILITY-READINESS-GIT-CONTEXT-REPAIR.md because repository Issues are disabled.
 
 protected_C502_attempt_hashes:
   result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
