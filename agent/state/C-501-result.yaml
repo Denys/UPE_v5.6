@@ -1,7 +1,7 @@
 schema_version: '1.0'
 record_id: C-501-RESULT
-generated_at: '2026-07-27T07:54:39.868Z'
-status: TESTED_LOCALLY_READY_FOR_CANDIDATE_REVIEW
+generated_at: '2026-07-28'
+status: MERGED_PR_25_PASS
 
 task:
   id: C-501
@@ -9,16 +9,35 @@ task:
   correction: APP_SERVER_UNVERSIONED_ENVELOPE_FRAMING
   verdict: PASS
   gate: validation/C-501-GATE.yaml
-  task_closed: false
+  task_closed: true
 
 repository:
   identity: Denys/UPE_v5.6
-  worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c501-schema-framing-correction-20260727'
-  branch: codex/c501-schema-framing-correction-20260727
-  base_commit: 293b328d436a27a848df2b7bf1858b840840058f
-  working_tree_head: 293b328d436a27a848df2b7bf1858b840840058f
   original_pull_request: https://github.com/Denys/UPE_v5.6/pull/16
   nested_terminal_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/22
+  framing_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/25
+  framing_correction_branch: codex/c501-schema-framing-correction-20260727
+  framing_correction_base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+  framing_correction_head_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+  adopted_on_main: true
+
+post_merge_review:
+  date: '2026-07-28'
+  route: connected_github_read_only_static_review
+  candidate_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  reviewed_merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+  verdict: PASS
+  inspected:
+    - exact PR 25 diff and merged commit
+    - current adapter implementation
+    - focused adapter tests added by PR 25
+    - generated stable codex-cli 0.144.3 ClientRequest schema
+    - C-501 result and gate evidence
+  limits:
+    - No test or App Server process was executed from the GitHub-connected review surface.
+    - The 36 focused and 477 repository test results are retained recorded evidence, not a new rerun.
+    - Live compatibility remains exclusively C-502 evidence.
 
 defect_repaired:
   mechanism: >-
@@ -26,9 +45,9 @@ defect_repaired:
     absent from the generated stable codex-cli 0.144.3 request, notification,
     server-request and live response framing.
   observed_failure: >-
-    The retained C-502 attempt reached initialize_response_parse, where the
-    unchanged adapter rejected the first unversioned response before any thread,
-    turn, model or external action.
+    The retained C-502 attempt reached initialize_response_parse, where the old
+    adapter rejected the first unversioned response before any thread, turn,
+    model or external action.
   correction:
     - outbound requests contain id, method and params without jsonrpc
     - outbound notifications contain method and applicable params without jsonrpc
@@ -58,6 +77,7 @@ preserved_behavior:
 
 verification:
   result: PASS
+  source: recorded_by_PR_25_not_rerun_here
   uv_lock: PASS_33_PACKAGES
   targeted_C501: 36_passed
   complete_repository_tests: 477_passed
@@ -79,10 +99,12 @@ evidence_hashes_sha256:
   src/harness/adapters/codex_app_server.py: 0514395e7f9a109d333e3662881df1e81f716e84b724f2671e92a3fd8066adca
   tests/unit/test_codex_adapter.py: 5230f5c0b3f82f87484b1c79c08429a5f14617f8ab1abd9568252b7584a93c4c
 
-c502_evidence_preserved:
+c502_prior_attempt:
+  role: preserved_historical_failure_evidence
   worktree: 'C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727'
   status: FAIL_NOT_CLOSED
-  rerun_performed: false
+  rerun_performed_by_PR_25: false
+  failure_cause_addressed_by_C501: true
   result_sha256: b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182
   gate_sha256: b3dad269ad2aa4d060382be1a25b2ac4131b646d6083a393522ab5d3e79f9765
   observation_sha256: 2f67e7f947dbc5b05bcd5fd20ba04d445414059077c686c44d3a1f943c376d49
@@ -92,17 +114,19 @@ protected_state:
   primary_checkout_user_artifacts: preserved_unmodified
   prior_C501_worktrees: preserved_unmodified
   unrelated_worktrees: preserved_unmodified
-  retained_C502_worktree: preserved_unmodified
+  retained_C502_evidence: preserved_unmodified
   generated_schema_artifacts: preserved_unmodified
-  app_server_or_model_started: false
   release_or_deployment: not_performed
 
 known_limits:
-  - The failed C-502 attempt remains historical evidence and was not rerun.
-  - Live compatibility requires a new separately authorized bounded C-502 run.
-  - C-503 remains blocked because C-502 has not passed.
+  - No new C-502 run has yet proved live initialize, thread, turn, event and terminal behavior.
+  - C-503 remains blocked until a fresh C-502 attempt passes.
+  - App Server remains experimental and no production-readiness claim is made.
   - Python 3.12 and 3.13 remain unverified; the accepted Windows runtime is Python 3.14.3.
 
+next_action_gate: PR_26_merged_and_exact_head_reviewed
 next_action: >-
-  Freeze the exact candidate and obtain a fresh independent candidate-review
-  PASS approving only the task-scoped commit.
+  Only after PR 26 is merged and its exact reviewed content is present on
+  origin/main, execute the separately authorized bounded C-502 attempt from a
+  fresh worktree based on that accepted main commit, preserving the prior
+  failed attempt and all four protected hashes.

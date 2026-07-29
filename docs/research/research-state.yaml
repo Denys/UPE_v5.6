@@ -1,15 +1,16 @@
 upe_state:
   goal: >-
-    Correct the reopened C-501 App Server envelope framing against the generated
-    stable codex-cli 0.144.3 protocol, preserve the failed C-502 evidence, and
-    keep any new live smoke, C-503 and unrelated implementation separate.
+    Reconcile C-501 after PR 25, preserve the failed C-502 attempt as historical
+    evidence, authorize a fresh complete-lifecycle C-502 smoke only after PR 26
+    merges, and make engineering state persistence a verified UPE completion
+    requirement.
 
   repository_status:
     identity: Denys/UPE_v5.6
     canonical_url: https://github.com/Denys/UPE_v5.6
     default_branch: main
-    observed_main_commit: 293b328d436a27a848df2b7bf1858b840840058f
-    observed_main_commit_role: accepted_C410_merge_PR_24
+    observed_main_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+    observed_main_commit_role: accepted_C501_unversioned_framing_merge_PR_25
     prior_target_pr_1:
       state: MERGED
       merge_commit: 507cccc1a8dda824220b67afc8c39480b7fb8104
@@ -126,12 +127,15 @@ upe_state:
       head_commit: 80802a4d0599fe15580776aabffd98339a1c5e50
       merge_commit: b1d1a9be9669eb16f6d86e906c4b42b75a2e99e6
     C_501_unversioned_framing_correction:
-      state: TESTED_LOCALLY_CANDIDATE_REVIEW_PENDING
+      state: MERGED_PR_25_PASS
       branch: codex/c501-schema-framing-correction-20260727
       base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+      head_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+      pull_request: https://github.com/Denys/UPE_v5.6/pull/25
+      merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
       result: agent/state/C-501-result.yaml
       gate: validation/C-501-GATE.yaml
-      retained_C502_status: FAIL_NOT_CLOSED
+      retained_C502_status: HISTORICAL_FAIL_ATTEMPT_001_NOT_OVERWRITTEN
     C_409_local_slice:
       state: MERGED_PR_17
       branch: codex/c409-cli-doctor
@@ -152,15 +156,28 @@ upe_state:
 
   active_development:
     C-501:
-      state: UNVERSIONED_FRAMING_CORRECTION_CANDIDATE_REVIEW_PENDING
+      state: MERGED_PR_25_PASS
       branch: codex/c501-schema-framing-correction-20260727
-      base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+      merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
       authority: explicit_upe_code_pipeline_through_task_closed
     C-502:
-      state: FAIL_RETAINED_EVIDENCE_NOT_CLOSED
-      branch: codex/c502-app-server-smoke-20260727
-      base_commit: c8370a53b2d1b5cdf4c5f448ad7aae9c34a412dd
-      authority: no_rerun_authorized
+      state: AUTHORIZED_PENDING_PR_26_INTEGRATION
+      intended_branch: codex/c502-app-server-smoke-rerun-20260728
+      required_main_ancestor: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+      handoff: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+      authority: explicit_user_request_2026_07_28_complete_missing_C501_C502_steps
+      execution_gate: PR_26_merged_and_exact_head_reviewed
+      pr26_checkpoint_commit: f13d197b9909b8f04fc214620573f29121d38ae2
+      pr26_latest_reviewed_commit: ec7a552773fb5da160276cbe676b93f44051690e
+      required_live_scope: initialize_thread_turn_tool_approval_interrupt_reconnect
+      runner_delivery: POST_MERGE_REPOSITORY_TOOLING_REQUIRED_BEFORE_LIVE_START
+      runner_delivery_paths:
+        - scripts/run_c502_app_server_smoke.py
+        - scripts/validate_c502_app_server_smoke.py
+        - tests/integration/test_c502_app_server_smoke.py
+      runner_delivery_gate: COMMITTED_OFFLINE_TESTED_AND_FOCUSED_PRELIVE_INSPECTION_PASS
+      historical_runner_scope: ONE_HAPPY_PATH_TURN_NO_INTERRUPT_OR_RECONNECT_APPROVALS_DENIED
+      prior_attempt: FAIL_RETAINED_IMMUTABLE
 
   must_status:
     research_matrix: PASS
@@ -197,11 +214,11 @@ upe_state:
     C-407: MERGED_PR_15_PASS
     C-408: MERGED_PR_14_PASS
     C-409: MERGED_PR_17_PASS
-    C-501: CORRECTION_TESTED_LOCALLY_CANDIDATE_REVIEW_PENDING
-    C-502: FAIL_RETAINED_EVIDENCE_NOT_CLOSED
+    C-501: MERGED_PR_25_PASS
+    C-502: AUTHORIZED_PENDING_PR_26_INTEGRATION
     C-505: PR_18_PASS_SIX_REVIEW_CYCLES_REPAIRED
-    harness_implementation: C501_UNVERSIONED_FRAMING_CORRECTION_REVIEW_PENDING
-    local_implementation_authorization: GRANTED_C501_UPE_CODE_THROUGH_TASK_CLOSED
+    harness_implementation: C502_COMPLETE_LIFECYCLE_SMOKE_PENDING_PR_26
+    local_implementation_authorization: GRANTED_C502_AFTER_PR_26_MERGE
 
   authoritative_inputs:
     - Pasted markdown.md
@@ -225,9 +242,13 @@ upe_state:
     - handoffs/W-200-LOCAL-IMPLEMENTATION-BRIEF.md
 
   findings:
-    - The retained C-502 run proved that the generated stable 0.144.3 wire protocol is unversioned JSONL; the prior C-501 adapter invented and required a jsonrpc 2.0 member.
-    - C-501 now emits unversioned requests, notifications and server-request replies, accepts unversioned inbound envelopes, preserves strict classification, and follows generated Draft 7 extra-member behavior.
-    - The retained C-502 result and gate remain FAIL and not closed; no rerun, App Server process, model turn or fixture mutation occurred during this correction.
+    - The retained C-502 attempt proved that the generated stable 0.144.3 wire protocol is unversioned JSONL; the prior C-501 adapter invented and required a jsonrpc 2.0 member.
+    - C-502 attempt-001 did start the real Windows-native Codex App Server 0.144.3, sent initialize and received a response; it stopped at initialize_response_parse after 2.417 seconds because the pre-PR-25 adapter rejected the server's unversioned envelope.
+    - PR #25 merged the corrected C-501 unversioned request, notification, server-request and response framing at b20aa4304e61d12e6460e92fccb5b63d9560eb43.
+    - The retained C-502 result and gate remain immutable historical FAIL evidence; no App Server process, model turn or fixture mutation is claimed by PR #26.
+    - The fresh C-502 attempt is authorized only after PR #26 integration and must cover the ADR-001 initialize/thread/turn/tool/approval/interrupt/reconnect lifecycle, not only a happy path.
+    - PR #26 currently defines the attempt-002 contract but does not deliver a reproducible runner, validator or integration test for that expanded lifecycle. The uncommitted historical runner covers one happy-path turn, denies approvals and has no interrupt or reconnect scenario, so it cannot execute attempt-002 unchanged.
+    - UPE state persistence uses the existing research-state, task result/gate and ADR hierarchy; a parallel state.md or decision_log.md would create conflicting authority.
     - PR #4 merged C-301/C-302 into main at a7e99bd32e71ef047296446c14f9e4376b444fcd.
     - Accepted docs/research, docs/architecture, and schemas trees already existed on main and were reused without rewriting.
     - The build brief required four prompt and five template paths, but no accepted source files existed at those paths; C-303 records each new file as an intentional transformation of exact accepted contracts.
@@ -319,10 +340,21 @@ upe_state:
     - Repaired the fifth PR #18 review round by recognizing quoted serialized credential keys and returning FORBIDDEN for malformed recovered command workspaces; 86 focused and 451 complete repository tests pass.
     - Repaired the sixth PR #18 review round by classifying extensionless Windows interpreters and rejecting credential-bearing argv switches before policy retention; 92 focused and 457 complete repository tests pass.
     - Repaired the seventh PR #18 review round by redacting split credential-flag values in flat command, exception and tool-output text; all 69 permission tests plus changed-file Ruff and strict mypy checks pass, while the immediately preceding head retains the 457-test complete-suite evidence.
+    - Reconciled C-501 result/gate with merged PR #25 while preserving the four protected C-502 attempt-001 hashes.
+    - Added the PR #26 bounded C-502 attempt-002 handoff and expanded it to the complete ADR-001 approval, interrupt and reconnect lifecycle.
+    - Converted the C-502 attempt-002 transfer from a bespoke YAML envelope to paired W-205 goal and W-204 WORK_TO_CODEX contracts and passed direct Draft 2020-12 validation with format checking.
+    - Repaired exact-head review findings so the readiness frontier honors the PR 26 integration gate, the C-502 write boundary covers the fixture owner marker and derived report, and post-edit evidence uses verify-fast plus verify-full without rerunning bootstrap.
+    - Made the readiness frontier derive C-502 blocking from the persisted execution_gate field rather than a state-label alias, so renaming authorization state cannot bypass the merge-and-review gate.
+    - Made overall result/gate status authoritative over nested criteria, propagated the PR 26 prerequisite into C-501 next actions, and made C-502 mutable-input resolution squash-safe through one exact post-merge main baseline.
+    - Made repository-owned task gates authoritative over result records for completion, so a passing result cannot unblock downstream tasks while its mandatory gate is FAIL or INSUFFICIENT_EVIDENCE.
+    - Derived required task gates from canonical handoff outputs and applied them after every completion source, so a missing, FAIL or INSUFFICIENT_EVIDENCE gate cannot be bypassed by result, must-status, backlog or downstream completion.
+    - Made verified engineering state persistence a mandatory UPE workspace completion rule using existing canonical state, evidence and ADR locations.
 
   unresolved:
-    - A new bounded C-502 live-smoke run requires separate explicit approval; the consumed retained attempt remains FAIL and was not rerun.
-    - C-503 remains blocked until a separately authorized C-502 run passes.
+    - Decide and materialize how attempt-002 will deliver its reproducible runner, validator and integration test. Recommended minimum: extend the PR #26 handoff/goal allowed paths so the post-merge C-502 branch may adapt and verify those three artifacts before consuming the single live attempt.
+    - PR #26 must pass local validation, receive exact-head review and merge before the authorized C-502 attempt-002 may start.
+    - C-502 live compatibility remains UNKNOWN until the complete-lifecycle attempt-002 passes; the retained attempt-001 remains historical FAIL evidence.
+    - C-503 remains blocked until C-502 attempt-002 passes every approval, interrupt, reconnect, fixture and evidence requirement.
     - Run the scaffold checks on Python 3.12 and 3.13 before claiming support beyond the observed Python 3.14.3 runtime.
     - Wire the accepted C-505 policy into orchestration, persistence, recovery, CLI and provider dispatch only through the separate C-506 integration package.
     - Add CI and complete release/security review before release readiness.
@@ -365,6 +397,13 @@ upe_state:
       - C-501 generated unversioned JSONL envelopes, strict response/notification/server-request classification, initialize/thread/turn/approval methods and shapes, interleaving, ordering, redaction, terminal return, cancellation mapping, compatibility pinning, and transport error normalization
       - C-409 exact command parsing, fail-closed dispatch, concurrent bounded process reads, timeout child termination, secret-safe diagnostics, deterministic JSON, and read-only SQLite inspection
       - C-505 exact approval identity/scope/expiry/revocation, command/environment minimization, Windows path/network refusal and recursive secret/PII redaction with malformed-input canaries
+      - direct Draft 2020-12 validation of the C-502 WORK_TO_CODEX handoff against schemas/handoff.schema.yaml with RFC 3339 format checking
+      - readiness regression proving AUTHORIZED_PENDING_PR_26_INTEGRATION renders C-502 blocked/sequential and excludes it from suggested runs
+      - readiness regression proving a renamed C-502 state remains blocked while execution_gate is persisted
+      - evidence regression proving nested PASS criteria cannot override an overall FAIL or INSUFFICIENT_EVIDENCE verdict
+      - completion regression proving a C-502 result PASS is insufficient until validation/C-502-GATE.yaml also passes
+      - finalization regression proving missing, FAIL and INSUFFICIENT_EVIDENCE C-502 gates override passing result, must-status and backlog sources, while gate PASS completes the task
+      - C-502 contract checks freezing verify-fast.sh and verify-full.sh as post-edit exit-0 validators and covering every mandatory write path
     result: PASS
     scope_note: >-
       PASS accepts C-401 typed state/configuration, C-402 provider-neutral fake,
@@ -389,13 +428,15 @@ upe_state:
     - chatgpt_work_harness_implementation_routing_2026-07-18/
 
   recovery: >-
-    Resume C-501 framing correction on
-    codex/c501-schema-framing-correction-20260727 from
-    293b328d436a27a848df2b7bf1858b840840058f. Preserve the dirty primary,
-    retained C-502 evidence, prior C-501 worktrees and unrelated lanes.
+    Read re-fresh-continue-upe-pr26-c502-live-smoke.md, then resume PR #26
+    reconciliation from agent/reconcile-c501-c502. Preserve the dirty primary
+    checkout, retained C-502 attempt-001 evidence, all four protected hashes,
+    prior C-501 worktrees and unrelated lanes.
 
   next_action: >-
-    Run the fresh upe-code candidate review, then advance only through the
-    authorized exact commit, push, PR and merge gates. After merge, verify report
-    freshness and that C-502, not C-503, is the next separately authorized
-    runtime frontier.
+    Resolve the runner-delivery design recorded in the re-fresh handoff, update
+    the PR #26 contracts without executing the live run, rerun local validation
+    and obtain exact-head review. Merge only with separate authorization. After
+    merge, verify report provenance/freshness on main and execute only the
+    bounded C-502 attempt-002 handoff; keep C-503 blocked unless that
+    complete-lifecycle smoke passes.

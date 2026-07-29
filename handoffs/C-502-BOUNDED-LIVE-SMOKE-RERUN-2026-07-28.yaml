@@ -1,0 +1,653 @@
+schema_version: 1.0.0
+handoff_id: HO-C502-bounded-live-smoke-rerun-20260728
+revision: 1
+supersedes: null
+direction: WORK_TO_CODEX
+created_at: '2026-07-28T21:31:33Z'
+producer:
+  surface: LOCAL_WORK
+  actor: UPE PR 26 reconciliation lane
+  runtime: GPT-5.6-Sol
+consumer:
+  surface: LOCAL_CODEX
+  actor: Windows-native UPE implementation lane
+  runtime: Codex CLI 0.144.3
+
+task:
+  task_id: C-502
+  goal_id: goal.c502.bounded-live-smoke-rerun
+  goal_contract_ref:
+    kind: REPOSITORY_PATH
+    ref: handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
+    description: W-205 schema-valid C-502 bounded live-smoke goal contract.
+  title: Run a controlled Codex App Server lifecycle smoke task
+  contract_version: 1.0.0
+  status: BLOCKED
+
+repository:
+  provider: GITHUB
+  owner: Denys
+  name: UPE_v5.6
+  canonical_url: https://github.com/Denys/UPE_v5.6
+  base_ref: main
+  observed_commit: 79589b4d37526da84485a7321764fd38ea4688cb
+  delivery_ref: agent/reconcile-c501-c502
+  observed_at: '2026-07-28T21:31:33Z'
+  local_root: null
+  worktree_state: CLEAN
+  dirty_paths: []
+  pull_request:
+    number: 26
+    url: https://github.com/Denys/UPE_v5.6/pull/26
+    state: OPEN_READY
+
+authoritative_inputs:
+  - input_id: IN-C502-user-authorization
+    kind: USER_INSTRUCTION
+    location: GitHub-connected UPE conversation dated 2026-07-28
+    version_or_ref: user-request-2026-07-28
+    digest: null
+    required: true
+  - input_id: IN-C502-adr-001
+    kind: ADR
+    location: docs/architecture/ADR-001-harness-boundary.md
+    version_or_ref: main@b20aa4304e61d12e6460e92fccb5b63d9560eb43
+    digest: null
+    required: true
+  - input_id: IN-C502-backlog
+    kind: REPOSITORY_FILE
+    location: chatgpt_work_harness_implementation_routing_2026-07-18/harness_implementation_backlog.yaml
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
+    digest: null
+    required: true
+  - input_id: IN-C502-goal-contract
+    kind: REPOSITORY_FILE
+    location: handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
+    digest: null
+    required: true
+  - input_id: IN-C502-c501-gate
+    kind: GATE_RECORD
+    location: validation/C-501-GATE.yaml
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
+    digest: null
+    required: true
+  - input_id: IN-C502-c501-result
+    kind: REPOSITORY_FILE
+    location: agent/state/C-501-result.yaml
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
+    digest: null
+    required: true
+  - input_id: IN-C502-current-state
+    kind: REPOSITORY_FILE
+    location: docs/research/research-state.yaml
+    version_or_ref: post-merge-main@contains-PR-26-reviewed-content
+    digest: null
+    required: true
+  - input_id: IN-C502-handoff-schema
+    kind: SCHEMA
+    location: schemas/handoff.schema.yaml
+    version_or_ref: 1.0.0
+    digest: null
+    required: true
+  - input_id: IN-C502-generated-protocol
+    kind: RUNTIME_EVIDENCE
+    location: docs/research/generated-app-server-schema/codex-cli-0.144.3
+    version_or_ref: codex-cli-0.144.3
+    digest: null
+    required: true
+
+scope:
+  in_scope:
+    - >-
+      Adapt, commit and validate the repository-owned attempt-002 runner,
+      validator and offline integration test before starting App Server.
+    - >-
+      Run one Windows-native App Server process, one thread, one fixture-mutating
+      turn and at most two non-mutating control turns.
+    - >-
+      Prove initialize, thread/turn, exact-scope tool approval, interrupt,
+      resume/reconnect, ordered events, one terminal per turn and clean process
+      shutdown.
+    - >-
+      Bootstrap and mutate only the generated C-305 fixture repository, run only
+      its predeclared deterministic validator, and persist bounded attempt-002
+      evidence.
+    - >-
+      Record PASS, FAIL or INSUFFICIENT_EVIDENCE without retrying an unchanged
+      failed scenario, then update canonical state, the C-502 gate and the
+      derived readiness report.
+  out_of_scope:
+    - Release, deployment, production use or repository visibility changes.
+    - C-503 crash/restart recovery implementation.
+    - Any mutation of the primary user checkout, unrelated worktrees or systems.
+    - Any modification or deletion of retained C-502 attempt-001 evidence.
+    - Any smoke-task network or external-service action.
+  allowed_paths:
+    - scripts/run_c502_app_server_smoke.py
+    - scripts/validate_c502_app_server_smoke.py
+    - tests/integration/test_c502_app_server_smoke.py
+    - examples/fixture-repository/.fixture-output/repository
+    - examples/fixture-repository/.fixture-output.owner
+    - evals/results/app-server-smoke/attempt-002
+    - docs/research/app-server-smoke-observation.md
+    - agent/state/C-502-result.yaml
+    - validation/C-502-GATE.yaml
+    - docs/research/research-state.yaml
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  forbidden_actions:
+    - Start before PR 26 is merged and present in the new worktree baseline.
+    - Start App Server before the repository-owned tooling passes offline tests and focused pre-live inspection.
+    - Use more than one App Server process, one thread, three turns or one fixture-mutating turn.
+    - Send network requests or perform external-service actions from the smoke task.
+    - Expose credentials, secret values, broad environment state or unrelated user artifacts.
+    - Modify any path outside scope or alter retained attempt-001 evidence.
+    - Continue after a malformed, ambiguous, duplicated, mismatched or uncorrelated provider event.
+    - Retry an unchanged failed or unknown external action.
+    - Merge, release, deploy or change visibility without new exact-scope approval.
+
+must_requirements:
+  - must_id: MUST-C502-preflight
+    statement: >-
+      From a fresh isolated worktree based on current origin/main, prove that the
+      baseline contains PR 25 and the exact reviewed content merged through PR
+      26. Resolve every `post-merge-main@contains-PR-26-reviewed-content` input
+      from that single baseline and compare its tracked content, without
+      requiring feature-branch SHA ancestry after a squash merge. Record exact
+      branch, HEAD, dirty state, worktrees, Python, uv, Git and Codex identities;
+      require Codex CLI 0.144.3 and a successful app-server help probe; bootstrap
+      a clean C-305 fixture and pass the focused C-501 tests.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-run-summary
+      - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
+    evidence_refs: []
+  - must_id: MUST-C502-bounds
+    statement: >-
+      Use at most one App Server process, one thread, three turns and one
+      fixture-mutating turn; stop rather than widening any bound.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-run-summary
+      - OUT-C502-events
+    evidence_refs: []
+  - must_id: MUST-C502-tooling-readiness
+    statement: >-
+      Adapt and commit the repository-owned complete-lifecycle runner, artifact
+      validator and offline integration test on the task-scoped post-merge C-502
+      branch. Pass their deterministic tests without starting App Server and
+      clear one focused pre-live inspection before consuming attempt-002.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-runner-source
+      - OUT-C502-validator-source
+      - OUT-C502-integration-test
+    evidence_refs: []
+  - must_id: MUST-C502-initialize
+    statement: >-
+      Accept the unversioned JSONL initialize response, confirm the exact
+      CLI/schema pin, send initialized, create exactly one thread, and preserve
+      correlation and event order.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-run-summary
+      - OUT-C502-events
+    evidence_refs: []
+  - must_id: MUST-C502-approval
+    statement: >-
+      Request one harmless deterministic text-file change in the generated
+      fixture; observe one exact thread, turn, item and path-scoped approval,
+      answer it once, and permit only the predeclared fixture validator.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-approval
+      - OUT-C502-events
+      - OUT-C502-fixture-diff
+      - OUT-C502-validator
+    evidence_refs: []
+  - must_id: MUST-C502-interrupt
+    statement: >-
+      Start one bounded non-mutating turn, interrupt it after its first
+      correlated non-terminal event, and observe exactly one interrupted
+      terminal for that turn.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-interrupt
+      - OUT-C502-events
+    evidence_refs: []
+  - must_id: MUST-C502-reconnect
+    statement: >-
+      Resume or reconnect the same thread through the adapter, verify the
+      original thread identity, submit one non-mutating confirmation turn, and
+      observe exactly one completed terminal without repeating fixture mutation.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-reconnect
+      - OUT-C502-events
+    evidence_refs: []
+  - must_id: MUST-C502-containment
+    statement: >-
+      Prove that only the generated fixture changed, that the deterministic
+      validator result matches that diff, that no external mutation occurred,
+      and that the App Server process stopped cleanly. After capturing the
+      observed edit, run exactly `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-fast.sh` and `C:\Program Files\Git\usr\bin\bash.exe
+      scripts/verify-full.sh`; require exit 0 plus `fixture_verify_fast=PASS` or
+      `fixture_verify_full=PASS` and `exit_code=0`. Do not rerun bootstrap after
+      the edit because it recreates the fixture repository.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-run-summary
+      - OUT-C502-fixture-diff
+      - OUT-C502-validator
+      - OUT-C502-fixture-owner-marker
+    evidence_refs: []
+  - must_id: MUST-C502-evidence
+    statement: >-
+      Produce all attempt-002 outputs, record SHA-256 for every result artifact,
+      redact unneeded model text, stderr and environment values, preserve the
+      four attempt-001 hashes verbatim, and separate observation from inference
+      and retained PR 25 evidence.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-run-summary
+      - OUT-C502-events
+      - OUT-C502-approval
+      - OUT-C502-interrupt
+      - OUT-C502-reconnect
+      - OUT-C502-fixture-diff
+      - OUT-C502-validator
+      - OUT-C502-observation
+    evidence_refs: []
+  - must_id: MUST-C502-state
+    statement: >-
+      Update the C-502 result, gate, canonical research state and observation
+      with the exact main baseline and attempt-002 hashes; regenerate and check
+      the derived readiness report; keep C-503 blocked unless every critical
+      condition passes.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-result
+      - OUT-C502-gate
+      - OUT-C502-state
+      - OUT-C502-observation
+      - OUT-C502-readiness-report
+    evidence_refs: []
+  - must_id: MUST-C502-review
+    statement: >-
+      After deterministic checks, obtain a fresh exact-head read-only review;
+      merge remains a separately authorized action.
+    critical: true
+    status: PENDING
+    output_refs:
+      - OUT-C502-gate
+      - OUT-C502-state
+    evidence_refs: []
+
+outputs:
+  - output_id: OUT-C502-runner-source
+    location: scripts/run_c502_app_server_smoke.py
+    media_type: text/x-python
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-validator-source
+    location: scripts/validate_c502_app_server_smoke.py
+    media_type: text/x-python
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-integration-test
+    location: tests/integration/test_c502_app_server_smoke.py
+    media_type: text/x-python
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-fixture-owner-marker
+    location: examples/fixture-repository/.fixture-output.owner
+    media_type: text/plain
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-run-summary
+    location: evals/results/app-server-smoke/attempt-002/run-summary.json
+    media_type: application/json
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-events
+    location: evals/results/app-server-smoke/attempt-002/events.jsonl
+    media_type: application/x-ndjson
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-approval
+    location: evals/results/app-server-smoke/attempt-002/approval-result.json
+    media_type: application/json
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-interrupt
+    location: evals/results/app-server-smoke/attempt-002/interrupt-result.json
+    media_type: application/json
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-reconnect
+    location: evals/results/app-server-smoke/attempt-002/reconnect-result.json
+    media_type: application/json
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-fixture-diff
+    location: evals/results/app-server-smoke/attempt-002/fixture-diff.patch
+    media_type: text/x-diff
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-validator
+    location: evals/results/app-server-smoke/attempt-002/validator-result.json
+    media_type: application/json
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-observation
+    location: docs/research/app-server-smoke-observation.md
+    media_type: text/markdown
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-result
+    location: agent/state/C-502-result.yaml
+    media_type: application/yaml
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-gate
+    location: validation/C-502-GATE.yaml
+    media_type: application/yaml
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-state
+    location: docs/research/research-state.yaml
+    media_type: application/yaml
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+  - output_id: OUT-C502-readiness-report
+    location: UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    media_type: text/html
+    status: PLANNED
+    digest: null
+    evidence_refs: []
+
+evidence:
+  - evidence_id: EV-C502-handoff-schema
+    kind: SCHEMA_VALIDATION
+    location: validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+    captured_at: '2026-07-28T21:31:33Z'
+    version_or_ref: agent/reconcile-c501-c502
+    digest: null
+    supports:
+      - MUST-C502-review
+      - criterion.contract
+    result: PASS
+    summary: >-
+      The C-502 handoff directly validates against the Draft 2020-12
+      schemas/handoff.schema.yaml contract with format checking.
+  - evidence_id: EV-C502-c501-gate
+    kind: FILE
+    location: validation/C-501-GATE.yaml
+    captured_at: '2026-07-28T21:31:33Z'
+    version_or_ref: main@b20aa4304e61d12e6460e92fccb5b63d9560eb43
+    digest: null
+    supports:
+      - MUST-C502-preflight
+    result: PASS
+    summary: PR 25 merged the C-501 unversioned JSONL correction; live compatibility remains unclaimed.
+  - evidence_id: EV-C502-prior-hashes
+    kind: FILE
+    location: agent/state/C-501-result.yaml
+    captured_at: '2026-07-28T21:31:33Z'
+    version_or_ref: agent/reconcile-c501-c502@79589b4d37526da84485a7321764fd38ea4688cb
+    digest: null
+    supports:
+      - MUST-C502-evidence
+    result: PASS
+    summary: The four protected attempt-001 hashes remain recorded unchanged as historical failure evidence.
+  - evidence_id: EV-C502-user-authorization
+    kind: APPROVAL
+    location: GitHub-connected UPE conversation dated 2026-07-28
+    captured_at: '2026-07-28T21:31:33Z'
+    version_or_ref: user-request-2026-07-28
+    digest: null
+    supports:
+      - AP-C502-write
+      - AP-C502-commit
+      - AP-C502-push
+      - AP-C502-create-pr
+      - AP-C502-update-pr
+    result: PASS
+    summary: >-
+      The user authorized completion of the bounded missing C-501/C-502 work;
+      this includes post-merge repository-owned tooling delivery, but the
+      receiver must still revalidate exact scope before each action.
+
+approvals:
+  policy: EXPLICIT_FOR_CONSEQUENTIAL
+  records:
+    - approval_id: AP-C502-write
+      action: WRITE
+      target: C-502 isolated worktree allowed_paths
+      exact_scope: >-
+        Create one fresh isolated worktree, write only the three repository-owned
+        tooling files, generated C-305 fixture and listed attempt-002
+        evidence/state paths, and run one bounded local App Server lifecycle
+        smoke only after offline tooling readiness passes.
+      status: GRANTED
+      authority_ref: user request dated 2026-07-28 in the GitHub-connected UPE conversation
+      recorded_at: '2026-07-28T21:31:33Z'
+      expires_at: null
+    - approval_id: AP-C502-commit
+      action: COMMIT
+      target: future task-scoped C-502 evidence branch
+      exact_scope: Commit only the bounded C-502 tooling, generated attempt-002 evidence and required state, gate and observation updates.
+      status: GRANTED
+      authority_ref: user request dated 2026-07-28 in the GitHub-connected UPE conversation
+      recorded_at: '2026-07-28T21:31:33Z'
+      expires_at: null
+    - approval_id: AP-C502-push
+      action: PUSH
+      target: future task-scoped C-502 evidence branch
+      exact_scope: Push only the reviewed C-502 evidence branch to Denys/UPE_v5.6.
+      status: GRANTED
+      authority_ref: user request dated 2026-07-28 in the GitHub-connected UPE conversation
+      recorded_at: '2026-07-28T21:31:33Z'
+      expires_at: null
+    - approval_id: AP-C502-create-pr
+      action: CREATE_PR
+      target: Denys/UPE_v5.6 C-502 evidence pull request
+      exact_scope: Create one task-scoped C-502 pull request after local validation.
+      status: GRANTED
+      authority_ref: user request dated 2026-07-28 in the GitHub-connected UPE conversation
+      recorded_at: '2026-07-28T21:31:33Z'
+      expires_at: null
+    - approval_id: AP-C502-update-pr
+      action: UPDATE_PR
+      target: Denys/UPE_v5.6 C-502 evidence pull request
+      exact_scope: Update only the task-scoped C-502 pull request with validation and exact-head review results.
+      status: GRANTED
+      authority_ref: user request dated 2026-07-28 in the GitHub-connected UPE conversation
+      recorded_at: '2026-07-28T21:31:33Z'
+      expires_at: null
+  still_required: []
+  forbidden_without_new_approval:
+    - MERGE
+    - RELEASE
+    - DEPLOY
+    - VISIBILITY_CHANGE
+    - EXTERNAL_MESSAGE
+    - PURCHASE
+    - PRODUCTION_MUTATION
+    - DESTRUCTIVE_ACTION
+    - SECRET_HANDLING
+    - OTHER_EXTERNAL_WRITE
+
+state_snapshot:
+  authority: REPOSITORY_HANDOFF
+  canonical_state_ref: docs/research/research-state.yaml
+  run_id: null
+  lifecycle_state: BLOCKED
+  iteration: 0
+  event_seq: null
+  last_transition_id: null
+  captured_at: '2026-07-28T21:31:33Z'
+
+checkpoint:
+  checkpoint_id: CP-C502-pr26-reconciliation
+  kind: REPOSITORY_ARTIFACT
+  reference: validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+  created_at: '2026-07-28T21:31:33Z'
+  verified: true
+  previous_checkpoint_id: null
+  artifact_hashes: []
+  validation_refs:
+    - EV-C502-handoff-schema
+
+external_actions: []
+
+verification:
+  overall: INSUFFICIENT_EVIDENCE
+  criteria:
+    - criterion_id: criterion.contract
+      verdict: PASS
+      blocking: true
+      evidence_refs:
+        - EV-C502-handoff-schema
+      smallest_correction: null
+      missing_evidence: []
+    - criterion_id: criterion.evidence-integrity
+      verdict: INSUFFICIENT_EVIDENCE
+      blocking: true
+      evidence_refs:
+        - EV-C502-c501-gate
+        - EV-C502-prior-hashes
+      smallest_correction: Execute the bounded attempt-002 and verify every planned output and SHA-256 digest.
+      missing_evidence:
+        - committed repository-owned runner, validator and offline integration test
+        - passing offline tooling tests and focused pre-live inspection
+        - attempt-002 runtime outputs and hashes
+        - fixture diff tied to deterministic validator result
+        - approval, interrupt and reconnect observations
+    - criterion_id: criterion.safety-delivery
+      verdict: INSUFFICIENT_EVIDENCE
+      blocking: true
+      evidence_refs:
+        - EV-C502-user-authorization
+      smallest_correction: >-
+        Merge PR 26 only under separate authorization, create the fresh worktree
+        from updated origin/main, and revalidate repository, runtime, approval
+        and containment facts before starting the App Server.
+      missing_evidence:
+        - merged PR 26 in the fresh worktree baseline
+        - live CLI and generated-schema identity
+        - fresh exact-scope approval revalidation
+        - proof that no external or unrelated mutation occurred
+
+unresolved:
+  - issue_id: ISS-C502-pr26-not-merged
+    description: PR 26 is open and merge is not authorized.
+    impact: BLOCKING
+    owner: OPERATOR
+    next_step: Review the exact PR 26 head and provide separate merge authorization if accepted.
+  - issue_id: ISS-C502-live-unknown
+    description: No fresh attempt-002 has proved live App Server compatibility after PR 25.
+    impact: BLOCKING
+    owner: LOCAL_CODEX
+    next_step: Execute this handoff only after the PR 26 integration precondition is satisfied.
+  - issue_id: ISS-C502-tooling-pending
+    description: The repository-owned attempt-002 runner, validator and offline integration test are authorized but not yet delivered.
+    impact: BLOCKING
+    owner: LOCAL_CODEX
+    next_step: Implement, commit, test and inspect the three tooling artifacts on the fresh post-merge C-502 branch before App Server startup.
+  - issue_id: ISS-C503-dependent
+    description: C-503 depends on a fully passing C-502 lifecycle smoke.
+    impact: NON_BLOCKING
+    owner: LOCAL_CODEX
+    next_step: Keep C-503 blocked unless every C-502 critical MUST and verification criterion passes.
+
+recovery:
+  last_stable_checkpoint_id: CP-C502-pr26-reconciliation
+  resume_preconditions:
+    - Fetch origin and prove that current origin/main contains PR 25 and the accepted PR 26 merge.
+    - Create a fresh isolated worktree and branch from that exact origin/main.
+    - Implement and commit the three repository-owned tooling artifacts, pass offline tests and clear focused pre-live inspection.
+    - Revalidate the handoff, required inputs, repository identity, allowed paths and approval scope.
+    - Confirm Codex CLI 0.144.3, the accepted generated protocol identity and a clean C-305 fixture baseline.
+  revalidate:
+    - GitHub PR 26 state, accepted merge commit and current origin/main ancestry.
+    - Codex CLI version, app-server help result and generated schema identity.
+    - App Server process absence before start and clean fixture repository identity.
+    - Approval target, exact scope, status and expiry before each consequential action.
+    - Current canonical research state and readiness report agreement.
+  do_not_repeat:
+    - Do not rerun, rewrite or delete retained C-502 attempt-001 evidence.
+    - Do not re-adjudicate the merged PR 25 C-501 envelope correction unless its identity changed.
+    - Do not recreate PR 26 reconciliation artifacts that remain valid.
+    - Do not retry any unknown or failed action without first reconciling its target state.
+  reconciliation_required: false
+
+next_action:
+  status: BLOCKED
+  owner: LOCAL_CODEX
+  action: >-
+    After separately authorized PR 26 merge, create a fresh branch/worktree from
+    updated origin/main; implement, commit, test and inspect the repository-owned
+    tooling offline; then execute exactly one bounded C-502 attempt-002.
+  preconditions:
+    - PR 26 is merged after passing local checks and exact-head review.
+    - Current origin/main contains both PR 25 and the accepted PR 26 merge.
+    - The runner, validator and integration test are committed and pass offline validation plus focused pre-live inspection.
+    - Canonical research state and readiness report agree that C-502 is authorized.
+    - The handoff and every required input validate and remain reachable.
+    - The exact-scope write, commit, push and PR grants are revalidated before use.
+  stop_conditions:
+    - Stop if any precondition, identity, approval, containment or protocol check fails.
+    - Stop after the first unmet mandatory condition and record FAIL or INSUFFICIENT_EVIDENCE.
+    - Stop if any response, notification, terminal or action correlation is malformed, ambiguous, absent or duplicated.
+    - Stop before any action outside allowed paths or the recorded authorization.
+    - Stop the App Server and preserve bounded partial evidence on failure.
+  approval_refs:
+    - AP-C502-write
+    - AP-C502-commit
+    - AP-C502-push
+    - AP-C502-create-pr
+    - AP-C502-update-pr
+
+notes:
+  - >-
+    The retained attempt-001 result, gate, observation and validator SHA-256
+    values are respectively b4f0309b24cef482648984679b038e93fa4c967f859ce806da8c53ee3eba0182,
+    b3dad269ad2aa4d060382be1a25b2ac4131b646d6083a393522ab5d3e79f9765,
+    2f67e7f947dbc5b05bcd5fd20ba04d445414059077c686c44d3a1f943c376d49
+    and 1f02cd3c7a31470dc346f089bbe0db749297acdabbcb1f26258ea1f4655076e3.
+  - >-
+    The accepted runtime pin is Codex CLI 0.144.3 using the generated
+    codex-app-server unversioned JSONL protocol; observed Python support is
+    3.14.3 and broader Python support is not claimed.
+  - >-
+    This repository handoff carries approval evidence but grants no authority by
+    itself; the receiver must revalidate the user grant and exact target before
+    each consequential action.

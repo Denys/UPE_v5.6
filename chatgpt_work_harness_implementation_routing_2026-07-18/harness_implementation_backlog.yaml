@@ -962,17 +962,21 @@ tasks:
   - C-305
   - C-409
   critical_path: true
-  scope: One narrow happy-path smoke run; do not call the harness production-ready.
+  scope: >-
+    One bounded lifecycle smoke covering initialize, thread/turn, exact-scope
+    tool approval, interrupt and resume/reconnect; do not call the harness
+    production-ready.
   outputs:
   - evals/results/app-server-smoke/
   - docs/research/app-server-smoke-observation.md
   completion_evidence:
   - fixture-only change observed
   - events recorded
+  - approval, interrupt and resume/reconnect behavior observed
   - validator evidence recorded
   - no external mutation
   escalation: none
-  notes: ''
+  notes: One thread, at most three turns, and one fixture-mutating turn.
 - id: C-503
   title: Implement crash/restart and process-state reconciliation
   phase: 6-app-server-recovery-security

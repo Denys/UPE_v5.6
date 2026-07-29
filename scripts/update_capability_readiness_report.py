@@ -7,7 +7,7 @@ import json
 import re
 import subprocess
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -210,15 +210,11 @@ def _task_ids_from_text(value: str) -> set[str]:
     return ids
 
 
-def _status_values(value: object) -> Iterable[object]:
-    if isinstance(value, Mapping):
-        for key, nested in value.items():
-            if str(key).lower() in {"status", "verdict", "result", "state"}:
-                yield nested
-            yield from _status_values(nested)
-    elif isinstance(value, list):
-        for nested in value:
-            yield from _status_values(nested)
+def _declared_status(record: Mapping[str, Any]) -> object | None:
+    for key in ("status", "verdict", "result", "state", "decision"):
+        if key in record:
+            return record[key]
+    return None
 
 
 def _evidence_is_successful(path: Path) -> bool:
@@ -226,20 +222,57 @@ def _evidence_is_successful(path: Path) -> bool:
         data = _load_yaml(path)
     except (OSError, ValueError, yaml.YAMLError):
         return False
-    return any(_successful(value) for value in _status_values(data))
+
+    overall = _declared_status(data)
+    if overall is not None:
+        return _successful(overall)
+
+    task = data.get("task")
+    if isinstance(task, Mapping):
+        task_status = _declared_status(task)
+        if task_status is not None:
+            return _successful(task_status)
+
+    tasks = data.get("tasks")
+    if isinstance(tasks, Mapping) and tasks:
+        task_statuses = [
+            _declared_status(record) for record in tasks.values() if isinstance(record, Mapping)
+        ]
+        return len(task_statuses) == len(tasks) and all(
+            status is not None and _successful(status) for status in task_statuses
+        )
+
+    verification = data.get("verification")
+    if isinstance(verification, Mapping):
+        verification_status = _declared_status(verification)
+        if verification_status is not None:
+            return _successful(verification_status)
+
+    upe_state = data.get("upe_state")
+    if isinstance(upe_state, Mapping):
+        verification = upe_state.get("verification")
+        if isinstance(verification, Mapping):
+            verification_status = _declared_status(verification)
+            if verification_status is not None:
+                return _successful(verification_status)
+
+    return False
 
 
 def _evidence_task_ids(root: Path) -> set[str]:
-    paths = [
-        *sorted((root / "agent/state").glob("*result*.yaml")),
+    result_paths = sorted((root / "agent/state").glob("*result*.yaml"))
+    gate_paths = [
         *sorted((root / "validation").glob("*GATE*.yaml")),
         *sorted((root / "gate-records").glob("*.yaml")),
     ]
+    authoritative_gate_ids = {
+        task_id for path in gate_paths for task_id in _task_ids_from_text(path.name)
+    }
     completed: set[str] = set()
-    for path in paths:
+    for path in [*result_paths, *gate_paths]:
         if not _evidence_is_successful(path):
             continue
-        completed.update(_task_ids_from_text(path.name))
+        record_task_ids = _task_ids_from_text(path.name)
         try:
             data = _load_yaml(path)
         except (OSError, ValueError, yaml.YAMLError):
@@ -248,14 +281,17 @@ def _evidence_task_ids(root: Path) -> set[str]:
         if isinstance(task_record, Mapping):
             declared_id = task_record.get("id")
             if declared_id is not None:
-                completed.update(_task_ids_from_text(str(declared_id)))
+                record_task_ids.update(_task_ids_from_text(str(declared_id)))
         for key in ("task_id", "task_ids"):
             declared = data.get(key)
             if isinstance(declared, list):
                 for item in declared:
-                    completed.update(_task_ids_from_text(str(item)))
+                    record_task_ids.update(_task_ids_from_text(str(item)))
             elif declared is not None:
-                completed.update(_task_ids_from_text(str(declared)))
+                record_task_ids.update(_task_ids_from_text(str(declared)))
+        if path in result_paths:
+            record_task_ids.difference_update(authoritative_gate_ids)
+        completed.update(record_task_ids)
     return completed
 
 
@@ -276,6 +312,59 @@ def _active_development_states(state: Mapping[str, Any]) -> dict[str, str]:
         raw_state = record.get("state", "") if isinstance(record, Mapping) else record
         states[_normalize_state_key(raw_task_id)] = _normalize_state_key(raw_state)
     return states
+
+
+def _active_development_execution_gates(state: Mapping[str, Any]) -> dict[str, str]:
+    upe_state = state.get("upe_state", {})
+    if not isinstance(upe_state, Mapping):
+        return {}
+    active = upe_state.get("active_development", {})
+    if not isinstance(active, Mapping):
+        return {}
+
+    gates: dict[str, str] = {}
+    for raw_task_id, record in active.items():
+        if not isinstance(record, Mapping):
+            continue
+        raw_gate = record.get("execution_gate")
+        if isinstance(raw_gate, str) and raw_gate.strip():
+            gates[_normalize_state_key(raw_task_id)] = raw_gate.strip()
+    return gates
+
+
+def _required_task_gate_paths(state: Mapping[str, Any], root: Path) -> dict[str, Path]:
+    required: dict[str, Path] = {}
+    upe_state = state.get("upe_state", {})
+    active = upe_state.get("active_development", {}) if isinstance(upe_state, Mapping) else {}
+    if isinstance(active, Mapping):
+        for raw_task_id, record in active.items():
+            if not isinstance(record, Mapping):
+                continue
+            handoff_ref = record.get("handoff")
+            if not isinstance(handoff_ref, str) or not handoff_ref.strip():
+                continue
+            try:
+                handoff = _load_yaml(root / handoff_ref)
+            except (OSError, ValueError, yaml.YAMLError):
+                continue
+            outputs = handoff.get("outputs", [])
+            if not isinstance(outputs, list):
+                continue
+            for output in outputs:
+                if not isinstance(output, Mapping):
+                    continue
+                location = output.get("location")
+                if (
+                    isinstance(location, str)
+                    and location.startswith("validation/")
+                    and "GATE" in Path(location).name.upper()
+                ):
+                    required[_normalize_state_key(raw_task_id)] = root / location
+
+    for gate_path in sorted((root / "validation").glob("*GATE*.yaml")):
+        for task_id in _task_ids_from_text(gate_path.name):
+            required.setdefault(task_id, gate_path)
+    return required
 
 
 def _completed_task_ids(
@@ -308,10 +397,14 @@ def _completed_task_ids(
             if dependency_id not in completed and dependency_id in task_by_id:
                 completed.add(dependency_id)
                 pending.append(dependency_id)
+
+    for task_id, gate_path in _required_task_gate_paths(state, root).items():
+        if not gate_path.is_file() or not _evidence_is_successful(gate_path):
+            completed.discard(task_id)
     return completed
 
 
-def _git_value(root: Path, *arguments: str) -> str:
+def _git_value(root: Path, *arguments: str) -> str | None:
     completed = subprocess.run(
         ["git", *arguments],
         cwd=root,
@@ -319,7 +412,115 @@ def _git_value(root: Path, *arguments: str) -> str:
         capture_output=True,
         text=True,
     )
-    return completed.stdout.strip() if completed.returncode == 0 else "unavailable"
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and value else None
+
+
+def _repository_commit_exists(root: Path, head: str) -> bool:
+    completed = subprocess.run(
+        ["git", "cat-file", "-e", f"{head}^{{commit}}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0
+
+
+def _report_matches_head(root: Path, report: Path) -> bool:
+    try:
+        relative_report = report.resolve().relative_to(root.resolve())
+    except ValueError:
+        return False
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", relative_report.as_posix()],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if tracked.returncode != 0:
+        return False
+    unchanged = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", relative_report.as_posix()],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return unchanged.returncode == 0
+
+
+def _valid_repository_head(head: object) -> bool:
+    return isinstance(head, str) and re.fullmatch(r"[0-9a-f]{40}", head) is not None
+
+
+def _valid_repository_values(head: object, branch: object) -> bool:
+    return (
+        _valid_repository_head(head)
+        and isinstance(branch, str)
+        and bool(branch)
+        and branch != "unavailable"
+        and not any(character.isspace() or ord(character) < 32 for character in branch)
+    )
+
+
+def _valid_repository_context(value: object) -> bool:
+    return (
+        isinstance(value, Mapping)
+        and _valid_repository_values(value.get("head"), value.get("branch"))
+        and value.get("context_status") in {"observed", "explicit", "preserved"}
+    )
+
+
+def _repository_context(
+    root: Path,
+    *,
+    explicit_head: str | None,
+    explicit_branch: str | None,
+    previous: object,
+    allow_unresolved_preserved: bool = False,
+) -> dict[str, str]:
+    observed_head = _git_value(root, "rev-parse", "HEAD")
+    observed_branch = _git_value(root, "branch", "--show-current")
+    if _valid_repository_values(observed_head, observed_branch):
+        return {
+            "head": str(observed_head),
+            "branch": str(observed_branch),
+            "context_status": "observed",
+        }
+
+    if explicit_head is not None or explicit_branch is not None:
+        if not _valid_repository_values(explicit_head, explicit_branch):
+            raise ValueError("repository overrides require a 40-hex head and a non-empty branch")
+        if _valid_repository_head(observed_head) and not _repository_commit_exists(
+            root, str(explicit_head)
+        ):
+            raise ValueError("repository override head does not resolve to a commit")
+        return {
+            "head": str(explicit_head),
+            "branch": str(explicit_branch),
+            "context_status": "explicit",
+        }
+
+    if isinstance(previous, Mapping) and _valid_repository_values(
+        previous.get("head"), previous.get("branch")
+    ):
+        if (
+            _valid_repository_head(observed_head)
+            and not allow_unresolved_preserved
+            and not _repository_commit_exists(root, str(previous["head"]))
+        ):
+            raise ValueError("preserved repository head does not resolve to a commit")
+        return {
+            "head": str(previous["head"]),
+            "branch": str(previous["branch"]),
+            "context_status": "preserved",
+        }
+
+    raise ValueError(
+        "repository provenance is unavailable; no observed, explicit, or preserved context exists"
+    )
 
 
 def _origin_documents(task: Mapping[str, Any]) -> list[dict[str, str]]:
@@ -395,6 +596,7 @@ def _planning(
     status: str,
     dependency_mode: str,
     incomplete_dependencies: list[str],
+    execution_gate: str | None,
 ) -> dict[str, object]:
     if status == "complete":
         return {
@@ -418,8 +620,18 @@ def _planning(
             "blocked_by": [],
         }
 
-    parallelizable_now = dependency_mode == "independent_now" and not incomplete_dependencies
-    if parallelizable_now:
+    blocked_by = [
+        *incomplete_dependencies,
+        *([execution_gate] if execution_gate is not None else []),
+    ]
+    parallelizable_now = (
+        dependency_mode == "independent_now"
+        and not incomplete_dependencies
+        and execution_gate is None
+    )
+    if execution_gate is not None:
+        parallel_note = f"Blocked by execution gate {execution_gate}."
+    elif parallelizable_now:
         parallel_note = (
             "Can start from the current accepted baseline in an isolated branch/worktree; "
             "shared report and current-state bookkeeping must be integrated serially."
@@ -441,7 +653,7 @@ def _planning(
         ),
         "parallelizable_now": parallelizable_now,
         "parallel_note": parallel_note,
-        "blocked_by": incomplete_dependencies,
+        "blocked_by": blocked_by,
     }
 
 
@@ -531,12 +743,18 @@ def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
         for index, task in enumerate(ready, start=1)
     ]
 
-    blockers = [
+    dependency_blockers = [
         f"{task['id']} waits on {', '.join(task['incomplete_dependencies'])}"
         for task in rendered
         if task["status"] == "blocked"
         and any(dependency in task_ids for dependency in task["incomplete_dependencies"])
-    ][:6]
+    ]
+    execution_gate_blockers = [
+        f"{task['id']} waits on {task['execution_gate']}"
+        for task in rendered
+        if task["status"] == "blocked" and task["execution_gate"] is not None
+    ]
+    blockers = [*execution_gate_blockers, *dependency_blockers][:6]
 
     effort_ranges = [
         task["planning"]["estimate_hours"]
@@ -604,7 +822,12 @@ def _next_suggested_run(rendered: list[dict[str, Any]]) -> dict[str, object]:
     }
 
 
-def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, Any]:
+def build_payload(
+    root: Path,
+    *,
+    repository_context: Mapping[str, str],
+    refreshed_at: str | None = None,
+) -> dict[str, Any]:
     backlog = _load_yaml(root / BACKLOG_PATH)
     state = _load_yaml(root / STATE_PATH)
     raw_tasks = backlog.get("tasks")
@@ -613,6 +836,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
     tasks = [task for task in raw_tasks if isinstance(task, Mapping)]
     completed = _completed_task_ids(tasks, state, root)
     active_states = _active_development_states(state)
+    execution_gates = _active_development_execution_gates(state)
 
     visible_tasks = [
         task
@@ -626,7 +850,11 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
         dependencies = [str(item) for item in task.get("dependencies", [])]
         incomplete_dependencies = [item for item in dependencies if item not in completed]
         canonical_status = str(task.get("status", "planned")).lower()
-        if task_id in completed:
+        execution_gate = execution_gates.get(task_id)
+        if execution_gate is not None:
+            status = "blocked"
+            dependency_mode = "sequential"
+        elif task_id in completed:
             status = "complete"
             dependency_mode = "satisfied"
         elif active_states.get(task_id) == "LOCALLY-ACCEPTED-UNMERGED":
@@ -662,6 +890,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
                 "dependency_mode": dependency_mode,
                 "dependencies": dependencies,
                 "incomplete_dependencies": incomplete_dependencies,
+                "execution_gate": execution_gate,
                 "dependents": [],
                 "critical_path": bool(task.get("critical_path", False)),
                 "description": str(task.get("scope", "No scope description recorded.")),
@@ -674,6 +903,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
                     status=status,
                     dependency_mode=dependency_mode,
                     incomplete_dependencies=incomplete_dependencies,
+                    execution_gate=execution_gate,
                 ),
             }
         )
@@ -715,10 +945,7 @@ def build_payload(root: Path, *, refreshed_at: str | None = None) -> dict[str, A
     return {
         "schema_version": "1.0",
         "refreshed_at": refreshed_at or datetime.now().astimezone().isoformat(timespec="seconds"),
-        "repository": {
-            "head": _git_value(root, "rev-parse", "HEAD"),
-            "branch": _git_value(root, "branch", "--show-current"),
-        },
+        "repository": dict(repository_context),
         "summary": {
             "visible_tasks": len(rendered),
             "delivery_tasks": len(delivery_tasks),
@@ -810,6 +1037,19 @@ def _parse_args(arguments: list[str]) -> argparse.Namespace:
     parser.add_argument("--check", action="store_true", help="fail when embedded state is stale")
     parser.add_argument("--quiet", action="store_true", help="suppress the summary line")
     parser.add_argument("--report", type=Path, help="override the report path")
+    parser.add_argument(
+        "--repository-head",
+        help="validated 40-hex repository head used only when local Git is unavailable",
+    )
+    parser.add_argument(
+        "--repository-branch",
+        help="repository branch paired with --repository-head",
+    )
+    parser.add_argument(
+        "--allow-invalid-repository-context",
+        action="store_true",
+        help="diagnostic-only: ignore invalid embedded provenance during --check",
+    )
     return parser.parse_args(arguments)
 
 
@@ -821,8 +1061,60 @@ def main(arguments: list[str] | None = None) -> int:
         report = root / report
     html = report.read_bytes().decode("utf-8")
     existing = _embedded_payload(html)
+    existing_repository = existing.get("repository")
+    report_bound_to_head = options.check and _report_matches_head(root, report)
+    if (
+        options.check
+        and not options.allow_invalid_repository_context
+        and not _valid_repository_context(existing_repository)
+    ):
+        print(
+            "FAIL capability readiness report repository provenance is invalid",
+            file=sys.stderr,
+        )
+        return 1
+    observed_head = _git_value(root, "rev-parse", "HEAD")
+    if (
+        options.check
+        and not options.allow_invalid_repository_context
+        and _valid_repository_head(observed_head)
+        and isinstance(existing_repository, Mapping)
+        and not _repository_commit_exists(root, str(existing_repository["head"]))
+        and not report_bound_to_head
+    ):
+        print(
+            "FAIL capability readiness report repository head is unresolved "
+            "and the report is not bound to current Git history",
+            file=sys.stderr,
+        )
+        return 1
+    if options.allow_invalid_repository_context and not options.check:
+        print(
+            "FAIL --allow-invalid-repository-context is diagnostic-only and requires --check",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        repository_context = _repository_context(
+            root,
+            explicit_head=options.repository_head,
+            explicit_branch=options.repository_branch,
+            previous=existing_repository,
+            allow_unresolved_preserved=report_bound_to_head,
+        )
+    except ValueError as error:
+        if not (options.check and options.allow_invalid_repository_context):
+            print(f"FAIL {error}", file=sys.stderr)
+            return 1
+        repository_context = (
+            dict(existing_repository) if isinstance(existing_repository, Mapping) else {}
+        )
     refreshed_at = str(existing.get("refreshed_at", "")) if options.check else None
-    expected = build_payload(root, refreshed_at=refreshed_at)
+    expected = build_payload(
+        root,
+        repository_context=repository_context,
+        refreshed_at=refreshed_at,
+    )
 
     if options.check:
         if _freshness_state(existing) != _freshness_state(expected):

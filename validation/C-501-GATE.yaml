@@ -1,20 +1,33 @@
 schema_version: '1.0'
 gate_id: C-501-CODEX-APP-SERVER-ADAPTER
-generated_at: '2026-07-27T07:54:39.868Z'
+generated_at: '2026-07-28'
 status: PASS
 status_reason: >-
-  The schema-pinned synchronous adapter now uses the generated stable
-  codex-cli 0.144.3 unversioned JSONL envelope framing, preserves strict
-  classification and all accepted lifecycle behavior, and passes 477
-  repository tests without starting App Server or a model.
+  PR 25 corrected the adapter to the generated stable codex-cli 0.144.3
+  unversioned JSONL framing, preserved strict classification and accepted
+  lifecycle behavior, recorded 36 focused and 477 repository tests, and merged
+  to main at b20aa4304e61d12e6460e92fccb5b63d9560eb43. C-501 is closed;
+  live compatibility remains the separate C-502 gate.
 
 repository:
   identity: Denys/UPE_v5.6
-  base_commit: 293b328d436a27a848df2b7bf1858b840840058f
-  working_tree_head: 293b328d436a27a848df2b7bf1858b840840058f
-  branch: codex/c501-schema-framing-correction-20260727
   original_pull_request: https://github.com/Denys/UPE_v5.6/pull/16
   nested_terminal_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/22
+  framing_correction_pull_request: https://github.com/Denys/UPE_v5.6/pull/25
+  framing_correction_base_commit: 293b328d436a27a848df2b7bf1858b840840058f
+  framing_correction_head_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  merge_commit: b20aa4304e61d12e6460e92fccb5b63d9560eb43
+  adopted_on_main: true
+
+review:
+  date: '2026-07-28'
+  route: connected_github_read_only_static_review
+  exact_candidate_commit: 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a
+  verdict: PASS
+  limits:
+    - No checks were rerun on the GitHub-connected review surface.
+    - Recorded PR 25 verification remains the execution evidence.
+    - This review does not satisfy or replace C-502 live evidence.
 
 criteria:
   - id: C-501-UNVERSIONED-FRAMING
@@ -54,18 +67,23 @@ criteria:
   - id: C-501-REGRESSION
     verdict: PASS
     evidence:
-      - Thirty-six focused C-501 and 477 complete repository tests pass on Windows Python 3.14.3.
-      - Lock, Ruff lint and format, strict mypy, work-specification, reference, schema, report and diff checks pass.
+      - PR 25 records 36 focused C-501 and 477 complete repository tests on Windows Python 3.14.3.
+      - PR 25 records lock, Ruff lint and format, strict mypy, work-specification, reference, schema, report and diff checks as passing.
       - New tests start no App Server, model, shell, network or external action.
+  - id: C-501-DELIVERY
+    verdict: PASS
+    evidence:
+      - Exact correction head 4d942ba6c07712d5fa8c147f4b2822ed64ba6a5a merged through PR 25.
+      - Main adopted the correction at b20aa4304e61d12e6460e92fccb5b63d9560eb43.
+      - The stale candidate-review and task_closed fields are reconciled by this record.
   - id: C-501-SCOPE-AND-PRESERVATION
     verdict: PASS
     evidence:
-      - Functional changes are confined to the canonical adapter and unit-test paths.
-      - C-501 result, gate, current-state and mandatory derived report are the only evidence paths eligible for serialized reconciliation.
-      - Generated schemas, retained C-502 files and status, primary checkout and unrelated worktrees remain unchanged.
-      - No C-502 rerun, release, deployment, destructive cleanup or unrelated external mutation occurred.
+      - Functional changes remain confined to the canonical adapter and unit-test paths.
+      - Generated schemas and the prior C-502 evidence hashes remain unchanged.
+      - No release, deployment, destructive cleanup or unrelated external mutation is claimed.
 
-commands:
+recorded_commands_from_PR_25:
   - py -3 -m uv lock --check
   - py -3 -m uv run pytest -q tests/unit/test_codex_adapter.py
   - py -3 -m uv run pytest -q
@@ -79,7 +97,7 @@ commands:
   - py -3 -m uv run python scripts/update_capability_readiness_report.py --check
   - git diff --check
 
-observed_results:
+recorded_results_from_PR_25:
   focused_tests: 36_passed
   full_repository_tests: 477_passed
   uv_lock: PASS_33_PACKAGES
@@ -90,13 +108,18 @@ observed_results:
   reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
   schema_validator: PASS_6_INSTANCES
   capability_report_tests: PASS_9_TESTS
-  capability_report_before_reconciliation: PASS_CURRENT
   git_diff_check: PASS
 
 known_limits:
-  - No C-502 rerun was performed; live compatibility remains separately authorization-gated.
-  - C-502 remains FAIL and not closed, so C-503 remains blocked.
+  - No new C-502 run has yet proved live compatibility.
+  - The prior failed C-502 evidence remains immutable historical evidence, not the verdict for a future attempt.
+  - C-503 remains blocked until a fresh C-502 attempt passes.
   - App Server remains experimental and no production-readiness claim is made.
   - Python 3.12 and 3.13 remain unverified.
 
-next_action: Obtain fresh candidate review approving only the exact task-scoped commit.
+next_action_gate: PR_26_merged_and_exact_head_reviewed
+next_action: >-
+  Only after PR 26 is merged and its exact reviewed content is present on
+  origin/main, run the separately authorized bounded C-502 attempt from a fresh
+  worktree based on that accepted main commit and preserve the prior failed
+  attempt under its existing four hashes.
