@@ -170,7 +170,12 @@ upe_state:
       pr26_checkpoint_commit: f13d197b9909b8f04fc214620573f29121d38ae2
       pr26_latest_reviewed_commit: ec7a552773fb5da160276cbe676b93f44051690e
       required_live_scope: initialize_thread_turn_tool_approval_interrupt_reconnect
-      runner_delivery: BLOCKED_MISSING_REPRODUCIBLE_ATTEMPT_002_RUNNER
+      runner_delivery: POST_MERGE_REPOSITORY_TOOLING_REQUIRED_BEFORE_LIVE_START
+      runner_delivery_paths:
+        - scripts/run_c502_app_server_smoke.py
+        - scripts/validate_c502_app_server_smoke.py
+        - tests/integration/test_c502_app_server_smoke.py
+      runner_delivery_gate: COMMITTED_OFFLINE_TESTED_AND_FOCUSED_PRELIVE_INSPECTION_PASS
       historical_runner_scope: ONE_HAPPY_PATH_TURN_NO_INTERRUPT_OR_RECONNECT_APPROVALS_DENIED
       prior_attempt: FAIL_RETAINED_IMMUTABLE
 

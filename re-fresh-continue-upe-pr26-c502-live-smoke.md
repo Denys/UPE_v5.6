@@ -11,8 +11,8 @@ live smoke unless separately authorized.
 - Local branch: `codex/pr26-state-persistence-reconciliation-20260728`.
 - Remote PR branch: `agent/reconcile-c501-c502`.
 - Pull request: https://github.com/Denys/UPE_v5.6/pull/26
-- Published functional/state checkpoint:
-  `f13d197b9909b8f04fc214620573f29121d38ae2`.
+- Starting clean remote checkpoint:
+  `0c4944e5b817af7244be32da0c024134179de8e7`.
 - PR #25 is merged at `b20aa4304e61d12e6460e92fccb5b63d9560eb43`
   and fixes the unversioned App Server envelope framing.
 - C-502 attempt-001 was a real Windows-native App Server 0.144.3 launch. It
@@ -27,32 +27,27 @@ live smoke unless separately authorized.
   gate is applied after every completion source; missing, `FAIL` or
   `INSUFFICIENT_EVIDENCE` keeps C-502 incomplete. Targeted tests are 30/30 and
   the complete suite is 498/498.
-- Critical open gap: PR #26 does not deliver an attempt-002 runner, validator or
-  integration test. The uncommitted historical runner is happy-path-only,
-  denies approvals and has no interrupt/reconnect scenario.
+- Runner-delivery design is resolved: PR #26 must authorize the repository-owned
+  runner, validator and offline integration test as required post-merge C-502
+  outputs, with offline validation and focused pre-live inspection before App
+  Server startup. The tooling itself remains intentionally outside PR #26.
 - No PR #26 merge and no attempt-002 live run are authorized or performed.
 
 ## Next steps
 
 1. Inspect branch, HEAD, dirty state and recent history; re-run the smallest
    checks if the checkpoint is not clean.
-2. Resolve the runner-delivery design before implementation:
-   - recommended minimum: extend the PR #26 handoff and goal allowed paths so
-     the post-merge C-502 branch may adapt, test and commit
-     `scripts/run_c502_app_server_smoke.py`,
-     `scripts/validate_c502_app_server_smoke.py` and
-     `tests/integration/test_c502_app_server_smoke.py` before consuming the one
-     live attempt;
-   - alternative: implement and review the complete lifecycle tooling inside
-     PR #26 before merge, at the cost of a much larger reconciliation PR;
-   - reject an ephemeral external runner because it lacks reviewed repository
-     provenance.
-3. After the design is approved, update the bounded contracts and deterministic
-   tests only. Do not run App Server yet.
-4. Regenerate the readiness report, run the full local gate set, push the
-   checkpoint and obtain a fresh exact-head review.
-5. Request separate merge authorization. Only after PR #26 is merged into a
+2. Verify both contracts carry the same 11 allowed paths and 16 outputs,
+   including `scripts/run_c502_app_server_smoke.py`,
+   `scripts/validate_c502_app_server_smoke.py` and
+   `tests/integration/test_c502_app_server_smoke.py`.
+3. Regenerate the readiness report, run the consolidated local gate set, push
+   the checkpoint and obtain one final exact-head review. Do not restart broad
+   review cycles unless it reports a genuine blocker.
+4. Request separate merge authorization. Only after PR #26 is merged into a
    fresh `origin/main` worktree may attempt-002 start.
+5. On the post-merge C-502 branch, implement, commit, test and inspect the three
+   tooling artifacts offline before starting App Server.
 6. During attempt-002, use exactly one App Server process, one thread, at most
    three turns and one fixture mutation; write the planned evidence/result/gate,
    and keep C-503 blocked unless every critical criterion passes.

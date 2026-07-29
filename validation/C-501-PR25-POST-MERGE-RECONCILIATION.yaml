@@ -21,6 +21,7 @@ run_record:
       - Derive required task gates from canonical handoff outputs and apply them after every completion source, so a missing or non-PASS gate always leaves the task incomplete.
       - Carry the PR 26 merge-and-review prerequisite into both C-501 next-action records.
       - Resolve mutable C-502 inputs from one exact post-merge main baseline by content rather than feature-branch ancestry.
+      - Authorize repository-owned runner, validator and integration-test delivery on the post-merge C-502 branch, with offline validation and focused pre-live inspection before App Server startup.
     rejected:
       - Treating the one-turn happy-path handoff as sufficient for ADR-001.
       - Treating report head or branch values of unavailable as valid provenance.
@@ -40,6 +41,7 @@ run_record:
     - PR_26_EXACT_HEAD_REVIEW_PENDING
     - PR_26_NOT_MERGED
     - C502_LIVE_COMPATIBILITY_UNKNOWN
+    - C502_POST_MERGE_TOOLING_NOT_YET_DELIVERED
     - C503_DEPENDS_ON_C502_PASS
   artifacts_generated:
     - handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
@@ -267,6 +269,82 @@ refresh_checkpoint_2026_07_29:
     app_server_protocol_contract: runner_delivery_gap_recorded
     state_and_recovery: new_chat_checkpoint_added
     security_and_approvals: unchanged_no_live_action
+    documentation_and_report: updated
+    release_or_deployment: none
+
+runner_delivery_decision_2026_07_29:
+  captured_at: '2026-07-29T06:41:06+02:00'
+  objective: >-
+    Make PR 26 an executable precondition for C-502 attempt-002 without adding
+    lifecycle tooling to the reconciliation PR or consuming the live attempt.
+  decisions:
+    accepted:
+      - >-
+        Deliver the complete-lifecycle runner, deterministic validator and
+        offline integration test as required repository-owned artifacts on the
+        fresh post-merge C-502 branch.
+      - >-
+        Expand both C-502 contracts to 11 allowed paths and 16 aligned outputs,
+        and require committed tooling, passing offline tests and one focused
+        pre-live inspection before App Server startup.
+      - >-
+        Use one final exact-head PR 26 review after the consolidated contract
+        change; do not restart broad review cycles unless it reports a genuine
+        blocker.
+    rejected:
+      - Expanding PR 26 with the complete lifecycle-tooling implementation.
+      - Running attempt-002 from an ephemeral external script without repository provenance.
+    deferred:
+      - Implement and execute the tooling only after separately authorized PR 26 merge.
+      - Execute exactly one live attempt only after the offline tooling-readiness gate passes.
+  evidence:
+    - handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
+    - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    - tests/test_capability_readiness_report.py
+  repository_changes:
+    - handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml
+    - handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
+    - docs/research/research-state.yaml
+    - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+    - tests/test_capability_readiness_report.py
+    - re-fresh-continue-upe-pr26-c502-live-smoke.md
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  verification:
+    contract_alignment: PASS_11_ALLOWED_PATHS_16_OUTPUTS
+    direct_contract_schemas: PASS_DRAFT_2020_12_WITH_FORMAT_CHECKING
+    targeted_tests: PASS_31
+    complete_repository_tests: PASS_499
+    ruff_lint: PASS
+    ruff_format: PASS_49_FILES
+    mypy_strict: PASS_40_SOURCE_FILES
+    uv_lock: PASS_33_PACKAGES
+    work_specification_validator: PASS
+    reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+    capability_report_freshness_and_provenance: PASS
+    git_diff_check: PASS
+    visual_report: PASS_DESKTOP_1440x1000_MOBILE_390x844_NO_CONSOLE_ERRORS_NO_HORIZONTAL_OVERFLOW
+  assumptions:
+    - The post-merge C-502 branch remains separately authorization-gated and will start from fresh origin/main.
+  risks:
+    - A live attempt can still be wasted if the focused pre-live tooling inspection is skipped.
+    - Live approval behavior may still yield UNKNOWN or INSUFFICIENT_EVIDENCE after tooling passes offline.
+  open_questions:
+    - none_for_runner_delivery
+  next_recommended_step: >-
+    Validate and publish this contract-only PR 26 checkpoint, obtain one final
+    exact-head review, then request separate merge authorization.
+  blocking_issues:
+    - PR_26_EXACT_HEAD_REVIEW_PENDING
+    - PR_26_NOT_MERGED
+    - C502_POST_MERGE_TOOLING_NOT_YET_DELIVERED
+    - C502_LIVE_COMPATIBILITY_UNKNOWN
+  artifacts_generated:
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+  version_impact:
+    harness_runtime: none
+    app_server_protocol_contract: post_merge_repository_tooling_required
+    state_and_recovery: runner_delivery_decision_resolved
+    security_and_approvals: offline_tooling_gate_added
     documentation_and_report: updated
     release_or_deployment: none
 

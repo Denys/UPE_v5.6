@@ -11,6 +11,7 @@ from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html"
@@ -467,6 +468,61 @@ def test_c502_handoff_resolves_mutable_inputs_from_post_merge_main() -> None:
         == 5
     )
     assert "without\n      requiring feature-branch SHA ancestry after a squash merge" in handoff
+
+
+def test_c502_contracts_require_aligned_post_merge_tooling() -> None:
+    goal_path = ROOT / "handoffs/C-502-GOAL-CONTRACT-2026-07-28.yaml"
+    handoff_path = ROOT / "handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml"
+    goal = cast(dict[str, Any], yaml.safe_load(goal_path.read_text(encoding="utf-8")))
+    handoff = cast(dict[str, Any], yaml.safe_load(handoff_path.read_text(encoding="utf-8")))
+
+    tooling_outputs = {
+        "OUT-C502-runner-source": "scripts/run_c502_app_server_smoke.py",
+        "OUT-C502-validator-source": "scripts/validate_c502_app_server_smoke.py",
+        "OUT-C502-integration-test": "tests/integration/test_c502_app_server_smoke.py",
+    }
+    expected_allowed_paths = {
+        *tooling_outputs.values(),
+        "examples/fixture-repository/.fixture-output/repository",
+        "examples/fixture-repository/.fixture-output.owner",
+        "evals/results/app-server-smoke/attempt-002",
+        "docs/research/app-server-smoke-observation.md",
+        "agent/state/C-502-result.yaml",
+        "validation/C-502-GATE.yaml",
+        "docs/research/research-state.yaml",
+        "UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html",
+    }
+    goal_allowed_paths = {entry["ref"] for entry in goal["scope"]["allowed_files"]}
+    handoff_allowed_paths = set(handoff["scope"]["allowed_paths"])
+    goal_outputs = {entry["id"]: entry["destination"]["ref"] for entry in goal["outputs"]}
+    handoff_outputs = {entry["output_id"]: entry["location"] for entry in handoff["outputs"]}
+
+    assert goal_allowed_paths == handoff_allowed_paths == expected_allowed_paths
+    assert len(expected_allowed_paths) == 11
+    assert goal_outputs == handoff_outputs
+    assert len(goal_outputs) == 16
+    assert tooling_outputs.items() <= goal_outputs.items()
+
+    goal_tooling_condition = next(
+        condition
+        for condition in goal["done_conditions"]
+        if condition["id"] == "done.c502.tooling-readiness"
+    )
+    handoff_tooling_requirement = next(
+        requirement
+        for requirement in handoff["must_requirements"]
+        if requirement["must_id"] == "MUST-C502-tooling-readiness"
+    )
+    assert set(goal_tooling_condition["output_ids"]) == set(tooling_outputs)
+    assert set(handoff_tooling_requirement["output_refs"]) == set(tooling_outputs)
+    assert goal_tooling_condition["mandatory"] is True
+    assert handoff_tooling_requirement["critical"] is True
+    assert "without starting App Server" in goal_tooling_condition["description"]
+    assert "without starting App Server" in handoff_tooling_requirement["statement"]
+    assert any(
+        "before the repository-owned tooling passes offline tests" in action
+        for action in handoff["scope"]["forbidden_actions"]
+    )
 
 
 def test_visible_report_narrative_matches_current_frontier() -> None:

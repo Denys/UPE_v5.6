@@ -9,6 +9,7 @@ objective: >-
 scope:
   in_scope:
     - One fresh isolated worktree and branch from updated origin/main after PR 26 integration.
+    - Repository-owned runner, validator and integration-test delivery with offline validation before App Server startup.
     - One App Server process, one thread, one fixture-mutating turn and at most two non-mutating control turns.
     - Initialize, thread/turn, exact-scope approval, interrupt, resume/reconnect, event ordering and terminal behavior.
     - C-305 fixture bootstrap, fixture-only deterministic change and validator execution.
@@ -20,6 +21,15 @@ scope:
     - Network or external-service actions initiated by the smoke task.
     - Mutation of the primary checkout, unrelated worktrees, unrelated repositories or retained attempt-001 evidence.
   allowed_files:
+    - kind: REPOSITORY_PATH
+      ref: scripts/run_c502_app_server_smoke.py
+      description: Repository-owned attempt-002 lifecycle runner created and validated before live startup.
+    - kind: REPOSITORY_PATH
+      ref: scripts/validate_c502_app_server_smoke.py
+      description: Repository-owned deterministic validator for attempt-002 artifacts and correlations.
+    - kind: REPOSITORY_PATH
+      ref: tests/integration/test_c502_app_server_smoke.py
+      description: Offline integration coverage for the runner and validator without starting App Server.
     - kind: REPOSITORY_PATH
       ref: examples/fixture-repository/.fixture-output/repository
       description: Generated C-305 fixture repository and only permitted smoke-task mutation root.
@@ -94,6 +104,26 @@ done_conditions:
       - OUT-C502-run-summary
       - OUT-C502-validator
       - OUT-C502-fixture-owner-marker
+    release_blocking: true
+  - id: done.c502.tooling-readiness
+    description: >-
+      The repository-owned runner, validator and offline integration test are
+      committed on the task-scoped post-merge C-502 branch; their deterministic
+      tests pass without starting App Server, and one focused pre-live inspection
+      finds no blocker before the single live attempt may begin.
+    mandatory: true
+    verification:
+      method: HUMAN_REVIEW
+      evidence_required: true
+      validator_refs:
+        - kind: REPOSITORY_PATH
+          ref: tests/integration/test_c502_app_server_smoke.py
+          description: Offline runner/validator integration tests that must pass without App Server startup.
+      evaluator_access: READ_ONLY
+    output_ids:
+      - OUT-C502-runner-source
+      - OUT-C502-validator-source
+      - OUT-C502-integration-test
     release_blocking: true
   - id: done.c502.lifecycle
     description: >-
@@ -177,6 +207,8 @@ constraints:
       description: Execute exactly one attempt-002 with one process, one thread, at most three turns and one fixture-mutating turn.
     - id: must.c502.stop-first-failure
       description: Stop at the first unmet mandatory condition and record FAIL or INSUFFICIENT_EVIDENCE with bounded partial evidence.
+    - id: must.c502.tooling-readiness
+      description: Commit and validate the three repository-owned tooling artifacts offline and clear one focused pre-live inspection before starting App Server.
     - id: must.c502.state-persistence
       description: Update result, gate, canonical state, observation and derived readiness report before considering the run complete.
     - id: must.c502.exact-head-review
@@ -184,6 +216,8 @@ constraints:
   must_not:
     - id: must-not.c502.premerge
       description: Do not start until PR 26 is merged under separate authorization and present in current origin/main.
+    - id: must-not.c502.unvalidated-tooling
+      description: Do not start App Server while the offline tooling-readiness condition is incomplete or blocked.
     - id: must-not.c502.repeat-history
       description: Do not rerun, rewrite or delete retained attempt-001 evidence.
     - id: must-not.c502.external
@@ -216,7 +250,7 @@ constraints:
 tools:
   required:
     - capability_id: local.repository
-      purpose: Inspect the exact UPE repository and create bounded local evidence/state artifacts.
+      purpose: Inspect the exact UPE repository and create the bounded tooling, evidence and state artifacts.
       required_action_scope: WRITE
       capability_record_ref: null
       fallback: Stop with a repository identity or write-scope blocker.
@@ -247,7 +281,7 @@ tools:
     - capability_id: production.system
       reason: C-502 is a fixture-only validation task and has no production authority.
     - capability_id: unrelated.repository.write
-      reason: Only the generated fixture and named evidence/state paths are in scope.
+      reason: Only the three tooling files, generated fixture and named evidence/state paths are in scope.
   actual_exposure_required: true
 
 approvals:
@@ -256,11 +290,11 @@ approvals:
   rules:
     - action_class: WRITE
       requirement: EXPLICIT_AUTHORIZATION
-      scope: Write only the generated fixture and named attempt-002 evidence/state paths in a fresh isolated worktree.
+      scope: Write only the three tooling files, generated fixture and named attempt-002 evidence/state paths in a fresh isolated worktree.
       approver: user
     - action_class: COMMIT
       requirement: EXPLICIT_AUTHORIZATION
-      scope: Commit only the bounded C-502 attempt-002 evidence and required state/gate updates.
+      scope: Commit only the bounded C-502 tooling, attempt-002 evidence and required state/gate updates.
       approver: user
     - action_class: PUSH
       requirement: EXPLICIT_AUTHORIZATION
@@ -316,6 +350,36 @@ budget:
   stop_on_exhaustion: true
 
 outputs:
+  - id: OUT-C502-runner-source
+    description: Repository-owned complete-lifecycle attempt-002 runner.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: scripts/run_c502_app_server_smoke.py
+      description: Bounded runner implemented and validated before live startup.
+    format: Python source
+    required: true
+    done_condition_ids:
+      - done.c502.tooling-readiness
+  - id: OUT-C502-validator-source
+    description: Repository-owned deterministic attempt-002 artifact validator.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: scripts/validate_c502_app_server_smoke.py
+      description: Validator for output shape, correlation, bounds, hashes and containment evidence.
+    format: Python source
+    required: true
+    done_condition_ids:
+      - done.c502.tooling-readiness
+  - id: OUT-C502-integration-test
+    description: Offline integration coverage for the attempt-002 runner and validator.
+    destination:
+      kind: REPOSITORY_PATH
+      ref: tests/integration/test_c502_app_server_smoke.py
+      description: Deterministic tests that exercise lifecycle tooling without starting App Server.
+    format: Python source
+    required: true
+    done_condition_ids:
+      - done.c502.tooling-readiness
   - id: OUT-C502-fixture-owner-marker
     description: Adjacent ownership marker created and validated by the C-305 fixture bootstrap.
     destination:
@@ -462,4 +526,4 @@ completion_policy:
   worker_self_attestation_sufficient: false
 
 created_at: '2026-07-28T21:31:33Z'
-updated_at: null
+updated_at: '2026-07-29T06:41:06+02:00'
