@@ -399,6 +399,51 @@ def test_authoritative_gate_controls_result_completion(
     assert ("C-502" in completed) is expected_complete
 
 
+@pytest.mark.parametrize(
+    ("gate_status", "expected_complete"),
+    [
+        (None, False),
+        ("FAIL", False),
+        ("INSUFFICIENT_EVIDENCE", False),
+        ("PASS", True),
+    ],
+)
+def test_required_gate_is_applied_after_every_completion_source(
+    tmp_path: Path, gate_status: str | None, expected_complete: bool
+) -> None:
+    module = _updater_module()
+    handoff_path = tmp_path / "handoffs/C-502.yaml"
+    result_path = tmp_path / "agent/state/C-502-result.yaml"
+    gate_path = tmp_path / "validation/C-502-GATE.yaml"
+    (tmp_path / "gate-records").mkdir()
+    handoff_path.parent.mkdir()
+    result_path.parent.mkdir(parents=True)
+    gate_path.parent.mkdir()
+    handoff_path.write_text(
+        "outputs:\n  - output_id: OUT-C502-gate\n    location: validation/C-502-GATE.yaml\n",
+        encoding="utf-8",
+    )
+    result_path.write_text("status: PASS\n", encoding="utf-8")
+    if gate_status is not None:
+        gate_path.write_text(f"status: {gate_status}\n", encoding="utf-8")
+    state = {
+        "upe_state": {
+            "active_development": {
+                "C-502": {
+                    "state": "ATTEMPT_COMPLETE",
+                    "handoff": "handoffs/C-502.yaml",
+                }
+            },
+            "must_status": {"C-502": "PASS"},
+        }
+    }
+    tasks = [{"id": "C-502", "status": "done", "dependencies": []}]
+
+    completed = module._completed_task_ids(tasks, state, tmp_path)
+
+    assert ("C-502" in completed) is expected_complete
+
+
 def test_c501_next_actions_preserve_c502_execution_gate() -> None:
     for relative_path in ("agent/state/C-501-result.yaml", "validation/C-501-GATE.yaml"):
         record = (ROOT / relative_path).read_text(encoding="utf-8")

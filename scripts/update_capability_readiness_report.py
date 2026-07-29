@@ -332,6 +332,41 @@ def _active_development_execution_gates(state: Mapping[str, Any]) -> dict[str, s
     return gates
 
 
+def _required_task_gate_paths(state: Mapping[str, Any], root: Path) -> dict[str, Path]:
+    required: dict[str, Path] = {}
+    upe_state = state.get("upe_state", {})
+    active = upe_state.get("active_development", {}) if isinstance(upe_state, Mapping) else {}
+    if isinstance(active, Mapping):
+        for raw_task_id, record in active.items():
+            if not isinstance(record, Mapping):
+                continue
+            handoff_ref = record.get("handoff")
+            if not isinstance(handoff_ref, str) or not handoff_ref.strip():
+                continue
+            try:
+                handoff = _load_yaml(root / handoff_ref)
+            except (OSError, ValueError, yaml.YAMLError):
+                continue
+            outputs = handoff.get("outputs", [])
+            if not isinstance(outputs, list):
+                continue
+            for output in outputs:
+                if not isinstance(output, Mapping):
+                    continue
+                location = output.get("location")
+                if (
+                    isinstance(location, str)
+                    and location.startswith("validation/")
+                    and "GATE" in Path(location).name.upper()
+                ):
+                    required[_normalize_state_key(raw_task_id)] = root / location
+
+    for gate_path in sorted((root / "validation").glob("*GATE*.yaml")):
+        for task_id in _task_ids_from_text(gate_path.name):
+            required.setdefault(task_id, gate_path)
+    return required
+
+
 def _completed_task_ids(
     tasks: list[Mapping[str, Any]], state: Mapping[str, Any], root: Path
 ) -> set[str]:
@@ -362,6 +397,10 @@ def _completed_task_ids(
             if dependency_id not in completed and dependency_id in task_by_id:
                 completed.add(dependency_id)
                 pending.append(dependency_id)
+
+    for task_id, gate_path in _required_task_gate_paths(state, root).items():
+        if not gate_path.is_file() or not _evidence_is_successful(gate_path):
+            completed.discard(task_id)
     return completed
 
 
@@ -812,15 +851,15 @@ def build_payload(
         incomplete_dependencies = [item for item in dependencies if item not in completed]
         canonical_status = str(task.get("status", "planned")).lower()
         execution_gate = execution_gates.get(task_id)
-        if task_id in completed:
+        if execution_gate is not None:
+            status = "blocked"
+            dependency_mode = "sequential"
+        elif task_id in completed:
             status = "complete"
             dependency_mode = "satisfied"
         elif active_states.get(task_id) == "LOCALLY-ACCEPTED-UNMERGED":
             status = "in_development"
             dependency_mode = "in_progress"
-        elif execution_gate is not None:
-            status = "blocked"
-            dependency_mode = "sequential"
         elif canonical_status == "optional":
             status = "optional"
             dependency_mode = "independent" if not incomplete_dependencies else "sequential"

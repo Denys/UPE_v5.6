@@ -18,6 +18,7 @@ run_record:
       - Include the fixture owner marker and readiness report in the C-502 write boundary and freeze verify-fast/verify-full as the post-edit validators.
       - Treat an evidence record's overall status as authoritative over nested passing criteria when deriving task completion.
       - When a repository-owned task gate exists, require that gate to pass before a result record may contribute task completion.
+      - Derive required task gates from canonical handoff outputs and apply them after every completion source, so a missing or non-PASS gate always leaves the task incomplete.
       - Carry the PR 26 merge-and-review prerequisite into both C-501 next-action records.
       - Resolve mutable C-502 inputs from one exact post-merge main baseline by content rather than feature-branch ancestry.
     rejected:
@@ -67,8 +68,8 @@ run_record:
     yaml_parse: PASS_4_FILES
     C502_goal_contract_schema: PASS_DRAFT_2020_12_DIRECT_FORMAT_CHECK
     C502_handoff_schema: PASS_DRAFT_2020_12_DIRECT_FORMAT_CHECK
-    capability_report_tests: PASS_18
-    complete_repository_tests: PASS_486
+    capability_report_tests: PASS_30
+    complete_repository_tests: PASS_498
     ruff_lint: PASS
     ruff_format: PASS_49_FILES
     mypy_strict: PASS_40_SOURCE_FILES
@@ -99,17 +100,18 @@ run_record:
       C502_execution_gate_remediation_commit: 182f853b8b7ccc93b3035df16079a0cf547a31ba
       C502_persisted_gate_source_remediation_commit: 697cff6a28aa67c1b30b99ee9bf3f3b889814662
       C502_evidence_and_post_merge_input_remediation_commit: c13689829eab3047d9afa9a04118ad9db0b58034
-      C502_authoritative_gate_aggregation_commit: resolve_containing_commit_from_git_history
+      C502_authoritative_gate_aggregation_commit: ec7a552773fb5da160276cbe676b93f44051690e
+      C502_required_gate_finalization_commit: resolve_containing_commit_from_git_history
       delivery_record_commit: resolve_containing_commit_from_git_history
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: c13689829eab3047d9afa9a04118ad9db0b58034
-      latest_reviewed_head: c13689829eab3047d9afa9a04118ad9db0b58034
+      delivered_through_known_head: ec7a552773fb5da160276cbe676b93f44051690e
+      latest_reviewed_head: ec7a552773fb5da160276cbe676b93f44051690e
       delivery_record_push: this_follow_up_commit
     PR_26_update:
       status: PERFORMED
-      body_reconciled_through_known_head: c13689829eab3047d9afa9a04118ad9db0b58034
+      body_reconciled_through_known_head: ec7a552773fb5da160276cbe676b93f44051690e
       prior_P1_threads_replied: true
     exact_head_reviews:
       - reviewed_head: 88335f8bf1dfb638f4367bc40f8e02e916f5ced0
@@ -169,10 +171,97 @@ run_record:
         verdict: BLOCKED_ONE_P1
         findings:
           - a passing C-502 result could contribute completion independently while its mandatory gate remained failed or insufficient
+        remediation: ec7a552773fb5da160276cbe676b93f44051690e
+      - reviewed_head: ec7a552773fb5da160276cbe676b93f44051690e
+        verdict: BLOCKED_ONE_P1
+        findings:
+          - a missing or non-PASS C-502 gate could be bypassed by result, must-status, backlog or downstream completion aggregation
         remediation: this_follow_up_commit
     fresh_review_required: true
     merge:
       status: NOT_AUTHORIZED_NOT_PERFORMED
+
+refresh_checkpoint_2026_07_29:
+  objective: >-
+    Persist a clean new-chat recovery point after verifying the real C-502
+    attempt-001 history and discovering that PR 26 does not yet deliver an
+    executable attempt-002 lifecycle runner.
+  decisions:
+    accepted:
+      - >-
+        Treat attempt-001 as a real App Server launch that reached
+        initialize_response_parse, not as an unattempted launch.
+      - >-
+        Treat the historical uncommitted runner as non-reusable for attempt-002:
+        it covers one happy-path turn, denies approvals and has no interrupt or
+        reconnect scenario.
+      - Do not execute attempt-002, merge PR 26 or widen external authority during this refresh.
+      - >-
+        Keep the gate-finalization remediation: every required task gate is
+        derived from canonical handoff outputs and applied after all completion
+        sources; a missing or non-PASS gate leaves the task incomplete.
+    rejected:
+      - Claiming that the PR 26 contract alone makes attempt-002 executable.
+      - Running attempt-002 through an ephemeral external script with no reviewed repository provenance.
+    deferred:
+      - >-
+        Choose whether PR 26 should authorize runner/validator/test delivery in
+        the later C-502 branch (recommended minimum) or include the completed
+        lifecycle tooling itself before merge.
+  evidence:
+    - >-
+      C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727\agent\state\C-502-result.yaml
+    - >-
+      C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727\validation\C-502-GATE.yaml
+    - >-
+      C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727\docs\research\app-server-smoke-observation.md
+    - >-
+      C:\Users\denko\CodexWork\UPE_5.6_worktrees\c502-app-server-smoke-20260727\scripts\run_c502_app_server_smoke.py
+    - >-
+      Historical worktree Git status shows the runner, validator, integration
+      test and attempt-001 evidence were never committed.
+  repository_changes:
+    - scripts/update_capability_readiness_report.py
+    - tests/test_capability_readiness_report.py
+    - docs/research/research-state.yaml
+    - validation/C-501-PR25-POST-MERGE-RECONCILIATION.yaml
+    - UPE_5.6.0_to_5.6.1_capability_readiness_report_2026-07-19.html
+    - re-fresh-continue-upe-pr26-c502-live-smoke.md
+  verification:
+    capability_report_tests: PASS_30
+    complete_repository_tests: PASS_498
+    ruff_lint: PASS
+    ruff_format: PASS_49_FILES
+    mypy_strict: PASS_40_SOURCE_FILES
+    work_specification_validator: PASS
+    reference_validator: PASS_41_LOCATIONS_237_SCHEMA_REFERENCES
+    schema_validator: PASS_6_INSTANCES
+    capability_report_freshness_and_provenance: PASS
+    uv_lock: PASS_33_PACKAGES
+  assumptions:
+    - The new chat will continue on this machine with access to both retained worktrees.
+  risks:
+    - Building and executing the lifecycle runner in one unreviewed step could consume the single live attempt on a harness defect.
+    - Live approval behavior is model-dependent and may still yield UNKNOWN or INSUFFICIENT_EVIDENCE.
+  open_questions:
+    - Select the attempt-002 runner-delivery approach before changing its handoff or writing lifecycle tooling.
+  next_recommended_step: >-
+    Start from the re-fresh handoff, approve the runner-delivery design, then
+    update only the PR 26 contracts and deterministic tests before any live run.
+  blocking_issues:
+    - C502_ATTEMPT_002_RUNNER_NOT_DELIVERED
+    - PR_26_EXACT_HEAD_REVIEW_PENDING
+    - PR_26_NOT_MERGED
+    - C502_LIVE_COMPATIBILITY_UNKNOWN
+  artifacts_generated:
+    - re-fresh-continue-upe-pr26-c502-live-smoke.md
+  version_impact:
+    harness_runtime: none_in_this_refresh
+    app_server_protocol_contract: runner_delivery_gap_recorded
+    state_and_recovery: new_chat_checkpoint_added
+    security_and_approvals: unchanged_no_live_action
+    documentation_and_report: updated
+    release_or_deployment: none
 
 repository:
   identity: Denys/UPE_v5.6
