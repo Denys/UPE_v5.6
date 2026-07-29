@@ -167,6 +167,8 @@ upe_state:
       handoff: handoffs/C-502-BOUNDED-LIVE-SMOKE-RERUN-2026-07-28.yaml
       authority: explicit_user_request_2026_07_28_complete_missing_C501_C502_steps
       execution_gate: PR_26_merged_and_exact_head_reviewed
+      pr26_checkpoint_commit: f13d197b9909b8f04fc214620573f29121d38ae2
+      pr26_latest_reviewed_commit: ec7a552773fb5da160276cbe676b93f44051690e
       required_live_scope: initialize_thread_turn_tool_approval_interrupt_reconnect
       runner_delivery: BLOCKED_MISSING_REPRODUCIBLE_ATTEMPT_002_RUNNER
       historical_runner_scope: ONE_HAPPY_PATH_TURN_NO_INTERRUPT_OR_RECONNECT_APPROVALS_DENIED

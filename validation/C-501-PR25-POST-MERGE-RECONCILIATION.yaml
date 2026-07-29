@@ -106,7 +106,7 @@ run_record:
     push:
       status: PERFORMED
       remote_branch: agent/reconcile-c501-c502
-      delivered_through_known_head: ec7a552773fb5da160276cbe676b93f44051690e
+      delivered_through_known_head: f13d197b9909b8f04fc214620573f29121d38ae2
       latest_reviewed_head: ec7a552773fb5da160276cbe676b93f44051690e
       delivery_record_push: this_follow_up_commit
     PR_26_update:
@@ -238,6 +238,13 @@ refresh_checkpoint_2026_07_29:
     schema_validator: PASS_6_INSTANCES
     capability_report_freshness_and_provenance: PASS
     uv_lock: PASS_33_PACKAGES
+    visual_report: PASS_DESKTOP_1440x1000_MOBILE_390x844_NO_CONSOLE_ERRORS_NO_HORIZONTAL_OVERFLOW
+  delivery:
+    checkpoint_commit: f13d197b9909b8f04fc214620573f29121d38ae2
+    remote_branch: agent/reconcile-c501-c502
+    push: PERFORMED
+    exact_head_review: PENDING
+    merge: NOT_AUTHORIZED_NOT_PERFORMED
   assumptions:
     - The new chat will continue on this machine with access to both retained worktrees.
   risks:

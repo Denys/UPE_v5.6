@@ -11,6 +11,8 @@ live smoke unless separately authorized.
 - Local branch: `codex/pr26-state-persistence-reconciliation-20260728`.
 - Remote PR branch: `agent/reconcile-c501-c502`.
 - Pull request: https://github.com/Denys/UPE_v5.6/pull/26
+- Published functional/state checkpoint:
+  `f13d197b9909b8f04fc214620573f29121d38ae2`.
 - PR #25 is merged at `b20aa4304e61d12e6460e92fccb5b63d9560eb43`
   and fixes the unversioned App Server envelope framing.
 - C-502 attempt-001 was a real Windows-native App Server 0.144.3 launch. It
@@ -80,9 +82,10 @@ live smoke unless separately authorized.
 
 ## Carried-over data
 
-The latest reviewed remote head before the current gate-finalization checkpoint
-was `ec7a552773fb5da160276cbe676b93f44051690e`. Review found one P1: a missing
-or non-PASS C-502 gate could be bypassed by result, must-status, backlog or
-downstream completion aggregation. The local remediation derives required gates
-from canonical handoff outputs and applies them after all completion sources.
-It still requires a fresh exact-head review after publication.
+The latest reviewed remote head was
+`ec7a552773fb5da160276cbe676b93f44051690e`. Review found one P1: a missing or
+non-PASS C-502 gate could be bypassed by result, must-status, backlog or
+downstream completion aggregation. The remediation was published at
+`f13d197b9909b8f04fc214620573f29121d38ae2`; it derives required gates from
+canonical handoff outputs and applies them after all completion sources. It
+still requires a fresh exact-head review.
